@@ -18,7 +18,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var viewModel: MainActivityViewModel? = null
-    private val clienteProvider= ClienteProveedor()
+
 
     private val autenticacion=  Autenticacion()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,8 +70,8 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    override fun onStart() {
-        if(autenticacion.sesionExistente()) abriMapa()
-        super.onStart()
-    }
+//    override fun onStart() {
+//        if(autenticacion.sesionExistente()) abriMapa()
+//        super.onStart()
+//    }
 }

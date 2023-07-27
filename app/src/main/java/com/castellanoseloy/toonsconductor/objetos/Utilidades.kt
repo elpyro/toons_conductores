@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Environment
@@ -25,6 +26,8 @@ import android.widget.Toast
 import android.widget.VideoView
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -238,6 +241,28 @@ object Utilidades {
         drawable.draw(canvas)
 
         return bitmap
+    }
+
+
+    //drawable a bitmaptdescriptor 100x100
+    fun drawableToBitmapDescriptor(context: Context, drawable: Drawable): BitmapDescriptor? {
+        if (drawable is BitmapDrawable) {
+            val bitmapDrawable = drawable as BitmapDrawable
+            if (bitmapDrawable.bitmap != null) {
+                return BitmapDescriptorFactory.fromBitmap(bitmapDrawable.bitmap)
+            }
+        }
+
+        val bitmap: Bitmap = Bitmap.createBitmap(
+            150,
+            300,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, 150, 300)
+        drawable.draw(canvas)
+
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
     }
 
 
