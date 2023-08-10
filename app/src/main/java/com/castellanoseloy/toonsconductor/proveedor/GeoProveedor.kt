@@ -11,19 +11,25 @@ import org.imperiumlabs.geofirestore.GeoFirestore
 
 class GeoProveedor {
 
-    val coleccion = FirebaseFirestore.getInstance().collection("localizacion")
-    val geoFirestore = GeoFirestore(coleccion)
+    val localizacion = FirebaseFirestore.getInstance().collection("Localizacion")
+    val loacalizacionTrabajo = FirebaseFirestore.getInstance().collection("LocalizacionTrabajo")
+    val geoLocalizacion = GeoFirestore(localizacion)
+    val geoLocalizacionTrabajo = GeoFirestore(loacalizacionTrabajo)
 
    fun guardarLocalizacion(idConductor:String,localizacion:LatLng){
-       geoFirestore.setLocation(idConductor, GeoPoint(localizacion.latitude,localizacion.longitude))
+       geoLocalizacion.setLocation(idConductor, GeoPoint(localizacion.latitude,localizacion.longitude))
    }
 
+    fun guardarLocalizacionTrabajando(idConductor:String,localizacion:LatLng){
+        geoLocalizacionTrabajo.setLocation(idConductor, GeoPoint(localizacion.latitude,localizacion.longitude))
+    }
+
     fun eliminarLocalizacion(idConductor: String){
-        geoFirestore.getRefForDocumentID(idConductor).delete()
+        geoLocalizacion.getRefForDocumentID(idConductor).delete()
     }
 
     fun obtenerLocalizacion(idConductor: String,context: Context):Task<DocumentSnapshot>{
-        return geoFirestore.getRefForDocumentID(idConductor).get().addOnFailureListener {
+        return geoLocalizacion.getRefForDocumentID(idConductor).get().addOnFailureListener {
             ErroresFirebase.imprimirError(it,context)
         }
     }

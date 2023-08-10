@@ -7,7 +7,7 @@ import android.view.WindowManager
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.eliminarEspacios
-import com.castellanoseloy.toonsconductor.activitys.MapActivity.MapaActivity
+import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityRegistroUsuarioBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase

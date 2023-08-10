@@ -244,8 +244,8 @@ object Utilidades {
     }
 
 
-    //drawable a bitmaptdescriptor 100x100
-    fun drawableToBitmapDescriptor(context: Context, drawable: Drawable): BitmapDescriptor? {
+
+    fun drawableToBitmapDescriptor(drawable: Drawable): BitmapDescriptor? {
         if (drawable is BitmapDrawable) {
             val bitmapDrawable = drawable as BitmapDrawable
             if (bitmapDrawable.bitmap != null) {
@@ -254,12 +254,12 @@ object Utilidades {
         }
 
         val bitmap: Bitmap = Bitmap.createBitmap(
-            150,
-            300,
+            250,
+            600,
             Bitmap.Config.ARGB_8888
         )
         val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, 150, 300)
+        drawable.setBounds(0, 0, 250, 600)
         drawable.draw(canvas)
 
         return BitmapDescriptorFactory.fromBitmap(bitmap)

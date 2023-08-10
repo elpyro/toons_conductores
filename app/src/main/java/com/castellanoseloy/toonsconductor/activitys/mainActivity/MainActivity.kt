@@ -1,17 +1,15 @@
-package com.castellanoseloy.toonsconductor.activitys.MainActivity
+package com.castellanoseloy.toonsconductor.activitys.mainActivity
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.lifecycle.ViewModelProvider
-import com.castellanoseloy.toonsconductor.R
-import com.castellanoseloy.toonsconductor.activitys.MapActivity.MapaActivity
+import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.registro_usuario.RegistroUsuarioActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
-import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 
 
 class MainActivity : AppCompatActivity() {
@@ -70,8 +68,8 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-//    override fun onStart() {
-//        if(autenticacion.sesionExistente()) abriMapa()
-//        super.onStart()
-//    }
+    override fun onStart() {
+        if(autenticacion.sesionExistente()) abriMapa()
+        super.onStart()
+    }
 }

@@ -1,4 +1,4 @@
-package com.castellanoseloy.toonsconductor.activitys.MapActivity
+package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import androidx.lifecycle.ViewModel
 

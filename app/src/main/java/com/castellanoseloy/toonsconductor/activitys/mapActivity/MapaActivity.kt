@@ -1,17 +1,14 @@
-package com.castellanoseloy.toonsconductor.activitys.MapActivity
-
+package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -19,15 +16,17 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
-
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
+import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
+import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.google.android.gms.location.LocationRequest
-
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -35,12 +34,16 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.firebase.firestore.ListenerRegistration
 
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
+
+    var bookingListener: ListenerRegistration? =null
     private lateinit var binding: ActivityMapBinding
     private var viewModel: MapaActivityViewModel? = null
     private var googleMaps:GoogleMap? =null
@@ -50,7 +53,32 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var iconoMarca: BitmapDescriptor? = null
     private var geoProveedor= GeoProveedor()
     private var autenticacion=Autenticacion ()
+    private var bookingProvider=BookingProvider()
+
+    //GOOGLE PLACES
+    private var places:PlacesClient? =null
+    private var autocompleteOrigen:AutocompleteSupportFragment? =null
+    private var autocompleteDestino:AutocompleteSupportFragment? =null
+    private var nombreOrigen=""
+    private var nombreDestino=""
+    private var origenLatLng: LatLng? =null
+    private var destinoLatLng: LatLng? = null
+
+    val modalBooking = ModalBottomSheetBooking()
+
+    val timer = object: CountDownTimer(30000, 1000) {
+        override fun onTick(counter: Long) {
+            Log.d("TIMER", "Counter: $counter")
+        }
+
+        override fun onFinish() {
+            Log.d("TIMER", "ON FINISH")
+            modalBooking.dismiss()
+        }
+
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
 
         binding= ActivityMapBinding.inflate(layoutInflater)
@@ -73,14 +101,23 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
 
-        // Crear el BitmapDescriptor una sola vez
-        val imagenDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_carro_48)
-        iconoMarca = Utilidades.drawableToBitmapDescriptor(this, imagenDrawable!!)
+         listeners()
+    }
 
-        listeners()
+    private fun showModalBooking(booking: Booking) {
+
+        val bundle = Bundle()
+        bundle.putString("booking", booking.toJson())
+        modalBooking.arguments = bundle
+        modalBooking.isCancelable = false // NO PUEDA OCULTAR EL MODAL BOTTTOM SHEET
+
+        modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
+
+        timer.start()
     }
 
     private fun listeners() {
+        listenerBooking()
         binding.btnConnect.setOnClickListener { connectDriver() }
         binding.btnDisconnect.setOnClickListener { disconnectDriver() }
     }
@@ -99,8 +136,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                 }
                 permiso.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false)->{
                     Log.d("Pemisos","Permiso gps concedido con limitacion")
-                    verificarConductorConectado()
                     easyWayLocation!!.startLocation()
+                    verificarConductorConectado()
                 }
                 else->{
                     Log.d("Pemisos","Permiso gps NO concedidos")
@@ -127,7 +164,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     }
 
-    private fun disconnectDriver() {
+     fun disconnectDriver() {
         easyWayLocation?.endUpdates()
         if (ubicacionLatLong != null) {
             showButtonConnect()
@@ -191,19 +228,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         ) {
             return
         }
-
-//        try{
-//            val aceptado=googleMaps?.setMapStyle(
-//                MapStyleOptions.loadRawResourceStyle(this, R.raw.style)
-//            )
-//
-//            if(!aceptado!!){
-//                Log.d("Mapa", "No se puedo encontrar el estilo de mapa")
-//            }
-//        }catch (e:Resources.NotFoundException){
-//            Log.d("Mapa", "Error ${e.toString()}")
-//        }
-
     }
 
     override fun locationOn() {
@@ -216,17 +240,26 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         if(binding.btnDisconnect.isVisible) {
             ubicacionLatLong = LatLng(location.latitude, location.longitude) //POSICION ACTUAL
             if (!isCameraMoved) {
+
                 googleMaps?.moveCamera(
                     CameraUpdateFactory.newCameraPosition(
                         CameraPosition.builder().target(ubicacionLatLong!!).zoom(17f).build()
                     )
                 )
                 isCameraMoved = true // Marca moveCamera como ya ejecutado
+
+                crearIcono()
             }
 
             agregarMarca()
             salvarLocalizacion()
         }
+    }
+
+    private fun crearIcono() {
+        // Crear el BitmapDescriptor una sola vez
+        val imagenDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_carro_48)
+        iconoMarca = Utilidades.drawableToBitmapDescriptor( imagenDrawable!!)
     }
 
     private fun verificarConductorConectado(){
@@ -247,14 +280,38 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     }
 
+    
+    //mostrar cliente
+    private fun listenerBooking() {
+        bookingListener = bookingProvider.getBooking().addSnapshotListener { snapshot, e ->
+            if (e != null) {
+                Log.d("FIRESTORE", "ERROR: ${e.message}")
+                ErroresFirebase.imprimirError(e,this@MapaActivity)
+                return@addSnapshotListener
+            }
+
+            if (snapshot != null) {
+                if (snapshot.documents.size > 0) {
+                    val booking = snapshot.documents[0].toObject(Booking::class.java)
+                    if (booking?.status == "create") {
+                        showModalBooking(booking!!)
+                    }
+                }
+            }
+        }
+    }
 
     override fun onPause() {
         super.onPause()
-        easyWayLocation!!.endUpdates()
+//        if(easyWayLocation!=null) easyWayLocation!!.endUpdates()
+//        disconnectDriver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        easyWayLocation!!.endUpdates()
+        if(easyWayLocation!=null)  easyWayLocation!!.endUpdates()
+        disconnectDriver()
+        bookingListener?.remove()
     }
+
 }

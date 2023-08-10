@@ -1,4 +1,4 @@
-package com.castellanoseloy.toonsconductor.activitys.MainActivity
+package com.castellanoseloy.toonsconductor.activitys.mainActivity
 
 import androidx.lifecycle.ViewModel
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding

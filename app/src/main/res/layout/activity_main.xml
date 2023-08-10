@@ -16,7 +16,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/imagen_login"
-            android:scaleType="centerCrop"/>
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription" />
 
         <View
             android:layout_width="match_parent"
@@ -50,14 +51,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
                     android:src="@drawable/ic_pesona_blanco"
-                    android:layout_marginTop="10dp"></ImageView>
+                    android:layout_marginTop="10dp"
+                    tools:ignore="ContentDescription"></ImageView>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/Login"
+                    android:text="@string/ConductorMAYUSCULA"
                     android:textColor="@color/white"
-                    android:textSize="20dp"
+                    android:textSize="24sp"
                     android:layout_gravity="center"
                     android:gravity="center"
                     android:textStyle="bold">

@@ -5,12 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activitys.MapActivity.MapaActivity">
+    tools:context=".activitys.mapActivity.MapaActivity">
 
     <fragment
         android:id="@+id/mapa"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="40dp"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
 
