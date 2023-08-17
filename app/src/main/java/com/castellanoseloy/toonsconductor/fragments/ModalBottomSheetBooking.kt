@@ -11,12 +11,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
+import com.castellanoseloy.toonsconductor.activitys.utils.Sonidos
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -34,8 +37,10 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     private lateinit var btnCancel: Button
 
     private val bookingProvider = BookingProvider()
+    private val bookingAceptedsProvider = BookingAceptedsProvider()
     private val geoProvider = GeoProveedor()
     private val authProvider = Autenticacion()
+    private val sonidos=Sonidos()
     private lateinit var booking: Booking
 
     override fun onCreateView(
@@ -66,6 +71,8 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
 
         textViewTimeAndDistance.text = "${String.format("%.1f", booking?.time)} Min - ${String.format("%.1f", booking?.km)} Km"
 
+        sonidos.crearTonoInformativo(requireContext())
+
         listeners()
         return view
     }
@@ -94,6 +101,11 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
 
                 (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
                 geoProvider.eliminarLocalizacion(authProvider.obtenerId())
+
+                booking!!.status="accept" //crear el booking aceptado
+                bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
+                    Utilidades.mostrarToast("Viaje Tomado", requireContext())
+                }
                 goToMapTrip()
             }
             else {

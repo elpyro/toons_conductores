@@ -33,4 +33,8 @@ class GeoProveedor {
             ErroresFirebase.imprimirError(it,context)
         }
     }
+
+    fun eliminarLocalizacionTrabajo(idConductor: String){
+        geoLocalizacionTrabajo.getRefForDocumentID(idConductor).delete()
+    }
 }

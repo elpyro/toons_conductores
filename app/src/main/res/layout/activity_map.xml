@@ -22,7 +22,7 @@
         android:text="CONECTARSE"
         android:background="@drawable/rounded_button"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="70dp"
         android:layout_marginRight="60dp"
         android:layout_marginLeft="60dp"
         />
@@ -35,7 +35,7 @@
         android:background="@drawable/rounded_button"
         app:backgroundTint="@color/grey"
         android:layout_gravity="bottom"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="70dp"
         android:layout_marginRight="60dp"
         android:layout_marginLeft="60dp"
         android:visibility="gone"/>

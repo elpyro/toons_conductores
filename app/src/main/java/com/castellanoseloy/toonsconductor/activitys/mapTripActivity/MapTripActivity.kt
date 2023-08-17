@@ -1,28 +1,31 @@
 package com.castellanoseloy.toonsconductor.activitys.mapTripActivity
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.CountDownTimer
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.calificationClientActivity.CalificationClientActivity
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivityViewModel
+import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapTripBinding
-import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
-import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
+import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
@@ -39,15 +42,14 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.ktx.toObject
+
 
 class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, DirectionUtil.DirectionCallBack {
 
+    private var start: LatLng?=null
+    private var markerDestination: Marker? =null
+    private var isCloseToOrigin: Boolean = false
     private var markerOrigin: Marker? =null
-    var bookingListener: ListenerRegistration? =null
     private lateinit var binding: ActivityMapTripBinding
     private var viewModel: MapaActivityViewModel? = null
     private var googleMaps: GoogleMap? =null
@@ -57,27 +59,14 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var iconoMarca: BitmapDescriptor? = null
     private var geoProveedor= GeoProveedor()
     private var autenticacion= Autenticacion ()
-    private var bookingProvider= BookingProvider()
+    private var bookingAceptedsProvider =BookingAceptedsProvider()
     private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
 
-    //GOOGLE PLACES
-    private var places: PlacesClient? =null
-    private var autocompleteOrigen: AutocompleteSupportFragment? =null
-    private var autocompleteDestino: AutocompleteSupportFragment? =null
-    private var nombreOrigen=""
-    private var nombreDestino=""
-    private var origenLatLng: LatLng? =null
-    private var destinoLatLng: LatLng? = null
 
     private var distance = 0.00
     private var  time= 0.00
 
-    private var extraOriginName = ""
-    private var extraDestinationName = ""
-    private var extraOriginLat = 0.0
-    private var extraOriginLng = 0.0
-    private var extraDestinationLat = 0.0
-    private var extraDestinationLng = 0.0
+
     private var originLatLng: LatLng? = null
     private var destinationLatLng: LatLng? = null
 
@@ -88,19 +77,42 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private val WAY_POINT_TAG = "way_point_tag"
     private lateinit var directionUtil: DirectionUtil
 
-    val modalBooking = ModalBottomSheetBooking()
+    // DISTANCIA
+    private var meters = 0.0
+    private var km = 0.0
+    private var currentLocation = Location("")
+    private var previusLocation = Location("")
+    private var isStartedTrip = false
 
-    val timer = object: CountDownTimer(30000, 1000) {
-        override fun onTick(counter: Long) {
-            Log.d("TIMER", "Counter: $counter")
+    // TEMPORIZADOR
+    private var counter = 0
+    private var min = 0
+    private var handler = Handler(Looper.myLooper()!!)
+    private var runnable = Runnable {
+        kotlin.run {
+            counter++
+
+            if (min == 0) {
+                binding.textViewTimer.text = "$counter Seg"
+            }
+            else {
+                binding.textViewTimer.text = "$min Min $counter Seg"
+            }
+
+            if (counter == 60) {
+                min = min + (counter / 60)
+                counter = 0
+                binding.textViewTimer.text = "$min Min $counter Seg"
+            }
+
+            startTimer()
         }
-
-        override fun onFinish() {
-            Log.d("TIMER", "ON FINISH")
-            modalBooking.dismiss()
-        }
-
     }
+
+    private fun startTimer() {
+        handler.postDelayed(runnable, 1000) // INICIALIZAR EL CONTADOR
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -129,45 +141,31 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun getBooking(){
-        bookingProvider.getBooking().get().addOnSuccessListener {query->
+        bookingAceptedsProvider.getBooking().get().addOnSuccessListener {query->
 
             if(query!=null){
                 if(query.size()>0){
                     booking=  query.documents[0].toObject(Booking::class.java)
-                    val originLatLng= LatLng(booking!!.originLat!!, booking!!.originLng!!)
-                    dibujarRuta(originLatLng)
-                    addOriginMarker(originLatLng)
-
-                    bookingProvider.updateStatus(booking!!.idClient!!,"process").addOnCompleteListener {
-                        Utilidades.mostrarToast("Viaje Tomado", this@MapTripActivity)
-                    }
+                    originLatLng= LatLng(booking!!.originLat!!, booking!!.originLng!!)
+                    destinationLatLng=LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
+                    medirDistacia()
+                    dibujarRuta(originLatLng!!)
+                    addOriginMarker(originLatLng!!)
+                    //getClientInfo()
                 }
             }
 
         }
     }
 
-    private fun showModalBooking(booking: Booking) {
-
-        val bundle = Bundle()
-        bundle.putString("booking", booking.toJson())
-        modalBooking.arguments = bundle
-        modalBooking.isCancelable = false // NO PUEDA OCULTAR EL MODAL BOTTTOM SHEET
-
-        modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
-
-        timer.start()
-    }
 
     private fun listeners() {
-//        binding.btnConnect.setOnClickListener { connectDriver() }
+        binding.btnFinishTrip.setOnClickListener { updateToFinish() }
+        binding.btnStartTrip.setOnClickListener { updateToStarted()}
 //        binding.btnDisconnect.setOnClickListener { disconnectDriver() }
     }
 
-    private val ubicacionPorDefecto = LatLng(4.7109, -74.0721) // Ubicación predeterminada (latitud y longitud)
-    private fun centrarCamaraEnUbicacionPorDefecto() {
-        googleMaps?.moveCamera(CameraUpdateFactory.newLatLngZoom(ubicacionPorDefecto, 1f))
-    }
+
     var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){ permiso->
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
             when{
@@ -206,15 +204,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     }
 
-    fun disconnectDriver() {
-        easyWayLocation?.endUpdates()
-        if (ubicacionLatLong != null) {
-            easyWayLocation?.endUpdates()
-            centrarCamaraEnUbicacionPorDefecto()
-            geoProveedor.eliminarLocalizacion(autenticacion.obtenerId())
-        }
-    }
-
     private fun showButtonFinish() {
         binding.btnFinishTrip.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
         binding.btnStartTrip.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
@@ -244,11 +233,13 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons_location_person)))
     }
 
-//    private fun addDestinationMarker() {
-//        markerDestination = googleMaps?.addMarker(
-//            MarkerOptions().position(destinationLatLng!!).title("LLegada")
-//                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons_pin)))
-//    }
+    private fun addDestinationMarker() {
+        if (destinationLatLng != null) {
+            markerDestination = googleMaps?.addMarker(MarkerOptions().position(destinationLatLng!!).title("Recoger aqui")
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons_pin)))
+        }
+    }
+
     override fun onMapReady(mapa: GoogleMap) {
         googleMaps=mapa
 
@@ -277,9 +268,22 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     //ACTUALIZACION DE LA UBICACION EN TIEMPO REAL
 
     override fun currentLocation(location: Location) {
-
+        if (ubicacionLatLong!=null) {
+            start=ubicacionLatLong
+        }
             ubicacionLatLong = LatLng(location.latitude, location.longitude) //POSICION ACTUAL
-            if (!isCameraMoved) {
+
+        //medir distancia
+        currentLocation = location
+        if (isStartedTrip) {
+            meters = meters + previusLocation.distanceTo(currentLocation)
+            km = meters / 1000
+            binding.textViewDistance.text = "${String.format("%.1f", km)} km"
+        }
+        previusLocation = location
+
+
+        if (!isCameraMoved) {
 
                 googleMaps?.moveCamera(
                     CameraUpdateFactory.newCameraPosition(
@@ -289,14 +293,82 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                 isCameraMoved = true // Marca moveCamera como ya ejecutado
 
                 crearIcono()
+                agregarMarca()
                 getBooking()
             }
 
-            agregarMarca()
-            salvarLocalizacion()
-
+            if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
+                CarMoveAnim.carAnim(marcaConductor!!, start!!, ubicacionLatLong!!)
+            }
+        medirDistacia()
+        salvarLocalizacion()
     }
 
+    private fun medirDistacia() {
+        if (booking != null && originLatLng != null) {
+            var distance = getDistanceBetween(ubicacionLatLong!!, originLatLng!!)
+            if (distance <= 300) {
+                isCloseToOrigin = true
+            }
+            Log.d("LOCATION", "Distance: ${distance}")
+        }
+    }
+
+    private fun updateToStarted() {
+        if (isCloseToOrigin) {
+            bookingAceptedsProvider.updateStatus(booking?.idClient!!, "started").addOnCompleteListener {
+                if (it.isSuccessful) {
+                    if (destinationLatLng != null) {
+                        isStartedTrip = true
+                        googleMaps?.clear()
+                        agregarMarca()
+//                        addDirectionMarker(myLocationLatLng!!, angle)
+                        dibujarRuta(destinationLatLng!!)
+                        markerOrigin?.remove()
+                        addDestinationMarker()
+                        startTimer()
+//                        sendNotification("Viaje iniciado")
+                    }
+                    showButtonFinish()
+                }
+            }
+        }
+        else {
+            Toast.makeText(this, "Debes estar mas cerca a la posicion de recogida", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun updateToFinish() {
+
+        handler.removeCallbacks(runnable) // DETENER CONTADOR
+        isStartedTrip = false
+        easyWayLocation?.endUpdates()
+        geoProveedor.eliminarLocalizacionTrabajo(autenticacion.obtenerId())
+        if (min == 0) {
+            min = 1
+        }
+      //  getPrices(km, min.toDouble())
+        bookingAceptedsProvider.updateStatus(booking?.idClient!!, "finished").addOnCompleteListener {
+            if (it.isSuccessful) {
+//                sendNotification("Viaje terminado")
+                goToCalificationClient()
+            }
+        }
+    }
+
+    private fun goToCalificationClient() {
+        val i = Intent(this, CalificationClientActivity::class.java)
+        i.putExtra("price", booking!!.price)
+        i.putExtra("origin", booking!!.origin)
+        i.putExtra("destination", booking!!.destination)
+        i.putExtra("time", time/60)
+        i.putExtra("km", km)
+
+        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(i)
+
+        bookingAceptedsProvider.deleteBookingsForDriver(autenticacion.obtenerId())
+    }
     private fun crearIcono() {
         // Crear el BitmapDescriptor una sola vez
         val imagenDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_carro_48)
@@ -307,11 +379,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     override fun locationCancelled() {
 
     }
-
-
-
-
-
 
     override fun onDestroy() {
         super.onDestroy()
@@ -342,8 +409,12 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun dibujarRuta(position:LatLng){
+
+        wayPoints.clear()
+
         wayPoints.add(ubicacionLatLong!!)
         wayPoints.add(position!!)
+
         directionUtil = DirectionUtil.Builder()
             .setDirectionKey(resources.getString(R.string.google_maps_key))
             .setOrigin(ubicacionLatLong!!)
@@ -357,6 +428,22 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             .build()
 
         directionUtil.initPath()
+    }
+
+    //obtener la distacina entre dos puntos
+    private fun getDistanceBetween(originLatLng: LatLng, destinationLatLng: LatLng): Float {
+        var distance = 0.0f
+        val originLocation = Location("")
+        val destinationLocation = Location("")
+
+        originLocation.latitude = originLatLng.latitude
+        originLocation.longitude = originLatLng.longitude
+
+        destinationLocation.latitude = destinationLatLng.latitude
+        destinationLocation.longitude = destinationLatLng.longitude
+
+        distance = originLocation.distanceTo(destinationLocation)
+        return distance
     }
 
 }

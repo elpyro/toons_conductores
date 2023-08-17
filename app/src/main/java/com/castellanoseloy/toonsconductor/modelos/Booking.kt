@@ -12,7 +12,7 @@ data class Booking (
     val telefonoPasajero: String? = null,
     val origin: String? = null,
     val destination: String? = null,
-    val status: String? = null,
+    var status: String? = null,
     val pasajeros: String? = null,
     val equipaje: String? = null,
     val time: Double? = null,

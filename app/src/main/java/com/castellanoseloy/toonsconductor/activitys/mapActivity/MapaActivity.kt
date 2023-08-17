@@ -17,6 +17,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.modelos.Booking
@@ -43,6 +44,7 @@ import com.google.firebase.firestore.ListenerRegistration
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
+    private var start: LatLng? =null
     var bookingListener: ListenerRegistration? =null
     private lateinit var binding: ActivityMapBinding
     private var viewModel: MapaActivityViewModel? = null
@@ -55,14 +57,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var autenticacion=Autenticacion ()
     private var bookingProvider=BookingProvider()
 
-    //GOOGLE PLACES
-    private var places:PlacesClient? =null
-    private var autocompleteOrigen:AutocompleteSupportFragment? =null
-    private var autocompleteDestino:AutocompleteSupportFragment? =null
-    private var nombreOrigen=""
-    private var nombreDestino=""
-    private var origenLatLng: LatLng? =null
-    private var destinoLatLng: LatLng? = null
 
     val modalBooking = ModalBottomSheetBooking()
 
@@ -153,6 +147,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             geoProveedor.guardarLocalizacion(autenticacion.obtenerId(),ubicacionLatLong!!)
         }
     }
+
     private fun ubicacionPorDefecto() {
         val respuestaLocalizacion= LocationRequest.create().apply {
             interval=0
@@ -161,7 +156,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             smallestDisplacement=1f
         }
         easyWayLocation = EasyWayLocation(this, respuestaLocalizacion, false, false, this)
-
     }
 
      fun disconnectDriver() {
@@ -169,7 +163,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         if (ubicacionLatLong != null) {
             showButtonConnect()
             easyWayLocation?.endUpdates()
-            centrarCamaraEnUbicacionPorDefecto()
+            marcaConductor?.remove()
             geoProveedor.eliminarLocalizacion(autenticacion.obtenerId())
         }
     }
@@ -192,7 +186,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
 
     fun agregarMarca(){
-
+        crearIcono()
         if (marcaConductor!=null){
             marcaConductor!!.remove() //no redibujar icono
         }
@@ -206,14 +200,12 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                     .icon(iconoMarca)
             )
         }
-
     }
     override fun onMapReady(mapa: GoogleMap) {
         googleMaps=mapa
 
         googleMaps?.isMyLocationEnabled=false
         googleMaps?.uiSettings?.isZoomControlsEnabled=true
-
         // Habilitar el botón de "My Location" (ubicación actual)
         googleMaps?.uiSettings?.isMyLocationButtonEnabled = true
 
@@ -237,10 +229,12 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     //ACTUALIZACION DE LA UBICACION EN TIEMPO REAL
     private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
     override fun currentLocation(location: Location) {
-        if(binding.btnDisconnect.isVisible) {
+            if (ubicacionLatLong!=null) {
+                 start=ubicacionLatLong
+            }
             ubicacionLatLong = LatLng(location.latitude, location.longitude) //POSICION ACTUAL
-            if (!isCameraMoved) {
 
+            if (!isCameraMoved) {
                 googleMaps?.moveCamera(
                     CameraUpdateFactory.newCameraPosition(
                         CameraPosition.builder().target(ubicacionLatLong!!).zoom(17f).build()
@@ -248,12 +242,15 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                 )
                 isCameraMoved = true // Marca moveCamera como ya ejecutado
 
-                crearIcono()
+                agregarMarca()
             }
 
-            agregarMarca()
+            if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
+                CarMoveAnim.carAnim(marcaConductor!!, start!!, ubicacionLatLong!!)
+            }
+
+//            agregarMarca()
             salvarLocalizacion()
-        }
     }
 
     private fun crearIcono() {
@@ -295,6 +292,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                     val booking = snapshot.documents[0].toObject(Booking::class.java)
                     if (booking?.status == "create") {
                         showModalBooking(booking!!)
+
                     }
                 }
             }
