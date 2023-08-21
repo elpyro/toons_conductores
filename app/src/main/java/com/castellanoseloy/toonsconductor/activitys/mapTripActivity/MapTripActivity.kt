@@ -51,7 +51,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var isCloseToOrigin: Boolean = false
     private var markerOrigin: Marker? =null
     private lateinit var binding: ActivityMapTripBinding
-    private var viewModel: MapaActivityViewModel? = null
+
+    private var viewModel: MapTripActivityViewModel? = null
     private var googleMaps: GoogleMap? =null
     var easyWayLocation: EasyWayLocation? = null
     private var marcaConductor: Marker? = null
@@ -121,9 +122,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         setContentView(binding.root)
 
         //COLOCAR LA BARRA SUPERIOR TRANSAPENTE
-        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+        //window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
-        viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(MapTripActivityViewModel::class.java)
 
         //cargar mapa del fragmento
         val fragmentManager = supportFragmentManager
@@ -207,6 +208,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private fun showButtonFinish() {
         binding.btnFinishTrip.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
         binding.btnStartTrip.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
     }
 
 
@@ -315,6 +318,14 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun updateToStarted() {
+
+        binding.LinearCompartirRuta.visibility= View.VISIBLE
+        var wazeIntalado= viewModel?.isWazeInstalled(this)
+        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
+
+        if(!wazeIntalado!!) binding.imageViewWaze.visibility=View.GONE
+        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
+
         if (isCloseToOrigin) {
             bookingAceptedsProvider.updateStatus(booking?.idClient!!, "started").addOnCompleteListener {
                 if (it.isSuccessful) {

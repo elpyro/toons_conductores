@@ -204,7 +204,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     override fun onMapReady(mapa: GoogleMap) {
         googleMaps=mapa
 
-        googleMaps?.isMyLocationEnabled=false
+        googleMaps?.isMyLocationEnabled=true
         googleMaps?.uiSettings?.isZoomControlsEnabled=true
         // Habilitar el botón de "My Location" (ubicación actual)
         googleMaps?.uiSettings?.isMyLocationButtonEnabled = true

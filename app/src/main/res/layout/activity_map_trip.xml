@@ -13,6 +13,42 @@
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
     <LinearLayout
+        android:id="@+id/Linear_compartir_ruta"
+        android:visibility="visible"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_gravity="end"
+        android:gravity="center_vertical|end"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="30sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:text="Compartir: " />
+
+        <ImageView
+            android:id="@+id/imageView_Waze"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ico_waze"
+            android:layout_margin="4dp"
+            android:contentDescription="Waze" />
+
+        <ImageView
+            android:id="@+id/imageView_google_maps"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="4dp"
+            android:src="@drawable/ico_google_maps"
+            android:contentDescription="Google Maps" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -30,8 +66,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            >
+            android:orientation="vertical">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -42,7 +77,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tiempo transcurrido: "
+                    android:text="Tiempo: "
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     android:textSize="18sp"
@@ -70,7 +105,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Distancia total: "
+                    android:text="Recorrido: "
                     android:textColor="@color/black"
                     android:textStyle="bold"
                     android:textSize="18sp"
