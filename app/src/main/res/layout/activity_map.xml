@@ -24,6 +24,7 @@
         android:layout_gravity="bottom"
         android:layout_marginBottom="70dp"
         android:layout_marginRight="60dp"
+        android:textColor="@color/white"
         android:layout_marginLeft="60dp"
         />
 
@@ -33,6 +34,7 @@
         android:layout_height="wrap_content"
         android:text="DESCONECTARSE"
         android:background="@drawable/rounded_button"
+        android:textColor="@color/white"
         app:backgroundTint="@color/grey"
         android:layout_gravity="bottom"
         android:layout_marginBottom="70dp"
