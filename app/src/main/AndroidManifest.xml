@@ -18,6 +18,9 @@
         android:theme="@style/Theme.ToonsConductor"
         tools:targetApi="31">
         <activity
+            android:name=".activitys.profileActivity.ProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".activitys.calificationClientActivity.CalificationClientActivity"
             android:exported="false" />
         <activity

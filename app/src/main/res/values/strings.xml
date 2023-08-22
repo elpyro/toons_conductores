@@ -62,4 +62,5 @@
     <string name="Comision">Comision</string>
     <string name="Tarifa">Tú tarifa</string>
     <string name="Total">Total a cobrar</string>
+    <string name="Comentario">Comentario</string>
 </resources>

@@ -28,4 +28,10 @@ class Autenticacion {
     }
 
 
+    fun logout() {
+        firebaseAutenticacion.signOut()
+    }
+
+
+
 }

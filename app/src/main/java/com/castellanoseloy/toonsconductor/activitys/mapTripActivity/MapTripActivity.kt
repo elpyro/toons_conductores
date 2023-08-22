@@ -42,6 +42,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.optic.uberclonedriverkotlin.models.History
+import com.optic.uberclonedriverkotlin.providers.HistoryProvider
+import java.util.Date
 
 
 class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, DirectionUtil.DirectionCallBack {
@@ -58,15 +61,16 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var marcaConductor: Marker? = null
     private  var ubicacionLatLong: LatLng? = null
     private var iconoMarca: BitmapDescriptor? = null
+
     private var geoProveedor= GeoProveedor()
     private var autenticacion= Autenticacion ()
     private var bookingAceptedsProvider =BookingAceptedsProvider()
-    private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
+    private val historyProvider = HistoryProvider()
 
+    private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
 
     private var distance = 0.00
     private var  time= 0.00
-
 
     private var originLatLng: LatLng? = null
     private var destinationLatLng: LatLng? = null
@@ -166,6 +170,24 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 //        binding.btnDisconnect.setOnClickListener { disconnectDriver() }
     }
 
+    private fun createHistory() {
+        val history = History(
+            idDriver = autenticacion.obtenerId(),
+            idClient = booking?.idClient,
+            origin = booking?.origin,
+            destination = booking?.destination,
+            originLat = booking?.originLat,
+            originLng = booking?.originLng,
+            destinationLat = booking?.destinationLat,
+            destinationLng = booking?.destinationLng,
+            time = min,
+            km = km,
+            price = booking?.price,
+            timestamp = Date().time
+        )
+        historyProvider.create(history)
+    }
+
 
     var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){ permiso->
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
@@ -246,9 +268,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     override fun onMapReady(mapa: GoogleMap) {
         googleMaps=mapa
 
-        googleMaps?.isMyLocationEnabled=false
+        googleMaps?.isMyLocationEnabled=true
         googleMaps?.uiSettings?.isZoomControlsEnabled=true
-
         // Habilitar el botón de "My Location" (ubicación actual)
         googleMaps?.uiSettings?.isMyLocationButtonEnabled = true
 
@@ -360,10 +381,14 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         }
       //  getPrices(km, min.toDouble())
         bookingAceptedsProvider.updateStatus(booking?.idClient!!, "finished").addOnCompleteListener {
+
+            createHistory()
+
             if (it.isSuccessful) {
 //                sendNotification("Viaje terminado")
                 goToCalificationClient()
             }
+
         }
     }
 

@@ -20,6 +20,7 @@ import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
+import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetMenu
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
@@ -44,6 +45,7 @@ import com.google.firebase.firestore.ListenerRegistration
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
+    private var idConductor: String? = null
     private var start: LatLng? =null
     var bookingListener: ListenerRegistration? =null
     private lateinit var binding: ActivityMapBinding
@@ -56,6 +58,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var geoProveedor= GeoProveedor()
     private var autenticacion=Autenticacion ()
     private var bookingProvider=BookingProvider()
+    private val modalMenu = ModalBottomSheetMenu()
 
 
     val modalBooking = ModalBottomSheetBooking()
@@ -79,7 +82,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         setContentView(binding.root)
 
         //COLOCAR LA BARRA SUPERIOR TRANSAPENTE
-        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+       // window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
 
@@ -95,6 +98,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
 
+        idConductor=autenticacion.obtenerId()
+        
          listeners()
     }
 
@@ -114,6 +119,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         listenerBooking()
         binding.btnConnect.setOnClickListener { connectDriver() }
         binding.btnDisconnect.setOnClickListener { disconnectDriver() }
+        binding.imageViewMenu.setOnClickListener{ showModalMenu() }
+    }
+
+    private fun showModalMenu() {
+        modalMenu.show(supportFragmentManager, ModalBottomSheetMenu.TAG)
     }
 
     private val ubicacionPorDefecto = LatLng(4.7109, -74.0721) // Ubicación predeterminada (latitud y longitud)
@@ -164,7 +174,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             showButtonConnect()
             easyWayLocation?.endUpdates()
             marcaConductor?.remove()
-            geoProveedor.eliminarLocalizacion(autenticacion.obtenerId())
+           
+           if(idConductor!=null) geoProveedor.eliminarLocalizacion(idConductor!!)
         }
     }
     private fun connectDriver() {

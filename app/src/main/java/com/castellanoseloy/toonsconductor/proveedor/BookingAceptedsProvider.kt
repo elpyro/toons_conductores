@@ -30,6 +30,8 @@ class BookingAceptedsProvider {
         }
     }
 
+
+
     fun deleteBookingsForDriver(idDriver: String): Task<Void> {
 
         val query = db.whereEqualTo("idDriver", idDriver)
