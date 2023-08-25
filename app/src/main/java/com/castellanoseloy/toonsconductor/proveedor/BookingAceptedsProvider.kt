@@ -24,11 +24,18 @@ class BookingAceptedsProvider {
         return db.whereEqualTo("idDriver",authProvider.obtenerId())
     }
 
-    fun updateStatus(idClient: String, status: String): Task<Void> {
-        return db.document(idClient).update("status", status).addOnFailureListener { exception ->
+    fun updateStatus(idDriver: String, status: String): Task<Void> {
+        return db.document(idDriver).update("status", status).addOnFailureListener { exception ->
             Log.d("FIRESTORE", "ERROR: ${exception.message}")
         }
     }
+
+    fun updateStatusViajeConductor(idDriver: String, status: String): Task<Void> {
+        return db.document(idDriver).update("status", status).addOnFailureListener { exception ->
+            Log.d("FIRESTORE", "ERROR: ${exception.message}")
+        }
+    }
+
 
 
 

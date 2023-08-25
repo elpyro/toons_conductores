@@ -25,7 +25,7 @@ class CalificationClientActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCalificationClientBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+       // window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
         val extraPrice = intent.getDoubleExtra("price", 0.0)
         val extraOrigin = intent.getStringExtra("origin")

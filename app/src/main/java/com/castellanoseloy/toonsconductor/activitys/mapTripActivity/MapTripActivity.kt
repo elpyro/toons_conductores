@@ -125,9 +125,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         binding= ActivityMapTripBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //COLOCAR LA BARRA SUPERIOR TRANSAPENTE
-        //window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
         viewModel = ViewModelProvider(this).get(MapTripActivityViewModel::class.java)
 
         //cargar mapa del fragmento
@@ -159,15 +156,15 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     //getClientInfo()
                 }
             }
-
         }
     }
 
 
     private fun listeners() {
-        binding.btnFinishTrip.setOnClickListener { updateToFinish() }
+
         binding.btnStartTrip.setOnClickListener { updateToStarted()}
-//        binding.btnDisconnect.setOnClickListener { disconnectDriver() }
+        binding.btnFinishTrip.setOnClickListener { updateToFinish() }
+
     }
 
     private fun createHistory() {
@@ -329,27 +326,27 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun medirDistacia() {
+
         if (booking != null && originLatLng != null) {
             var distance = getDistanceBetween(ubicacionLatLong!!, originLatLng!!)
             if (distance <= 300) {
                 isCloseToOrigin = true
             }
+
             Log.d("LOCATION", "Distance: ${distance}")
         }
     }
 
     private fun updateToStarted() {
 
-        binding.LinearCompartirRuta.visibility= View.VISIBLE
-        var wazeIntalado= viewModel?.isWazeInstalled(this)
-        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
-
-        if(!wazeIntalado!!) binding.imageViewWaze.visibility=View.GONE
-        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
 
         if (isCloseToOrigin) {
-            bookingAceptedsProvider.updateStatus(booking?.idClient!!, "started").addOnCompleteListener {
+
+            bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "started").addOnCompleteListener {
                 if (it.isSuccessful) {
+
+                    mostrarBotonesDeNavegacion()
+
                     if (destinationLatLng != null) {
                         isStartedTrip = true
                         googleMaps?.clear()
@@ -362,12 +359,26 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 //                        sendNotification("Viaje iniciado")
                     }
                     showButtonFinish()
+                }else{
+                    Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
+                    Log.d("Booking", "ERROR: ${booking}")
+                    getBooking()
                 }
             }
         }
         else {
             Toast.makeText(this, "Debes estar mas cerca a la posicion de recogida", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun mostrarBotonesDeNavegacion() {
+        binding.LinearCompartirRuta.visibility= View.VISIBLE
+        var wazeIntalado= viewModel?.isWazeInstalled(this)
+        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
+
+        if(!wazeIntalado!!) binding.imageViewWaze.visibility=View.GONE
+        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
+
     }
 
     private fun updateToFinish() {
@@ -380,13 +391,12 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             min = 1
         }
       //  getPrices(km, min.toDouble())
-        bookingAceptedsProvider.updateStatus(booking?.idClient!!, "finished").addOnCompleteListener {
-
-            createHistory()
+        bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "finished").addOnCompleteListener {
 
             if (it.isSuccessful) {
 //                sendNotification("Viaje terminado")
                 goToCalificationClient()
+                createHistory()
             }
 
         }

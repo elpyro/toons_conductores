@@ -41,15 +41,19 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.firebase.firestore.ListenerRegistration
+import java.util.Date
 
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
+    private var booking: Booking? =null
+    private var primeraCarga: Boolean? =false
+    private var tiempoActivo: Long? =null
     private var idConductor: String? = null
     private var start: LatLng? =null
     var bookingListener: ListenerRegistration? =null
     private lateinit var binding: ActivityMapBinding
-    private var viewModel: MapaActivityViewModel? = null
+    var viewModel: MapaActivityViewModel? = null
     private var googleMaps:GoogleMap? =null
     var easyWayLocation: EasyWayLocation? = null
     private var marcaConductor: Marker? = null
@@ -59,18 +63,29 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var autenticacion=Autenticacion ()
     private var bookingProvider=BookingProvider()
     private val modalMenu = ModalBottomSheetMenu()
-
+    var currentTimerValue: Long ? =null
 
     val modalBooking = ModalBottomSheetBooking()
 
-    val timer = object: CountDownTimer(30000, 1000) {
+    val timer = object: CountDownTimer(10000, 1000) {
+
+
         override fun onTick(counter: Long) {
-            Log.d("TIMER", "Counter: $counter")
+            if (currentTimerValue != counter) {
+                Log.d("TIMER", "Timer value changed: $counter")
+                currentTimerValue = counter
+                viewModel!!.updateCurrentTimerValue(currentTimerValue!!)
+            }
         }
 
         override fun onFinish() {
             Log.d("TIMER", "ON FINISH")
-            modalBooking.dismiss()
+            val idClient= booking?.idClient!!
+            bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener {
+                listenerBooking()
+                modalBooking.dismiss()
+            }
+
         }
 
     }
@@ -99,20 +114,25 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         ))
 
         idConductor=autenticacion.obtenerId()
-        
+
+        tiempoActivo= Date().time
          listeners()
     }
 
     private fun showModalBooking(booking: Booking) {
 
-        val bundle = Bundle()
-        bundle.putString("booking", booking.toJson())
-        modalBooking.arguments = bundle
-        modalBooking.isCancelable = false // NO PUEDA OCULTAR EL MODAL BOTTTOM SHEET
 
-        modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
+            Log.d("MODAL", "Modal agregado para el booking ${booking}")
 
-        timer.start()
+            val bundle = Bundle()
+            bundle.putString("booking", booking.toJson())
+            modalBooking.arguments = bundle
+            modalBooking.isCancelable = false // NO PUEDA OCULTAR EL MODAL BOTTTOM SHEET
+
+            modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
+            timer.start()
+            primeraCarga=false
+
     }
 
     private fun listeners() {
@@ -127,9 +147,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     }
 
     private val ubicacionPorDefecto = LatLng(4.7109, -74.0721) // Ubicación predeterminada (latitud y longitud)
-    private fun centrarCamaraEnUbicacionPorDefecto() {
-        googleMaps?.moveCamera(CameraUpdateFactory.newLatLngZoom(ubicacionPorDefecto, 1f))
-    }
+
     var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
             when{
@@ -154,7 +172,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     private fun salvarLocalizacion(){
         if(ubicacionLatLong!=null){
-            geoProveedor.guardarLocalizacion(autenticacion.obtenerId(),ubicacionLatLong!!)
+            geoProveedor.guardarLocalizacion(autenticacion.obtenerId(),ubicacionLatLong!!, tiempoActivo!!)
         }
     }
 
@@ -290,8 +308,14 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     
     //mostrar cliente
-    private fun listenerBooking() {
+     fun listenerBooking() {
         bookingListener = bookingProvider.getBooking().addSnapshotListener { snapshot, e ->
+            
+            if(!primeraCarga!!){// no ultilizar datos en la cache. desechar el primer snapshop
+                primeraCarga = true
+                return@addSnapshotListener
+            }
+            
             if (e != null) {
                 Log.d("FIRESTORE", "ERROR: ${e.message}")
                 ErroresFirebase.imprimirError(e,this@MapaActivity)
@@ -300,8 +324,10 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
             if (snapshot != null) {
                 if (snapshot.documents.size > 0) {
-                    val booking = snapshot.documents[0].toObject(Booking::class.java)
+                    booking = snapshot.documents[0].toObject(Booking::class.java)
                     if (booking?.status == "create") {
+                        Log.d("FIRESTORE", "Booking creado: ${booking}")
+                        bookingListener?.remove()
                         showModalBooking(booking!!)
 
                     }

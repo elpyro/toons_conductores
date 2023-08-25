@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.Observer
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.R
@@ -27,6 +28,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 class ModalBottomSheetBooking: BottomSheetDialogFragment() {
 
+    private lateinit var textViewSolicitudViaje:TextView
     private lateinit var textViewOrigin: TextView
     private lateinit var textViewDestination: TextView
     private lateinit var textViewTimeAndDistance: TextView
@@ -43,6 +45,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     private val sonidos=Sonidos()
     private lateinit var booking: Booking
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -50,6 +53,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.modal_bottom_sheet_booking, container, false)
 
+        textViewSolicitudViaje=view.findViewById(R.id.TextView_tiempo)
         textViewOrigin = view.findViewById(R.id.textViewOrigin)
         textViewDestination = view.findViewById(R.id.textViewDestination)
         textViewTimeAndDistance = view.findViewById(R.id.textViewTimeAndDistance)
@@ -74,22 +78,35 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         sonidos.crearTonoInformativo(requireContext())
 
         listeners()
+        observadores()
         return view
     }
+
+    private fun observadores() {
+        (activity as? MapaActivity)?.viewModel?.currentTimerValue!!.observe(this, Observer { value ->
+            val seconds = value / 1000 // Convertir de milisegundos a segundos
+            textViewSolicitudViaje.text = "SOLICITUD DE VIAJE ${seconds.toInt()} SEGUNDOS"
+            Log.d("TIMER", "Current timer value changed: $seconds seconds")
+            // Puedes realizar acciones en función del valor del temporizador
+        })
+    }
+
 
     private fun listeners() {
         btnAccept.setOnClickListener { acceptBooking(booking?.idClient!!) }
         btnCancel.setOnClickListener { cancelBooking(booking?.idClient!!) }
+
     }
 
-    private fun cancelBooking(idClient: String) {
+     fun cancelBooking(idClient: String) {
         bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener {
             (activity as? MapaActivity)?.timer?.cancel()
+            (activity as? MapaActivity)?.listenerBooking()
+
             val modalBooking = (activity as? MapaActivity)?.modalBooking
             if (modalBooking != null && modalBooking.isAdded) {
                 modalBooking.dismiss()
             }
-
         }
     }
 
@@ -103,14 +120,20 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                 geoProvider.eliminarLocalizacion(authProvider.obtenerId())
 
                 booking!!.status="accept" //crear el booking aceptado
+
                 bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
-                    Utilidades.mostrarToast("Viaje Tomado", requireContext())
+                    Log.d("FIRESTORE", "Viaje aceptado: ${booking?.destination}")
+                    Utilidades.mostrarToast("Viaje Aceptado", requireContext())
+                    goToMapTrip()
                 }
-                goToMapTrip()
+
             }
             else {
                 if (context != null) {
                     Toast.makeText(activity, "No se pudo aceptar el viaje", Toast.LENGTH_LONG).show()
+                    (activity as? MapaActivity)?.listenerBooking()
+                    val modalBooking = (activity as? MapaActivity)?.modalBooking
+                    modalBooking?.dismiss()
                 }
             }
         }

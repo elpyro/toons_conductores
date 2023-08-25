@@ -4,16 +4,20 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
+import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
 import com.castellanoseloy.toonsconductor.activitys.registro_usuario.RegistroUsuarioActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 
 
 class MainActivity : AppCompatActivity() {
 
+    private val bookingAceptedsProvider = BookingAceptedsProvider()
     private lateinit var binding: ActivityMainBinding
     private var viewModel: MainActivityViewModel? = null
 
@@ -49,7 +53,7 @@ class MainActivity : AppCompatActivity() {
             autenticacion.login(binding.editTextCorreo.text.toString(),binding.editTextContrasena.text.toString())
                 .addOnCompleteListener {
                     if (it.isSuccessful){
-                        abriMapa()
+                        verificarViajesPendientes()
                     }else{
                         ErroresFirebase.imprimirError(it.exception,this@MainActivity)
                     }
@@ -61,15 +65,63 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this@MainActivity, RegistroUsuarioActivity::class.java)
         startActivity(intent)
     }
-    private fun abriMapa(){
+    private fun verificarViajesPendientes() {
+
+        bookingAceptedsProvider.getBooking().get().addOnSuccessListener { query ->
+
+            if (query != null) {
+                if (query.size() > 0) {
+                    //viaje pendiente encontrado
+                    crearAlertaDeViajePendiente()
+                }else{
+                    abrirMapaInicio()
+                }
+            }
+        }
+    }
+
+    private fun crearAlertaDeViajePendiente() {
+
+
+            val alertDialogBuilder = AlertDialog.Builder(this)
+            alertDialogBuilder.setTitle("Viaje Pendiente")
+            alertDialogBuilder.setMessage("Tienes un viaje pendiente ¿Deseas ir a el viaje?.")
+
+            // Botón Aceptar
+            alertDialogBuilder.setPositiveButton("Ir a viaje") { dialog, which ->
+                abrirViajePendiente()
+            }
+
+            // Botón Cancelar
+            alertDialogBuilder.setNegativeButton("Finalizarlo") { dialog, which ->
+                bookingAceptedsProvider.deleteBookingsForDriver(autenticacion.obtenerId())
+                abrirMapaInicio()
+            }
+
+            val alertDialog: AlertDialog = alertDialogBuilder.create()
+            alertDialog.show()
+
+    }
+
+    private fun abrirMapaInicio() {
         //abrir actividad y eleminar todas las anteriores para dejala de principal
         val intent = Intent(this@MainActivity, MapaActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
     }
 
+    private fun abrirViajePendiente() {
+        //abrir actividad y eleminar todas las anteriores para dejala de principal
+        val intent = Intent(this@MainActivity, MapTripActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+    }
+
     override fun onStart() {
-        if(autenticacion.sesionExistente()) abriMapa()
+        val idDriver= autenticacion.obtenerId()
+        if(autenticacion.sesionExistente()) verificarViajesPendientes()
         super.onStart()
     }
 }
+
+
