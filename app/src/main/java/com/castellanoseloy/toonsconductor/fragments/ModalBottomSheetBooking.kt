@@ -4,6 +4,7 @@ package com.castellanoseloy.toonsconductor.fragments
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -99,15 +100,24 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     }
 
      fun cancelBooking(idClient: String) {
-        bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener {
-            (activity as? MapaActivity)?.timer?.cancel()
-            (activity as? MapaActivity)?.listenerBooking()
+         bookingProvider.getBooking().get().addOnCompleteListener { task->
+             if(task.isSuccessful){
+                 bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task ->
+                     if (task.isSuccessful) {
+                         (activity as? MapaActivity)?.listenerBooking()
+                         Log.d("FIRESTORE", "booking actualizado a cancelado")
+                     }
+                 }
+             }
+         }
 
-            val modalBooking = (activity as? MapaActivity)?.modalBooking
-            if (modalBooking != null && modalBooking.isAdded) {
-                modalBooking.dismiss()
-            }
-        }
+         (activity as? MapaActivity)?.timer?.cancel()
+         val modalBooking = (activity as? MapaActivity)?.modalBooking
+         if (modalBooking != null && modalBooking.isAdded) {
+             modalBooking.dismiss()
+         }
+
+
     }
 
     private fun acceptBooking(idClient: String) {

@@ -11,7 +11,6 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
@@ -20,7 +19,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.calificationClientActivity.CalificationClientActivity
-import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivityViewModel
 import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapTripBinding
 import com.castellanoseloy.toonsconductor.modelos.Booking
@@ -143,7 +141,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun getBooking(){
-        bookingAceptedsProvider.getBooking().get().addOnSuccessListener {query->
+        bookingAceptedsProvider.getBookingAccepteds().get().addOnSuccessListener { query->
 
             if(query!=null){
                 if(query.size()>0){

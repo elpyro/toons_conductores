@@ -14,12 +14,6 @@ class BookingProvider {
     val authProvider = Autenticacion()
 
 
-    fun create(booking: Booking): Task<Void> {
-        return db.document(authProvider.obtenerId()).set(booking).addOnFailureListener {
-            Log.d("FIRESTORE", "ERROR: ${it.message}")
-        }
-    }
-
     fun getBooking(): Query {
         return db.whereEqualTo("idDriver",authProvider.obtenerId())
     }

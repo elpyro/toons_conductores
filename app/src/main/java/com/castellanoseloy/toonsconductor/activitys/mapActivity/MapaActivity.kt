@@ -6,6 +6,7 @@ import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -41,6 +42,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.firestore.Query
 import java.util.Date
 
 
@@ -81,10 +83,18 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         override fun onFinish() {
             Log.d("TIMER", "ON FINISH")
             val idClient= booking?.idClient!!
-            bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener {
-                listenerBooking()
-                modalBooking.dismiss()
+            bookingProvider.getBooking().get().addOnCompleteListener { task->
+                if(task.isSuccessful){
+                    bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task->
+                        if (task.isSuccessful) {
+                            listenerBooking()
+                            Log.d("FIRESTORE", "booking actualizado a cancelado")
+                        }
+                    }
+                }
             }
+
+            modalBooking.dismiss()
 
         }
 
@@ -122,7 +132,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private fun showModalBooking(booking: Booking) {
 
 
-            Log.d("MODAL", "Modal agregado para el booking ${booking}")
+            Log.d("Firestore", "Modal agregado para el booking ${booking}")
 
             val bundle = Bundle()
             bundle.putString("booking", booking.toJson())
@@ -309,12 +319,10 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     
     //mostrar cliente
      fun listenerBooking() {
+
         bookingListener = bookingProvider.getBooking().addSnapshotListener { snapshot, e ->
-            
-            if(!primeraCarga!!){// no ultilizar datos en la cache. desechar el primer snapshop
-                primeraCarga = true
-                return@addSnapshotListener
-            }
+            Log.d("FIRESTORE", "Esperando bookings para: "+ autenticacion.obtenerId())
+
             
             if (e != null) {
                 Log.d("FIRESTORE", "ERROR: ${e.message}")
@@ -325,11 +333,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             if (snapshot != null) {
                 if (snapshot.documents.size > 0) {
                     booking = snapshot.documents[0].toObject(Booking::class.java)
-                    if (booking?.status == "create") {
-                        Log.d("FIRESTORE", "Booking creado: ${booking}")
+                    if (booking?.status!="cancel"){
+                        Log.d("FIRESTORE", "Booking cargado: ${booking}")
+                        Log.d("FIRESTORE", "Booking listenener detenido")
                         bookingListener?.remove()
                         showModalBooking(booking!!)
-
                     }
                 }
             }
@@ -346,6 +354,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         super.onDestroy()
         if(easyWayLocation!=null)  easyWayLocation!!.endUpdates()
         disconnectDriver()
+        Log.d("FIRESTORE", "Booking listenener detenido")
         bookingListener?.remove()
     }
 

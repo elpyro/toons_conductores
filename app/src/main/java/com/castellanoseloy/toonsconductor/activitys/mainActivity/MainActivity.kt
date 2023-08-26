@@ -67,7 +67,7 @@ class MainActivity : AppCompatActivity() {
     }
     private fun verificarViajesPendientes() {
 
-        bookingAceptedsProvider.getBooking().get().addOnSuccessListener { query ->
+        bookingAceptedsProvider.getBookingAccepteds().get().addOnSuccessListener { query ->
 
             if (query != null) {
                 if (query.size() > 0) {

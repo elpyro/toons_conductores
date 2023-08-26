@@ -20,7 +20,7 @@ class BookingAceptedsProvider {
         }
     }
 
-    fun getBooking(): Query {
+    fun getBookingAccepteds(): Query {
         return db.whereEqualTo("idDriver",authProvider.obtenerId())
     }
 
