@@ -12,28 +12,28 @@ class MyActivityViewModel : ViewModel() {
     fun ValidarDatos(binding: ActivityRegistroUsuarioBinding):Boolean {
         var datosValidos=true
 
-        val nombre=binding.editTextName.text.toString()
-        val apellido=binding.editTextApellido.text.toString()
-        val telefono=binding.editTexTelefono.text.toString().eliminarEspacios()
+//        val nombre=binding.editTextName.text.toString()
+//        val apellido=binding.editTextApellido.text.toString()
+//        val telefono=binding.editTexTelefono.text.toString().eliminarEspacios()
         val correo=binding.editTexCorreo.text.toString()
         val contrasena=binding.editTextContrasena.text.toString()
         val contrasena2=binding.editTextVerificarContrasena.text.toString()
 
 
-        if (nombre != null && nombre.length <= 3) {
-            binding?.editTextName?.setError("Obligatorio")
-            datosValidos=false
-        }
-
-        if (apellido != null && apellido.length <= 3) {
-            binding?.editTextApellido?.setError("Obligatorio")
-            datosValidos=false
-        }
-
-        if (telefono != null && telefono.length != 10) {
-            binding?.editTexTelefono?.setError("Verificar")
-            datosValidos=false
-        }
+//        if (nombre != null && nombre.length <= 3) {
+//            binding?.editTextName?.setError("Obligatorio")
+//            datosValidos=false
+//        }
+//
+//        if (apellido != null && apellido.length <= 3) {
+//            binding?.editTextApellido?.setError("Obligatorio")
+//            datosValidos=false
+//        }
+//
+//        if (telefono != null && telefono.length != 10) {
+//            binding?.editTexTelefono?.setError("Verificar")
+//            datosValidos=false
+//        }
 
         if (correo != null && correo.length <= 3) {
             binding?.editTexCorreo?.setError("Obligatorio")

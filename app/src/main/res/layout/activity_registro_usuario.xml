@@ -55,8 +55,8 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="10dp"
+                        android:layout_height="40dp"
+                        android:layout_marginTop="5dp"
                         android:src="@drawable/ic_pesona_blanco"></ImageView>
 
                     <TextView
@@ -66,58 +66,58 @@
                         android:gravity="center"
                         android:text="@string/Registro"
                         android:textColor="@color/white"
-                        android:textSize="20dp"
+                        android:textSize="18dp"
                         android:textStyle="bold">
 
                     </TextView>
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:startIconDrawable="@drawable/ic_persona_blanco24"
-                        app:startIconTint="@color/white">
+<!--                    <com.google.android.material.textfield.TextInputLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        app:startIconDrawable="@drawable/ic_persona_blanco24"-->
+<!--                        app:startIconTint="@color/white">-->
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextName"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/Nombre"
-                            android:inputType="textPersonName|textCapWords"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+<!--                        <com.google.android.material.textfield.TextInputEditText-->
+<!--                            android:id="@+id/editTextName"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:hint="@string/Nombre"-->
+<!--                            android:inputType="textPersonName|textCapWords"-->
+<!--                            android:textColor="@color/white"-->
+<!--                            android:textSize="14sp" />-->
+<!--                    </com.google.android.material.textfield.TextInputLayout>-->
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:startIconDrawable="@drawable/ic_persona2_blanco24"
-                        app:startIconTint="@color/white">
+<!--                    <com.google.android.material.textfield.TextInputLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        app:startIconDrawable="@drawable/ic_persona2_blanco24"-->
+<!--                        app:startIconTint="@color/white">-->
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextApellido"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/Apellido"
-                            android:inputType="textPersonName|textCapWords"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+<!--                        <com.google.android.material.textfield.TextInputEditText-->
+<!--                            android:id="@+id/editTextApellido"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:hint="@string/Apellido"-->
+<!--                            android:inputType="textPersonName|textCapWords"-->
+<!--                            android:textColor="@color/white"-->
+<!--                            android:textSize="14sp" />-->
+<!--                    </com.google.android.material.textfield.TextInputLayout>-->
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:startIconDrawable="@drawable/ic_telefono_blanco24"
-                        app:startIconTint="@color/white">
+<!--                    <com.google.android.material.textfield.TextInputLayout-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        app:startIconDrawable="@drawable/ic_telefono_blanco24"-->
+<!--                        app:startIconTint="@color/white">-->
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTexTelefono"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/Telefono"
-                            android:inputType="phone"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+<!--                        <com.google.android.material.textfield.TextInputEditText-->
+<!--                            android:id="@+id/editTexTelefono"-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:hint="@string/Telefono"-->
+<!--                            android:inputType="phone"-->
+<!--                            android:textColor="@color/white"-->
+<!--                            android:textSize="14sp" />-->
+<!--                    </com.google.android.material.textfield.TextInputLayout>-->
 
 
                     <com.google.android.material.textfield.TextInputLayout

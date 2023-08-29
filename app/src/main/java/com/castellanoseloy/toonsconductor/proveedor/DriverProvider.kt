@@ -8,10 +8,17 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageTask
+import com.google.firebase.storage.UploadTask
 
 import java.io.File
 
 class DriverProvider {
+
+    companion object {
+        var datosConductor: ConductorModelo ? =null
+    }
+
 
     val db = Firebase.firestore.collection("Conductores")
     var storage = FirebaseStorage.getInstance().getReference().child("profile")
@@ -20,17 +27,17 @@ class DriverProvider {
         return db.document(driver.id!!).set(driver)
     }
 
-//    fun uploadImage(id: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
-//        var fromFile = Uri.fromFile(file)
-//        val ref = storage.child("$id.jpg")
-//        storage = ref
-//        val uploadTask = ref.putFile(fromFile)
-//
-//        return uploadTask.addOnFailureListener {
-//            Log.d("STORAGE", "ERROR: ${it.message}")
-//        }
-//    }
-//
+    fun uploadImage(id: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
+        var fromFile = Uri.fromFile(file)
+        val ref = storage.child("$id.jpg")
+        storage = ref
+        val uploadTask = ref.putFile(fromFile)
+
+        return uploadTask.addOnFailureListener {
+            Log.d("STORAGE", "ERROR: ${it.message}")
+        }
+    }
+
 //    fun createToken(idDriver: String) {
 //        FirebaseMessaging.getInstance().token.addOnCompleteListener {
 //            if (it.isSuccessful) {
@@ -56,13 +63,11 @@ class DriverProvider {
 
     fun update(driver: ConductorModelo): Task<Void> {
         val map: MutableMap<String, Any> = HashMap()
-        map["name"] = driver?.nombre!!
-        map["lastname"] = driver?.apellido!!
-        map["phone"] = driver?.telefono!!
-//        map["brandCar"] = driver?.brandCar!!
-//        map["colorCar"] = driver?.colorCar!!
-//        map["plateNumber"] = driver?.plateNumber!!
-//        map["image"] = driver?.image!!
+        map["nombre"] = driver?.nombre!!
+        map["apellido"] = driver?.apellido!!
+        map["telefono"] = driver?.telefono!!
+        map["validacion"] = driver?.validacion!!
+        map["imagen"] = driver?.imagen!!
         return db.document(driver?.id!!).update(map)
     }
 

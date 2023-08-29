@@ -63,4 +63,6 @@
     <string name="Tarifa">Tú tarifa</string>
     <string name="Total">Total a cobrar</string>
     <string name="Comentario">Comentario</string>
+    <string name="documentoIdentidad">Documento Identidad</string>
+    <string name="licencia">Licencia de Conducir</string>
 </resources>

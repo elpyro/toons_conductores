@@ -30,6 +30,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     val driverProvider = DriverProvider()
     val authProvider = Autenticacion()
 
+
     var textViewUsername: TextView? = null
     var linearLayoutLogout: LinearLayout? = null
     var linearLayoutProfile: LinearLayout? = null
@@ -74,15 +75,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     }
 
     private fun getDriver() {
-        driverProvider.getDriver(authProvider.obtenerId()).addOnSuccessListener { document ->
-            if (document.exists()) {
-                val driver = document.toObject(ConductorModelo::class.java)
-                textViewUsername?.text = "${driver?.nombre} ${driver?.apellido}"
-            }
+                textViewUsername?.text = "${DriverProvider.datosConductor?.nombre}"
         }
-    }
-
-
-
-
 }

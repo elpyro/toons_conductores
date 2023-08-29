@@ -15,6 +15,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:windowSoftInputMode="adjustResize"
         android:theme="@style/Theme.ToonsConductor"
         tools:targetApi="31">
         <activity
@@ -30,12 +31,15 @@
             android:name=".activitys.registro_usuario.RegistroUsuarioActivity"
             android:exported="false"
             android:label="@string/title_activity_registro_usuario"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.ToonsConductor" />
         <activity
             android:name=".activitys.mapActivity.MapaActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
         <activity
             android:name=".activitys.mainActivity.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

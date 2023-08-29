@@ -6,13 +6,13 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
-import com.castellanoseloy.toonscliente.objetos.Utilidades.eliminarEspacios
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityRegistroUsuarioBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class RegistroUsuarioActivity : AppCompatActivity() {
     private var viewModel: MyActivityViewModel? = null
@@ -43,6 +43,8 @@ class RegistroUsuarioActivity : AppCompatActivity() {
     }
 
     private fun registrar() {
+
+        binding.buttonRegistrar.isEnabled=false
         val datosValidos=viewModel!!.ValidarDatos(binding)
 
         if(datosValidos) {
@@ -50,18 +52,22 @@ class RegistroUsuarioActivity : AppCompatActivity() {
             val clave=binding.editTextContrasena.text.toString()
             autenticacion.registro(correo,clave).addOnCompleteListener {it->
                 if(it.isSuccessful){
-                    val cliente= ConductorModelo(
+                    val conductor= ConductorModelo(
                         id= autenticacion.obtenerId(),
-                        nombre=binding.editTextName.text.toString(),
-                        apellido=binding.editTextApellido.text.toString(),
-                        telefono=binding.editTexTelefono.text.toString().eliminarEspacios(),
-                        correo=binding.editTexCorreo.text.toString()
+                        nombre="",
+                        apellido="",
+                        telefono="",
+                        correo=binding.editTexCorreo.text.toString(),
+                        validacion = "Valida tu usuario"
                     )
-                    clienteProvider.crear(cliente).addOnCompleteListener {
+
+                    clienteProvider.crear(conductor).addOnCompleteListener {
                         if(it.isSuccessful){
+                            DriverProvider.datosConductor=conductor
                             Utilidades.mostrarToast("Registro Exitoso",this@RegistroUsuarioActivity)
                             abriMapa()
                         }else{
+                            binding.buttonRegistrar.isEnabled=true
                             ErroresFirebase.imprimirError(it.exception,this@RegistroUsuarioActivity)
                         }
                     }
@@ -69,6 +75,8 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                     ErroresFirebase.imprimirError(it.exception,this@RegistroUsuarioActivity)
                 }
             }
+        }else{
+            binding.buttonRegistrar.isEnabled=true
         }
     }
 

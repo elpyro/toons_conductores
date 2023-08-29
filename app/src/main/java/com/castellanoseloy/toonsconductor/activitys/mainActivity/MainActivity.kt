@@ -8,11 +8,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
+import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.activitys.registro_usuario.RegistroUsuarioActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
 class MainActivity : AppCompatActivity() {
@@ -20,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private val bookingAceptedsProvider = BookingAceptedsProvider()
     private lateinit var binding: ActivityMainBinding
     private var viewModel: MainActivityViewModel? = null
+
 
 
     private val autenticacion=  Autenticacion()
@@ -37,6 +40,7 @@ class MainActivity : AppCompatActivity() {
         listeners()
     }
 
+
     private fun listeners() {
         binding.butoonRegistrarse.setOnClickListener{
             registrar()
@@ -53,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             autenticacion.login(binding.editTextCorreo.text.toString(),binding.editTextContrasena.text.toString())
                 .addOnCompleteListener {
                     if (it.isSuccessful){
+
                         verificarViajesPendientes()
                     }else{
                         ErroresFirebase.imprimirError(it.exception,this@MainActivity)
@@ -60,6 +65,8 @@ class MainActivity : AppCompatActivity() {
                 }
         }
     }
+
+
 
     private fun registrar() {
         val intent = Intent(this@MainActivity, RegistroUsuarioActivity::class.java)
@@ -118,7 +125,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStart() {
-        val idDriver= autenticacion.obtenerId()
         if(autenticacion.sesionExistente()) verificarViajesPendientes()
         super.onStart()
     }

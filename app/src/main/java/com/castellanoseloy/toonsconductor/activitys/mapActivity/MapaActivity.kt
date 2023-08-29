@@ -1,28 +1,28 @@
 package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.os.Handler
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetMenu
 import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
@@ -39,10 +39,8 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.util.Date
 
 
@@ -66,6 +64,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var bookingProvider=BookingProvider()
     private val modalMenu = ModalBottomSheetMenu()
     var currentTimerValue: Long ? =null
+    private var driverProvideer=DriverProvider()
 
     val modalBooking = ModalBottomSheetBooking()
 
@@ -125,8 +124,26 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
         idConductor=autenticacion.obtenerId()
 
+
+        driverProvideer.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
+            Log.d("Firestore", "Validando conductor "+autenticacion.obtenerId())
+            if (document.exists()) {
+                val driver = document.toObject(ConductorModelo::class.java)
+                DriverProvider.datosConductor = driver
+                Log.d("Firestore", "Validacion de conductor ${driver?.validacion}")
+                if(!driver?.validacion.equals("Validado")) goToProfile()
+            }else{
+                Log.d("Firestore", "No se encontraron datos del conductor")
+            }
+        }
+
         tiempoActivo= Date().time
          listeners()
+    }
+
+    private fun goToProfile() {
+        val i = Intent(this, ProfileActivity::class.java)
+        startActivity(i)
     }
 
     private fun showModalBooking(booking: Booking) {

@@ -9,7 +9,8 @@ data class ConductorModelo (
     val apellido: String? = null,
     val correo: String? = null,
     val telefono: String? = null,
-    val imagen: String? = null
+    var imagen: String? = null,
+    val validacion: String? =null
 ) {
     public fun toJson() = klaxon.toJsonString(this)
 
