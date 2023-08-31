@@ -131,7 +131,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                 val driver = document.toObject(ConductorModelo::class.java)
                 DriverProvider.datosConductor = driver
                 Log.d("Firestore", "Validacion de conductor ${driver?.validacion}")
-                if(!driver?.validacion.equals("Validado")) goToProfile()
+                if(driver?.validacion.equals("Valida tu usuario")) goToProfile()
             }else{
                 Log.d("Firestore", "No se encontraron datos del conductor")
             }

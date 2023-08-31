@@ -13,13 +13,19 @@
         android:layout_height="match_parent"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
 
-    <ImageView
-        android:id="@+id/imageViewMenu"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_menu"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="20dp" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="5dp">
+
+        <ImageView
+            android:id="@+id/imageViewMenu"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_centerInParent="true"
+            android:src="@drawable/ic_menu" />
+    </RelativeLayout>
 
     <Button
         android:id="@+id/btnConnect"
@@ -31,8 +37,7 @@
         android:layout_marginBottom="70dp"
         android:layout_marginRight="60dp"
         android:textColor="@color/white"
-        android:layout_marginLeft="60dp"
-        />
+        android:layout_marginLeft="60dp" />
 
     <Button
         android:id="@+id/btnDisconnect"

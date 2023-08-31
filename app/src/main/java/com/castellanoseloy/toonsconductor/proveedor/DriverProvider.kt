@@ -8,10 +8,13 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
 
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 
 class DriverProvider {
 
@@ -20,6 +23,9 @@ class DriverProvider {
     }
 
 
+    private lateinit var storageLicencia: StorageReference
+    private lateinit var storageDocumento: StorageReference
+    var storageFotoPerfil: StorageReference? = null
     val db = Firebase.firestore.collection("Conductores")
     var storage = FirebaseStorage.getInstance().getReference().child("profile")
 
@@ -27,10 +33,15 @@ class DriverProvider {
         return db.document(driver.id!!).set(driver)
     }
 
-    fun uploadImage(id: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
+    fun uploadImage(id: String, nombreImagen: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
         var fromFile = Uri.fromFile(file)
-        val ref = storage.child("$id.jpg")
-        storage = ref
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+        val ref = storage.child("$id/$nombreImagen-$timeStamp.jpg")
+
+        if (nombreImagen.equals("fotoPerfil"))storageFotoPerfil = ref
+        if (nombreImagen.equals("documento"))storageDocumento = ref
+        if (nombreImagen.equals("licencia"))storageLicencia = ref
+
         val uploadTask = ref.putFile(fromFile)
 
         return uploadTask.addOnFailureListener {
@@ -53,8 +64,14 @@ class DriverProvider {
         return db.document(idDriver).update(map)
     }
 
-    fun getImageUrl(): Task<Uri> {
-        return storage.downloadUrl
+    fun getStorageFotoPerfil(): Task<Uri> {
+        return storageFotoPerfil?.downloadUrl!!
+    }
+    fun getStorageDocumento(): Task<Uri> {
+        return storageDocumento?.downloadUrl!!
+    }
+    fun getStorageLicencia(): Task<Uri> {
+        return storageLicencia?.downloadUrl!!
     }
 
     fun getDriver(idDriver: String): Task<DocumentSnapshot> {
@@ -67,7 +84,24 @@ class DriverProvider {
         map["apellido"] = driver?.apellido!!
         map["telefono"] = driver?.telefono!!
         map["validacion"] = driver?.validacion!!
-        map["imagen"] = driver?.imagen!!
+        return db.document(driver?.id!!).update(map)
+    }
+
+    fun updateFotoPerfil(driver: ConductorModelo): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenPerfil"] = driver?.imagenPerfil!!
+        return db.document(driver?.id!!).update(map)
+    }
+
+    fun updateDocumento(driver: ConductorModelo): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenDocumento"] = driver?.imagenDocumento!!
+        return db.document(driver?.id!!).update(map)
+    }
+
+    fun updateLicencia(driver: ConductorModelo): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenLicencia"] = driver?.imagenLicencia!!
         return db.document(driver?.id!!).update(map)
     }
 

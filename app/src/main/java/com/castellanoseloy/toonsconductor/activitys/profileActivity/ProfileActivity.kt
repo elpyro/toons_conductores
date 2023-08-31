@@ -4,11 +4,14 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.castellanoseloy.toonsconductor.R
 import android.app.Activity
+import android.app.ProgressDialog
+import android.graphics.Color
 import android.util.Log
-import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.databinding.ActivityProfileBinding
@@ -16,29 +19,62 @@ import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.github.dhaval2404.imagepicker.ImagePicker
 
-import com.google.protobuf.Empty
-
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.io.File
 
 
 class ProfileActivity : AppCompatActivity() {
+
+    private var totalElementos: Int = 0
     private lateinit var binding: ActivityProfileBinding
     val driverProvider = DriverProvider()
     val authProvider = Autenticacion()
 
-    private var imageFile: File? = null
+    private var fotoPerfil: File? = null
+    private var licencia: File? =null
+    private var documento: File? = null
+    
+    private var imagenSeleccionada: String? = null
+    private var actualizarElementos=1
 
+
+
+    private var viewModel: ProfileActivityViewModel ? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = DriverProvider.datosConductor?.validacion
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setTitleTextColor(Color.WHITE)
+
+        viewModel= ProfileActivityViewModel()
         getDriver()
-        binding.imageViewBack.setOnClickListener { finish() }
+
+        observador()
+        listeners()
+    }
+
+    private fun observador() {
+        viewModel?.elementosActualizar?.observe(this, Observer { it ->
+
+                if( it==0){
+                    progressDialog!!.dismiss()
+                    Utilidades.mostrarToast("Datos Actualizados",this)
+                    finish()
+                }
+        })
+    }
+
+    private fun listeners() {
+
         binding.btnUpdate.setOnClickListener { updateInfo() }
         binding.circleImageProfile.setOnClickListener { selectImage() }
+        binding.imageViewDocumento.setOnClickListener{ selectDocument()}
+        binding.imageViewLicencia.setOnClickListener{selectLicence()}
     }
 
     private val startImageForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -48,8 +84,20 @@ class ProfileActivity : AppCompatActivity() {
 
         if (resultCode == Activity.RESULT_OK) {
             val fileUri = data?.data
-            imageFile = File(fileUri?.path)
-            binding.circleImageProfile.setImageURI(fileUri)
+
+            if(imagenSeleccionada.equals("fotoPerfil")){
+                fotoPerfil = File(fileUri?.path)
+                binding.circleImageProfile?.setImageURI(fileUri)
+            }
+            if(imagenSeleccionada.equals("documentoIdentidad")){
+                documento = File(fileUri?.path)
+                binding.imageViewDocumento?.setImageURI(fileUri)
+            }
+            if(imagenSeleccionada.equals("licenciaConducir")) {
+                licencia = File(fileUri?.path)
+                binding.imageViewLicencia?.setImageURI(fileUri)
+            }
+
         }
         else if (resultCode == ImagePicker.RESULT_ERROR) {
             Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_LONG).show()
@@ -60,6 +108,7 @@ class ProfileActivity : AppCompatActivity() {
 
     }
     private fun selectImage() {
+        imagenSeleccionada= "fotoPerfil"
         ImagePicker.with(this)
             .crop()
             .compress(1024)
@@ -69,7 +118,48 @@ class ProfileActivity : AppCompatActivity() {
             }
     }
 
+    private fun selectDocument() {
+        imagenSeleccionada= "documentoIdentidad"
+        ImagePicker.with(this)
+            .crop()
+            .compress(1024)
+            .maxResultSize(1080,1080)
+            .createIntent { intent ->
+                startImageForResult.launch(intent)
+            }
+    }
+    private fun selectLicence() {
+        imagenSeleccionada= "licenciaConducir"
+        ImagePicker.with(this)
+            .crop()
+            .compress(1024)
+            .maxResultSize(1080,1080)
+            .createIntent { intent ->
+                startImageForResult.launch(intent)
+            }
+    }
+
+    val progressDialog: ProgressDialog by lazy {
+        ProgressDialog(this).apply {
+            setMessage("Guardando...")
+            setCancelable(true)
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        }
+    }
+
+
     private fun updateInfo() {
+
+        progressDialog!!.show()
+
+        binding.btnUpdate.isEnabled=false
+
+
+        if(fotoPerfil!=null) viewModel?.incrementarElementos()
+        if(documento!=null)viewModel?.incrementarElementos()
+        if(licencia!=null)viewModel?.incrementarElementos()
+
+
         val name = binding.textFieldName.text.toString()
         val lastname = binding.textFieldLastname.text.toString()
         val phone = binding.textFieldPhone.text.toString()
@@ -79,67 +169,161 @@ class ProfileActivity : AppCompatActivity() {
             nombre = name,
             apellido = lastname,
             telefono = phone,
-            imagen = DriverProvider.datosConductor?.imagen,
+            imagenPerfil = DriverProvider.datosConductor?.imagenPerfil,
+            imagenDocumento = DriverProvider.datosConductor?.imagenDocumento,
+            imagenLicencia = DriverProvider.datosConductor?.imagenLicencia,
             validacion = "Verificando Datos"
         )
 
-        if (imageFile != null) {
-            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, imageFile!!).addOnSuccessListener { taskSnapshot ->
-                driverProvider.getImageUrl().addOnSuccessListener { url ->
+        driverProvider.update(driver).addOnCompleteListener {
+            viewModel?.decrementarElementos()
+            if (!it.isSuccessful) {
+                Toast.makeText(
+                    this@ProfileActivity,
+                    "No se pudo actualizar la informacion",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+
+        if (fotoPerfil != null) {
+            driverProvider.uploadImage(
+                DriverProvider.datosConductor?.id!!,
+                "fotoPerfil",
+                fotoPerfil!!
+            ).addOnSuccessListener { taskSnapshot ->
+                driverProvider.getStorageFotoPerfil().addOnSuccessListener { url ->
                     val imageUrl = url.toString()
-                    driver.imagen = imageUrl
-                    driverProvider.update(driver).addOnCompleteListener {
-                        if (it.isSuccessful) {
-                            Toast.makeText(this@ProfileActivity, "Datos actualizados correctamente", Toast.LENGTH_LONG).show()
-                        }
-                        else {
-                            Toast.makeText(this@ProfileActivity, "No se pudo actualizar la informacion", Toast.LENGTH_LONG).show()
+                    Log.d("Firestore", "la ruta de la imagen de perfil es: ${imageUrl}")
+                    driver.imagenPerfil = imageUrl
+                    driverProvider.updateFotoPerfil(driver).addOnCompleteListener {
+                        viewModel?.decrementarElementos()
+                        if (!it.isSuccessful) {
+                            Toast.makeText(
+                                this@ProfileActivity,
+                                "No se pudo guardar la foto de perfil",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     }
                     Log.d("STORAGE", "$imageUrl")
                 }
             }
-        }   else {
-            driverProvider.update(driver).addOnCompleteListener {
-                if (it.isSuccessful) {
-                    Toast.makeText(this@ProfileActivity, "Datos actualizados correctamente", Toast.LENGTH_LONG).show()
-                }
-                else {
-                    Toast.makeText(this@ProfileActivity, "No se pudo actualizar la informacion", Toast.LENGTH_LONG).show()
+        }
+
+        if (documento != null) {
+            driverProvider.uploadImage(
+                DriverProvider.datosConductor?.id!!,
+                "documento",
+                documento!!
+            ).addOnSuccessListener { taskSnapshot ->
+                driverProvider.getStorageDocumento().addOnSuccessListener { url ->
+                    val imageUrl = url.toString()
+                    Log.d("Firestore", "la ruta de la imagen documento es: ${imageUrl}")
+                    driver.imagenDocumento = imageUrl
+                    driverProvider.updateDocumento(driver).addOnCompleteListener {
+                        viewModel?.decrementarElementos()
+                        if (!it.isSuccessful) {
+                            Toast.makeText(
+                                this@ProfileActivity,
+                                "No se pudo guardar el documento de identidad",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                    Log.d("STORAGE", "$imageUrl")
                 }
             }
         }
-
-    }
-
-    private fun getDriver() {
-        driverProvider.getDriver(DriverProvider.datosConductor?.id!!).addOnSuccessListener { document ->
-            if (document.exists()) {
-                val driver = document.toObject(ConductorModelo::class.java)
-                binding.textViewEmail.text = driver?.correo
-                binding.textFieldName.setText(driver?.nombre)
-                binding.textFieldLastname.setText(driver?.apellido)
-                binding.textFieldPhone.setText(driver?.telefono)
-
-                if(driver?.validacion.equals("Valida tu usuario"))  binding.imageEstado.setImageResource(R.drawable.ic_valida_datos)
-                if(driver?.validacion.equals("Verificando Datos"))  binding.imageEstado.setImageResource(R.drawable.ic_pendiente_validar)
-                if(driver?.validacion.equals("Validado"))  binding.imageEstado.setImageResource(R.drawable.ic_validado)
-                if(driver?.validacion.equals("Bloqueado"))  binding.imageEstado.setImageResource(R.drawable.ic_prohibido)
-
-                binding.imageEstado.setOnClickListener{
-                    if (driver?.validacion.equals("Valida tu usuario")) Utilidades.mostrarToast("Valida tu usuario",this)
-                    if(driver?.validacion.equals("Verificando Datos")) Utilidades.mostrarToast("Estamos verificando tus datos",this)
-                    if(driver?.validacion.equals("Validado"))  Utilidades.mostrarToast("Usuario Validado",this)
-                    if(driver?.validacion.equals("Bloqueado")) Utilidades.mostrarToast("Usuario Bloqueado",this)
-                }
-
-                if (driver?.imagen != null) {
-                    if (driver.imagen != "") {
-                        Glide.with(this).load(driver.imagen).into(binding.circleImageProfile)
+        if (licencia != null) {
+            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "licencia", licencia!!)
+                .addOnSuccessListener { taskSnapshot ->
+                    driverProvider.getStorageLicencia().addOnSuccessListener { url ->
+                        val imageUrl = url.toString()
+                        Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
+                        driver.imagenLicencia = imageUrl
+                        driverProvider.updateLicencia(driver).addOnCompleteListener {
+                            viewModel?.decrementarElementos()
+                            if (!it.isSuccessful) {
+                                Toast.makeText(
+                                    this@ProfileActivity,
+                                    "No se pudo guardar la licencia de conducir",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            Log.d("STORAGE", "$imageUrl")
+                        }
                     }
                 }
             }
         }
-    }
+
+
+    private fun getDriver() {
+            driverProvider.getDriver(DriverProvider.datosConductor?.id!!)
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val driver = document.toObject(ConductorModelo::class.java)
+                        binding.textViewEmail.text = driver?.correo
+                        binding.textFieldName.setText(driver?.nombre)
+                        binding.textFieldLastname.setText(driver?.apellido)
+                        binding.textFieldPhone.setText(driver?.telefono)
+
+                        if (driver?.validacion.equals("Valida tu usuario")) binding.imageEstado.setImageResource(
+                            R.drawable.ic_valida_datos
+                        )
+                        if (driver?.validacion.equals("Verificando Datos")) binding.imageEstado.setImageResource(
+                            R.drawable.ic_pendiente_validar
+                        )
+                        if (driver?.validacion.equals("Validado")) binding.imageEstado.setImageResource(
+                            R.drawable.ic_validado
+                        )
+                        if (driver?.validacion.equals("Bloqueado")) binding.imageEstado.setImageResource(
+                            R.drawable.ic_prohibido
+                        )
+
+                        binding.imageEstado.setOnClickListener {
+                            if (driver?.validacion.equals("Valida tu usuario")) Utilidades.mostrarToast(
+                                "Valida tu usuario",
+                                this
+                            )
+                            if (driver?.validacion.equals("Verificando Datos")) Utilidades.mostrarToast(
+                                "Estamos verificando tus datos",
+                                this
+                            )
+                            if (driver?.validacion.equals("Validado")) Utilidades.mostrarToast(
+                                "Usuario Validado",
+                                this
+                            )
+                            if (driver?.validacion.equals("Bloqueado")) Utilidades.mostrarToast(
+                                "Usuario Bloqueado",
+                                this
+                            )
+                        }
+
+                        if (driver?.imagenPerfil != null) {
+                            if (driver.imagenPerfil != "") {
+                                Glide.with(this).load(driver.imagenPerfil)
+                                    .into(binding.circleImageProfile)
+                            }
+                        }
+
+                        if (driver?.imagenDocumento != null) {
+                            if (driver.imagenDocumento != "") {
+                                Glide.with(this).load(driver.imagenDocumento)
+                                    .into(binding.imageViewDocumento)
+                            }
+                        }
+
+                        if (driver?.imagenLicencia != null) {
+                            if (driver.imagenLicencia != "") {
+                                Glide.with(this).load(driver.imagenLicencia)
+                                    .into(binding.imageViewLicencia)
+                            }
+                        }
+                        
+                    }
+                }
+        }
 
 }

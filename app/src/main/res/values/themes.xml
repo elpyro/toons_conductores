@@ -15,6 +15,7 @@
         <item name="colorControlActivated">@color/white</item>
         <item name="colorControlHighlight">@color/white</item>
         <item name="android:textColorHint">@color/white</item>
+        <item name="android:progressBarStyle">@style/CustomProgressBar</item>
     </style>
 
     <style name="Theme.ToonsConductor" parent="Base.Theme.ToonsConductor" />
@@ -28,5 +29,9 @@
         <item name="android:textColorPrimary">@color/grey_dark</item>
         <item name="colorSecondary">@color/grey_dark</item>
         <item name="colorOnPrimary">@color/grey_dark</item>
+    </style>
+
+    <style name="CustomProgressBar" parent="@android:style/Widget.ProgressBar">
+        <item name="android:backgroundTint">@color/red</item>
     </style>
 </resources>

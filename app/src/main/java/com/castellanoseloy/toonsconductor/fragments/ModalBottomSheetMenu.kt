@@ -13,6 +13,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.historial.HistoriesActivity
 import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
@@ -27,7 +28,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         const val TAG = "ModalBottomSheetMenu"
     }
 
-    val driverProvider = DriverProvider()
     val authProvider = Autenticacion()
 
 
@@ -52,7 +52,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
 
         linearLayoutLogout?.setOnClickListener { goToMain() }
         linearLayoutProfile?.setOnClickListener { goToProfile() }
-//        linearLayoutHistory?.setOnClickListener { goToHistories() }
+        linearLayoutHistory?.setOnClickListener { goToHistories() }
         return view
     }
 
@@ -61,10 +61,10 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         startActivity(i)
     }
 //
-//    private fun goToHistories() {
-//        val i = Intent(activity, HistoriesActivity::class.java)
-//        startActivity(i)
-//    }
+    private fun goToHistories() {
+        val i = Intent(activity, HistoriesActivity::class.java)
+        startActivity(i)
+    }
 
     private fun goToMain() {
 
@@ -75,6 +75,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     }
 
     private fun getDriver() {
-                textViewUsername?.text = "${DriverProvider.datosConductor?.nombre}"
+                textViewUsername?.text = DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
         }
 }
