@@ -39,19 +39,25 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.Query
+import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.util.Date
 
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
+    var modalMostrado: Boolean=false
+    private var bookingQuery: Query? =null
+    private var bookingListener: ValueEventListener? =null
     private var booking: Booking? =null
     private var primeraCarga: Boolean? =false
     private var tiempoActivo: Long? =null
     private var idConductor: String? = null
     private var start: LatLng? =null
-    var bookingListener: ListenerRegistration? =null
+
     private lateinit var binding: ActivityMapBinding
     var viewModel: MapaActivityViewModel? = null
     private var googleMaps:GoogleMap? =null
@@ -86,6 +92,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                 if(task.isSuccessful){
                     bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task->
                         if (task.isSuccessful) {
+                            modalBooking.dismiss()
+                            modalMostrado=false
                             listenerBooking()
                             Log.d("FIRESTORE", "booking actualizado a cancelado")
                         }
@@ -151,6 +159,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
             Log.d("Firestore", "Modal agregado para el booking ${booking}")
 
+// En tu código donde se muestra el modal
+        if (!modalMostrado) {
             val bundle = Bundle()
             bundle.putString("booking", booking.toJson())
             modalBooking.arguments = bundle
@@ -158,7 +168,9 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
             modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
             timer.start()
-            primeraCarga=false
+            primeraCarga = false
+            modalMostrado = true // Marcar el modal como mostrado
+        }
 
     }
 
@@ -170,7 +182,13 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     }
 
     private fun showModalMenu() {
-        modalMenu.show(supportFragmentManager, ModalBottomSheetMenu.TAG)
+        // Verifica si el menú modal ya está agregado al FragmentManager
+        val existingMenuFragment = supportFragmentManager.findFragmentByTag(ModalBottomSheetMenu.TAG)
+
+        if (existingMenuFragment == null) {
+            // El menú modal no está agregado, así que lo agregamos
+            modalMenu.show(supportFragmentManager, ModalBottomSheetMenu.TAG)
+        }
     }
 
     private val ubicacionPorDefecto = LatLng(4.7109, -74.0721) // Ubicación predeterminada (latitud y longitud)
@@ -337,28 +355,34 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     //mostrar cliente
      fun listenerBooking() {
 
-        bookingListener = bookingProvider.getBooking().addSnapshotListener { snapshot, e ->
-            Log.d("FIRESTORE", "Esperando bookings para: "+ autenticacion.obtenerId())
+         bookingQuery= bookingProvider.getBooking()
 
-            
-            if (e != null) {
-                Log.d("FIRESTORE", "ERROR: ${e.message}")
-                ErroresFirebase.imprimirError(e,this@MapaActivity)
-                return@addSnapshotListener
-            }
 
-            if (snapshot != null) {
-                if (snapshot.documents.size > 0) {
-                    booking = snapshot.documents[0].toObject(Booking::class.java)
-                    if (booking?.status!="cancel"){
-                        Log.d("FIRESTORE", "Booking cargado: ${booking}")
-                        Log.d("FIRESTORE", "Booking listenener detenido")
-                        bookingListener?.remove()
+        bookingListener = bookingQuery!!.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                Log.d("Firestore", "Esperando bookin")
+                // Este método se llama cuando los datos que cumplen con la consulta cambian
+
+                // Aquí puedes procesar los datos actualizados
+                for (childSnapshot in snapshot.children) {
+                     booking = childSnapshot.getValue(Booking::class.java)
+                    if (booking?.status == "create") {
+                        Log.d("REALTIME DATABASE", "Booking cargado: $booking")
+
                         showModalBooking(booking!!)
+                        break // Sal del bucle si se encuentra un booking válido
                     }
                 }
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Este método se llama si ocurre un error al recuperar los datos
+                Log.d("REALTIME DATABASE", "ERROR: ${error.message}")
+                ErroresFirebase.imprimirError(error.toException(), this@MapaActivity)
+            }
+        })
+
+
     }
 
     override fun onPause() {
@@ -372,7 +396,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         if(easyWayLocation!=null)  easyWayLocation!!.endUpdates()
         disconnectDriver()
         Log.d("FIRESTORE", "Booking listenener detenido")
-        bookingListener?.remove()
+        bookingQuery?.removeEventListener(bookingListener!!)
     }
 
 }

@@ -18,7 +18,7 @@ class CalificationClientActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCalificationClientBinding
     private var sonidos=Sonidos()
     private var historyProvider = HistoryProvider()
-    private var calification = 0f
+    private var calification = 5f
 
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -104,18 +104,24 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
              if(task.isSuccessful){
                  bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task ->
                      if (task.isSuccessful) {
-                         (activity as? MapaActivity)?.listenerBooking()
+
                          Log.d("FIRESTORE", "booking actualizado a cancelado")
+
+                         Log.d("FIRESTORE", "Modal ocultado")
+                         (activity as? MapaActivity)?.modalMostrado=false
+
+                         (activity as? MapaActivity)?.timer?.cancel()
+                         val modalBooking = (activity as? MapaActivity)?.modalBooking
+                         if (modalBooking != null && modalBooking.isAdded) {
+                             modalBooking.dismiss()
+                         }
+
                      }
                  }
              }
          }
 
-         (activity as? MapaActivity)?.timer?.cancel()
-         val modalBooking = (activity as? MapaActivity)?.modalBooking
-         if (modalBooking != null && modalBooking.isAdded) {
-             modalBooking.dismiss()
-         }
+
 
 
     }
@@ -124,7 +130,6 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         bookingProvider.updateStatus(idClient, "accept").addOnCompleteListener {
             (activity as? MapaActivity)?.timer?.cancel()
             if (it.isSuccessful) {
-                (activity as? MapaActivity)?.bookingListener?.remove()
 
                 (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
                 geoProvider.eliminarLocalizacion(authProvider.obtenerId())
