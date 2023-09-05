@@ -21,6 +21,7 @@ import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetMenu
+import com.castellanoseloy.toonsconductor.fragments.ModalBottomTripInfo
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
@@ -53,7 +54,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var bookingQuery: Query? =null
     private var bookingListener: ValueEventListener? =null
     private var booking: Booking? =null
-    private var primeraCarga: Boolean? =false
     private var tiempoActivo: Long? =null
     private var idConductor: String? = null
     private var start: LatLng? =null
@@ -72,7 +72,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     var currentTimerValue: Long ? =null
     private var driverProvideer=DriverProvider()
 
-    val modalBooking = ModalBottomSheetBooking()
+    var modalBooking = ModalBottomSheetBooking()
 
     val timer = object: CountDownTimer(10000, 1000) {
 
@@ -100,8 +100,13 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                     }
                 }
             }
+            try{
+                modalMostrado=false
+                modalBooking.dismiss()
+            }catch (e: Exception){
+                Log.d("FIRESTORE", "booking actualizado a cancelado")
+            }
 
-            modalBooking.dismiss()
 
         }
 
@@ -156,22 +161,19 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
 
     private fun showModalBooking(booking: Booking) {
 
-
+        if (!modalMostrado) {
             Log.d("Firestore", "Modal agregado para el booking ${booking}")
 
-// En tu código donde se muestra el modal
-        if (!modalMostrado) {
             val bundle = Bundle()
             bundle.putString("booking", booking.toJson())
             modalBooking.arguments = bundle
             modalBooking.isCancelable = false // NO PUEDA OCULTAR EL MODAL BOTTTOM SHEET
 
+            modalMostrado = true // Marcar el modal como mostrado
+
             modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
             timer.start()
-            primeraCarga = false
-            modalMostrado = true // Marcar el modal como mostrado
         }
-
     }
 
     private fun listeners() {
@@ -190,8 +192,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             modalMenu.show(supportFragmentManager, ModalBottomSheetMenu.TAG)
         }
     }
-
-    private val ubicacionPorDefecto = LatLng(4.7109, -74.0721) // Ubicación predeterminada (latitud y longitud)
 
     var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
@@ -322,8 +322,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
                 CarMoveAnim.carAnim(marcaConductor!!, start!!, ubicacionLatLong!!)
             }
-
-//            agregarMarca()
             salvarLocalizacion()
     }
 

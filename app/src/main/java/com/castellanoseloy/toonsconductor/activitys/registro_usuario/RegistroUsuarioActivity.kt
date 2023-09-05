@@ -16,7 +16,7 @@ import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class RegistroUsuarioActivity : AppCompatActivity() {
     private var viewModel: MyActivityViewModel? = null
-    private val clienteProvider= ClienteProveedor()
+    private val driverProvider= DriverProvider()
     private lateinit var binding: ActivityRegistroUsuarioBinding
     private val autenticacion=  Autenticacion()
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +61,7 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                         validacion = "Valida tu usuario"
                     )
 
-                    clienteProvider.crear(conductor).addOnCompleteListener {
+                    driverProvider.create(conductor).addOnCompleteListener {
                         if(it.isSuccessful){
                             DriverProvider.datosConductor=conductor
                             Utilidades.mostrarToast("Registro Exitoso",this@RegistroUsuarioActivity)

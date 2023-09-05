@@ -15,12 +15,14 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.calificationClientActivity.CalificationClientActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapTripBinding
+import com.castellanoseloy.toonsconductor.fragments.ModalBottomTripInfo
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
@@ -64,6 +66,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var autenticacion= Autenticacion ()
     private var bookingAceptedsProvider =BookingAceptedsProvider()
     private val historyProvider = HistoryProvider()
+    private val modalTrip=ModalBottomTripInfo()
 
     private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
 
@@ -145,6 +148,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
             if(query!=null){
                 if(query.size()>0){
+                    mostrarBotonesOcultos()
                     booking=  query.documents[0].toObject(Booking::class.java)
                     originLatLng= LatLng(booking!!.originLat!!, booking!!.originLng!!)
                     destinationLatLng=LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
@@ -157,11 +161,47 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         }
     }
 
+    private fun mostrarBotonesOcultos() {
+        binding?.imageViewInfo?.visibility=View.VISIBLE
+        binding?.btnStartTrip?.visibility=View.VISIBLE
+
+        binding.LinearCompartirRuta.visibility= View.VISIBLE
+
+        var wazeIntalado= viewModel?.isWazeInstalled(this)
+        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
+
+        if(!wazeIntalado!!) binding.imageViewWaze.visibility=View.GONE
+        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
+
+        //cuando incia el primer punto de busqueda es en el origen
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,originLatLng!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,originLatLng!!) }
+    }
+
 
     private fun listeners() {
 
         binding.btnStartTrip.setOnClickListener { updateToStarted()}
         binding.btnFinishTrip.setOnClickListener { updateToFinish() }
+        binding.imageViewInfo.setOnClickListener{ showModalInfo() }
+
+    }
+
+    private fun showModalInfo() {
+
+        val existingMenuFragment = supportFragmentManager.findFragmentByTag(ModalBottomTripInfo.TAG)
+
+        if (existingMenuFragment == null) {
+            if(booking!= null){
+                var bundle=Bundle()
+                bundle.putString("booking" , booking?.toJson())
+                modalTrip.arguments=bundle
+                modalTrip.show(supportFragmentManager,ModalBottomTripInfo.TAG )
+            }else{
+                Utilidades.mostrarToast("La información se esta cargando", this)
+
+            }
+        }
 
     }
 
@@ -370,12 +410,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun mostrarBotonesDeNavegacion() {
-        binding.LinearCompartirRuta.visibility= View.VISIBLE
-        var wazeIntalado= viewModel?.isWazeInstalled(this)
-        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
-
-        if(!wazeIntalado!!) binding.imageViewWaze.visibility=View.GONE
-        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
 
     }
 

@@ -28,7 +28,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
 
 class ModalBottomSheetBooking: BottomSheetDialogFragment() {
-
+    companion object {
+        const val TAG = "ModalBottomSheetBooking"
+    }
     private lateinit var textViewSolicitudViaje:TextView
     private lateinit var textViewOrigin: TextView
     private lateinit var textViewDestination: TextView
@@ -36,6 +38,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     private lateinit var textView_tarifa: TextView
     private lateinit var textView_pasajeros:TextView
     private lateinit var textView_equipaje:TextView
+    private lateinit var textViewComentario:TextView
     private lateinit var btnAccept: Button
     private lateinit var btnCancel: Button
 
@@ -61,6 +64,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         textView_tarifa = view.findViewById(R.id.textView_tarifa)
         textView_equipaje=view.findViewById(R.id.textView_equipaje)
         textView_pasajeros=view.findViewById(R.id.textView_pasajeros)
+        textViewComentario=view.findViewById(R.id.textViewComentario)
         btnAccept = view.findViewById(R.id.btnAccept)
         btnCancel = view.findViewById(R.id.btnCancel)
 
@@ -68,15 +72,19 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         booking = Booking.fromJson(data!!)!!
         Log.d("ARGUMENTS", "Booking: ${booking?.toJson()}")
 
+        (activity as? MapaActivity)?.modalMostrado=true
         textViewOrigin.text = booking?.origin
         textViewDestination.text = booking?.destination
         textView_pasajeros.text=booking.pasajeros
         textView_equipaje.text=booking.equipaje
+        textViewComentario.text=booking.comentario
         textView_tarifa.text=booking?.price.toString().formatoMonenda()
 
         textViewTimeAndDistance.text = "${String.format("%.1f", booking?.time)} Min - ${String.format("%.1f", booking?.km)} Km"
 
         sonidos.crearTonoInformativo(requireContext())
+
+        Log.d("Firestore", "Modal creado")
 
         listeners()
         observadores()
@@ -88,7 +96,6 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
             val seconds = value / 1000 // Convertir de milisegundos a segundos
             textViewSolicitudViaje.text = "SOLICITUD DE VIAJE ${seconds.toInt()} SEGUNDOS"
             Log.d("TIMER", "Current timer value changed: $seconds seconds")
-            // Puedes realizar acciones en función del valor del temporizador
         })
     }
 
@@ -96,75 +103,86 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     private fun listeners() {
         btnAccept.setOnClickListener { acceptBooking(booking?.idClient!!) }
         btnCancel.setOnClickListener { cancelBooking(booking?.idClient!!) }
-
     }
 
      fun cancelBooking(idClient: String) {
          bookingProvider.getBooking().get().addOnCompleteListener { task->
              if(task.isSuccessful){
-                 bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task ->
-                     if (task.isSuccessful) {
+                 val document = task.result
 
-                         Log.d("FIRESTORE", "booking actualizado a cancelado")
+                 if (document.exists()) {
+                     bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task ->
+                         if (task.isSuccessful) {
 
-                         Log.d("FIRESTORE", "Modal ocultado")
-                         (activity as? MapaActivity)?.modalMostrado=false
+                             Log.d("FIRESTORE", "booking actualizado a cancelado")
 
-                         (activity as? MapaActivity)?.timer?.cancel()
-                         val modalBooking = (activity as? MapaActivity)?.modalBooking
-                         if (modalBooking != null && modalBooking.isAdded) {
-                             modalBooking.dismiss()
+                             (activity as? MapaActivity)?.timer?.cancel()
+
+                             ocultarModal()
+
                          }
-
                      }
+                 }else{
+                     ocultarModal()
                  }
+             }else{
+                 ocultarModal()
              }
          }
-
-
-
-
     }
 
+    fun ocultarModal(){
+
+        val modalBooking = (activity as? MapaActivity)?.modalBooking
+        if (modalBooking != null && modalBooking.isAdded) {
+            modalBooking.dismiss()
+        }
+        (activity as? MapaActivity)?.modalMostrado=false
+        Log.d("FIRESTORE", "Modal ocultado")
+    }
     private fun acceptBooking(idClient: String) {
-        bookingProvider.updateStatus(idClient, "accept").addOnCompleteListener {
-            (activity as? MapaActivity)?.timer?.cancel()
-            if (it.isSuccessful) {
+        bookingProvider.getBooking().get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val document = task.result
 
-                (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
-                geoProvider.eliminarLocalizacion(authProvider.obtenerId())
+                if (document.exists()) {
+                    bookingProvider.updateStatus(idClient, "accept").addOnCompleteListener {
+                        (activity as? MapaActivity)?.timer?.cancel()
+                        if (it.isSuccessful) {
+                            (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
+                            geoProvider.eliminarLocalizacion(authProvider.obtenerId())
+                            booking!!.status = "accept" // Crear el booking aceptado
 
-                booking!!.status="accept" //crear el booking aceptado
-
-                bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
-                    Log.d("FIRESTORE", "Viaje aceptado: ${booking?.destination}")
-                    Utilidades.mostrarToast("Viaje Aceptado", requireContext())
-                    goToMapTrip()
+                            bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
+                                Log.d("FIRESTORE", "Viaje aceptado: ${booking?.destination}")
+                                Utilidades.mostrarToast("Viaje Aceptado", requireContext())
+                                goToMapTrip()
+                            }
+                        } else {
+                            viajeRechazado()
+                        }
+                    }
+                } else {
+                    // El booking no existe
+                    viajeRechazado()
                 }
-
-            }
-            else {
-                if (context != null) {
-                    Toast.makeText(activity, "No se pudo aceptar el viaje", Toast.LENGTH_LONG).show()
-                    (activity as? MapaActivity)?.listenerBooking()
-                    val modalBooking = (activity as? MapaActivity)?.modalBooking
-                    modalBooking?.dismiss()
-                }
+            } else {
+                viajeRechazado()
             }
         }
     }
 
-    private fun goToMapTrip() {
 
+    private fun viajeRechazado() {
+        Toast.makeText(activity, "No se pudo aceptar el viaje", Toast.LENGTH_LONG).show()
+        (activity as? MapaActivity)?.listenerBooking()
+        ocultarModal()
+    }
+
+    private fun goToMapTrip() {
         val i = Intent(context, MapTripActivity::class.java)
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         context?.startActivity(i)
     }
-
-    companion object {
-        const val TAG = "ModalBottomSheet"
-    }
-
-
 
 }

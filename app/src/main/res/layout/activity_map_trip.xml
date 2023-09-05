@@ -51,11 +51,7 @@
         android:layout_marginRight="30dp"
         android:gravity="center_vertical">
 
-        <ImageView
-            android:id="@+id/imageViewInfo"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@drawable/ic_pasajero" />
+
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -121,19 +117,22 @@
 
     </LinearLayout>
 
-
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_marginRight="60dp"
+    android:layout_marginLeft="60dp"
+    android:layout_marginBottom="12dp"
+    android:orientation="vertical">
     <Button
+        android:visibility="gone"
         android:id="@+id/btnStartTrip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="INICIAR VIAJE"
         android:background="@drawable/rounded_button"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="70dp"
-        android:layout_marginRight="60dp"
-        android:textColor="@color/white"
-        android:layout_marginLeft="60dp"
-        />
+        android:textColor="@color/white" />
 
 
     <Button
@@ -143,10 +142,15 @@
         android:text="FINALIZAR VIAJE"
         android:background="@drawable/rounded_button"
         app:backgroundTint="@color/blue"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="70dp"
-        android:layout_marginRight="60dp"
-        android:layout_marginLeft="60dp"
         android:visibility="gone"/>
 
+    <ImageView
+        android:visibility="gone"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:id="@+id/imageViewInfo"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:src="@drawable/baseline_info_24" />
+</LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

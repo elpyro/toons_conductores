@@ -6,12 +6,14 @@ private val klaxon = Klaxon()
 
 data class Client (
     val id: String? = null,
-    val name: String ? = null,
-    val lastname: String ? = null,
-    val email: String ? = null,
-    val phone: String ? = null,
-    val image: String ? = null,
-    val token: String ? = null,
+    val nombre: String? = null,
+    val apellido: String? = null,
+    val correo: String? = null,
+    val telefono: String? = null,
+    var imagenPerfil: String? = null,
+    var imagenDocumento: String? = null,
+    var areaTrabajo: String? = null,
+    val validacion: String? =null
 ) {
 
 

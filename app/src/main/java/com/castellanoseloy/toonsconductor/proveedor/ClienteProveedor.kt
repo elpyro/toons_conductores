@@ -9,11 +9,8 @@ import com.google.firebase.ktx.Firebase
 
 class ClienteProveedor {
 
-    val bd =Firebase.firestore.collection("Conductores")
+    val bd =Firebase.firestore.collection("Clientes")
 
-    fun crear(cliente: ConductorModelo):Task<Void>{
-        return bd.document(cliente.id!!).set(cliente)
-    }
 
     fun getClientById(id: String): Task<DocumentSnapshot> {
         return bd.document(id).get()

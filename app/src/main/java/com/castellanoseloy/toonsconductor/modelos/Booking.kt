@@ -15,6 +15,7 @@ data class Booking (
     var status: String? = null,
     val pasajeros: String? = null,
     val equipaje: String? = null,
+    val comentario:String? =null,
     val time: Double? = null,
     val km: Double? = null,
     val originLat: Double? = null,
