@@ -70,7 +70,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private var bookingProvider=BookingProvider()
     private val modalMenu = ModalBottomSheetMenu()
     var currentTimerValue: Long ? =null
-    private var driverProvideer=DriverProvider()
+
 
     var modalBooking = ModalBottomSheetBooking()
 
@@ -135,20 +135,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
 
-        idConductor=autenticacion.obtenerId()
-
-
-        driverProvideer.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
-            Log.d("Firestore", "Validando conductor "+autenticacion.obtenerId())
-            if (document.exists()) {
-                val driver = document.toObject(ConductorModelo::class.java)
-                DriverProvider.datosConductor = driver
-                Log.d("Firestore", "Validacion de conductor ${driver?.validacion}")
-                if(driver?.validacion.equals("Valida tu usuario")) goToProfile()
-            }else{
-                Log.d("Firestore", "No se encontraron datos del conductor")
-            }
-        }
+        //si el conductor es nuevo enviar a pantalla de perfil
+        if(DriverProvider.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
 
         tiempoActivo= Date().time
          listeners()

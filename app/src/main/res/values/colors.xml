@@ -13,4 +13,7 @@
 
     <color name="starSelectedColor">#FFC107</color> <!-- Color de estrellas seleccionadas (amarillo en este ejemplo) -->
     <color name="starUnselectedColor">#CCCCCC</color> <!-- Color de estrellas no seleccionadas (gris claro en este ejemplo) -->
+
+    <color name="colorThumb">#EEF13737</color> <!-- Color del círculo (interruptor) -->
+
 </resources>

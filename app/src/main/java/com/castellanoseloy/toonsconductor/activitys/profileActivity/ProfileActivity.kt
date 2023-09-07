@@ -25,18 +25,14 @@ import java.io.File
 
 class ProfileActivity : AppCompatActivity() {
 
-    private var totalElementos: Int = 0
     private lateinit var binding: ActivityProfileBinding
     val driverProvider = DriverProvider()
-    val authProvider = Autenticacion()
 
     private var fotoPerfil: File? = null
     private var licencia: File? =null
     private var documento: File? = null
     
     private var imagenSeleccionada: String? = null
-    private var actualizarElementos=1
-
 
 
     private var viewModel: ProfileActivityViewModel ? = null
@@ -60,7 +56,6 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun observador() {
         viewModel?.elementosActualizar?.observe(this, Observer { it ->
-
                 if( it==0){
                     progressDialog!!.dismiss()
                     Utilidades.mostrarToast("Datos Actualizados",this)

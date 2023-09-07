@@ -23,7 +23,8 @@ data class Booking (
     val destinationLat: Double? = null,
     val destinationLng: Double? = null,
     val price: Double? = null,
-    val comision:Double? =null
+    val comision:Double? =null,
+    var car: CarModel? =null
 ) {
     public fun toJson() = klaxon.toJsonString(this)
 

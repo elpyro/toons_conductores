@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activitys.profileActivity.ProfileActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.google.android.material.appbar.AppBarLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_marginTop="30dp"
+                android:layout_height="250dp">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/red_claro" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginBottom="20dp"
+                    android:gravity="bottom"
+                    android:layout_gravity="bottom"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/circleImageFotoFrontal"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            android:src="@drawable/baseline_directions_car_24"
+                            app:civ_border_width="3dp"
+                            app:civ_border_color="@color/white"
+                            android:layout_gravity="bottom|center"
+                            />
+
+                        <TextView
+                            android:id="@+id/textViewEmail"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Foto Frontal"
+                            android:textColor="@color/white"
+                            android:layout_gravity="bottom"
+                            android:gravity="center"
+                            android:textStyle="italic"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <de.hdodenhof.circleimageview.CircleImageView
+                            android:id="@+id/circleImageFotoLateral"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            android:src="@drawable/ic_paralel_car_write"
+                            app:civ_border_width="3dp"
+                            app:civ_border_color="@color/white"
+                            android:layout_gravity="bottom|center"
+                            />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Foto Lateral"
+                            android:textColor="@color/white"
+                            android:layout_gravity="bottom"
+                            android:gravity="center"
+                            android:textStyle="italic"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/EditTextGrey"
+                        android:layout_weight="2"
+                        app:hintTextColor="@color/grey_dark"
+                        app:startIconTint="@color/grey_dark">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/textFieldPlaca"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Placa"
+                            android:textColorHint="@color/grey_dark"
+                            android:inputType="textCapWords"
+                            android:textSize="16sp"
+                            android:textColor="@color/grey_dark" />
+
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/EditTextGrey"
+                        android:layout_weight="2"
+                        app:hintTextColor="@color/grey_dark"
+                        app:startIconTint="@color/grey_dark">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/textFielMarca"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Marca"
+                            android:textColorHint="@color/grey_dark"
+                            android:inputType="textCapWords"
+                            android:textSize="16sp"
+                            android:textColor="@color/grey_dark" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+
+
+
+
+                    <Spinner
+                        android:id="@+id/spinner"
+                        android:layout_weight="1"
+                        android:layout_width="wrap_content"
+                        android:entries="@array/tipoVehiculos"
+                        android:layout_height="wrap_content" />
+
+                    <Switch
+                        android:id="@+id/switchMaletero"
+                        android:checked="true"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:thumbTint="@color/colorThumb"
+                        android:text="Maletero Disponible" />
+
+                </LinearLayout>
+
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/EditTextGrey"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
+                    android:layout_marginTop="5dp"
+                    app:hintTextColor="@color/grey_dark"
+                    app:startIconTint="@color/grey_dark">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/textFielAsisentos"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Asientos Disponibles"
+                        android:textColorHint="@color/grey_dark"
+                        android:inputType="number"
+                        android:text="4"
+                        android:textSize="16sp"
+                        android:textColor="@color/grey_dark" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+
+                            android:gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/ColorVehiculo" />
+
+                        <ImageView
+                            android:layout_gravity="center"
+                            android:id="@+id/imageView_car_color"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            app:srcCompat="@drawable/ic_paralel_car" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_gravity="center"
+                            android:gravity="center"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="SOAT" />
+
+                        <ImageView
+                            android:id="@+id/imageView_document_SOAT"
+                            android:layout_gravity="center"
+                            android:layout_width="150dp"
+                            android:layout_height="150dp"
+                            app:srcCompat="@drawable/ic_document" />
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnUpdate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="30dp"
+                android:layout_marginLeft="30dp"
+                android:text="nuevo vehiculo"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/rounded_button"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

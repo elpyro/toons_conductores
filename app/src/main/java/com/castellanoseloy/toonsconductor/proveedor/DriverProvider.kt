@@ -25,13 +25,14 @@ class DriverProvider {
 
     private lateinit var storageLicencia: StorageReference
     private lateinit var storageDocumento: StorageReference
-    var storageFotoPerfil: StorageReference? = null
+    private lateinit var storageFotoPerfil: StorageReference
     val db = Firebase.firestore.collection("Conductores")
     var storage = FirebaseStorage.getInstance().getReference().child("profile")
 
     fun create(driver: ConductorModelo): Task<Void> {
         return db.document(driver.id!!).set(driver)
     }
+
 
     fun uploadImage(id: String, nombreImagen: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
         var fromFile = Uri.fromFile(file)
@@ -49,20 +50,7 @@ class DriverProvider {
         }
     }
 
-//    fun createToken(idDriver: String) {
-//        FirebaseMessaging.getInstance().token.addOnCompleteListener {
-//            if (it.isSuccessful) {
-//                val token = it.result // TOKEN DE NOTIFICACIONES
-//                updateToken(idDriver, token)
-//            }
-//        }
-//    }
 
-    fun updateToken(idDriver: String, token: String): Task<Void> {
-        val map: MutableMap<String, Any> = HashMap()
-        map["token"] = token
-        return db.document(idDriver).update(map)
-    }
 
     fun getStorageFotoPerfil(): Task<Uri> {
         return storageFotoPerfil?.downloadUrl!!
@@ -85,6 +73,11 @@ class DriverProvider {
         map["telefono"] = driver?.telefono!!
         map["validacion"] = driver?.validacion!!
         return db.document(driver?.id!!).update(map)
+    }
+    fun updateCar(idCar:String, ): Task<Void>{
+        val map: MutableMap<String, Any> = HashMap()
+        map["vehiculo"] = idCar
+        return db.document(datosConductor?.id!!).update(map)
     }
 
     fun updateFotoPerfil(driver: ConductorModelo): Task<Void> {

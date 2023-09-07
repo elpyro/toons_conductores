@@ -23,6 +23,7 @@ import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
+import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -153,8 +154,10 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                             geoProvider.eliminarLocalizacion(authProvider.obtenerId())
                             booking!!.status = "accept" // Crear el booking aceptado
 
+                            booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
+
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
-                                Log.d("FIRESTORE", "Viaje aceptado: ${booking?.destination}")
+                                Log.d("FIRESTORE", "Viaje aceptado: ${booking}")
                                 Utilidades.mostrarToast("Viaje Aceptado", requireContext())
                                 goToMapTrip()
                             }

@@ -109,7 +109,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textView_comision?.text = comision.toString().formatoMonenda()
         textView_total?.text = precio.toString().formatoMonenda()
 
-
         val tarifa =  precio -  comision
 
         textView_tarifa?.text = (tarifa).toString().formatoMonenda()

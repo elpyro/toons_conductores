@@ -7,6 +7,7 @@ import com.google.android.gms.tasks.Tasks
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class BookingAceptedsProvider {
 
@@ -21,7 +22,7 @@ class BookingAceptedsProvider {
     }
 
     fun getBookingAccepteds(): Query {
-        return db.whereEqualTo("idDriver",authProvider.obtenerId())
+        return db.whereEqualTo("idDriver",DriverProvider.datosConductor?.id)
     }
 
     fun updateStatus(idDriver: String, status: String): Task<Void> {

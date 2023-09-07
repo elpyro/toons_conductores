@@ -1,0 +1,105 @@
+package com.castellanoseloy.toonsconductor.activitys.carList
+
+import android.content.Intent
+import android.graphics.Color
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.addCar.AddCar
+import com.castellanoseloy.toonsconductor.activitys.historiesDetails.HistoriesDetailActivity
+import com.castellanoseloy.toonsconductor.databinding.ActivityCarListBinding
+import com.castellanoseloy.toonsconductor.modelos.CarModel
+import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
+
+class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
+
+    private lateinit var binding: ActivityCarListBinding
+    private val listaCarros: MutableList<CarModel> = mutableListOf()
+    private lateinit var adaptador:CarListAdapter
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding=ActivityCarListBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val linearLayoutManager = LinearLayoutManager(this)
+        binding.recyclerCarList.layoutManager = linearLayoutManager
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = "Mis vehiculos"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setTitleTextColor(Color.WHITE)
+
+
+        listeners()
+    }
+
+    private fun obtenerCars() {
+        val carProvider=CarProvider()
+        carProvider.getCarByDriverId(DriverProvider.datosConductor?.id!!)
+            .addOnCompleteListener {listaCars->
+                if (listaCars.isSuccessful) {
+                    val carrosEncontrados = listaCars.result?.toObjects(CarModel::class.java)
+                    if (!carrosEncontrados.isNullOrEmpty()) {
+                        // Aquí puedes hacer algo con los carros encontrados
+                        for (carro in carrosEncontrados) {
+                            listaCarros.add(carro)
+                        }
+                            cargarRecyclerView()
+                    } else {
+                        // No se encontraron carros para el conductor con el ID especificado
+                        Log.d("Carros", "Ningún carro encontrado para el conductor")
+                    }
+                } else {
+                    // Manejar el error si la consulta falla
+                    Log.e("Error", "Error al buscar carros: ${listaCars.exception?.message}")
+                }
+            }
+    }
+
+    private fun cargarRecyclerView() {
+        val gridLayoutManager = GridLayoutManager(this, 1)
+        binding!!.recyclerCarList.layoutManager = gridLayoutManager
+
+
+        if (listaCarros.isNotEmpty()) {
+            adaptador = CarListAdapter(listaCarros, this)
+            binding.recyclerCarList.adapter = adaptador
+        }
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+        listaCarros.clear()
+        obtenerCars()
+    }
+
+    private fun listeners() {
+        binding.imageViewAddCard.setOnClickListener{  goToAddCar() }
+    }
+
+    private fun goToAddCar() {
+        val i = Intent(this@CarList, AddCar::class.java)
+        startActivity(i)
+    }
+
+    override fun onItemClick(car: CarModel) {
+        val driverProvider=DriverProvider()
+        driverProvider.updateCar(car.id!!)
+            .addOnCompleteListener {
+                if(it.isSuccessful){
+                    DriverProvider.datosConductor?.vehiculo = car.id
+                    CarProvider.datosCarroEnUso= car
+                    adaptador.notifyDataSetChanged()
+                }
+            }
+    }
+
+}

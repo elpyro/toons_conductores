@@ -3,6 +3,7 @@ package com.castellanoseloy.toonsconductor.activitys.mainActivity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
@@ -11,9 +12,12 @@ import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActiv
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.activitys.registro_usuario.RegistroUsuarioActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding
+import com.castellanoseloy.toonsconductor.modelos.CarModel
+import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
+import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
@@ -57,8 +61,7 @@ class MainActivity : AppCompatActivity() {
             autenticacion.login(binding.editTextCorreo.text.toString(),binding.editTextContrasena.text.toString())
                 .addOnCompleteListener {
                     if (it.isSuccessful){
-
-                        verificarViajesPendientes()
+                        obtenerDatosConductor()
                     }else{
                         ErroresFirebase.imprimirError(it.exception,this@MainActivity)
                     }
@@ -72,10 +75,42 @@ class MainActivity : AppCompatActivity() {
         val intent = Intent(this@MainActivity, RegistroUsuarioActivity::class.java)
         startActivity(intent)
     }
+
+    private fun obtenerDatosConductor(){
+        val idConductor=autenticacion.obtenerId()
+
+        var driverProvideer=DriverProvider()
+        driverProvideer.getDriver(idConductor!!).addOnSuccessListener { document ->
+            if (document.exists()) {
+                val driver = document.toObject(ConductorModelo::class.java)
+                DriverProvider.datosConductor = driver
+
+                Log.d("Firestore", "Obteniendo datos del conductor ${driver?.validacion}")
+
+                verificarViajesPendientes()
+                obtenerDatosCarro()
+            }else{
+                Log.d("Firestore", "No se encontraron datos del conductor")
+            }
+        }
+    }
+
+    private fun obtenerDatosCarro(){
+
+        var carProvider=CarProvider()
+        carProvider.getCarById(DriverProvider.datosConductor?.vehiculo!!).addOnSuccessListener { document ->
+            if (document.exists()) {
+                val car = document.toObject(CarModel::class.java)
+                CarProvider.datosCarroEnUso = car
+                Log.d("Firestore", "Obteniendo datos del carro en uso")
+            }else{
+                Log.d("Firestore", "No se encontraron datos del carro en uso")
+            }
+        }
+    }
     private fun verificarViajesPendientes() {
 
         bookingAceptedsProvider.getBookingAccepteds().get().addOnSuccessListener { query ->
-
             if (query != null) {
                 if (query.size() > 0) {
                     //viaje pendiente encontrado
@@ -125,7 +160,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStart() {
-        if(autenticacion.sesionExistente()) verificarViajesPendientes()
+        if(autenticacion.sesionExistente()) obtenerDatosConductor()
         super.onStart()
     }
 }
