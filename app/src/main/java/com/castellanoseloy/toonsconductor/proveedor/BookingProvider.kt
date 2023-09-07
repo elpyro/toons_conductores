@@ -9,15 +9,15 @@ import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class BookingProvider {
 
     private val db: DatabaseReference = FirebaseDatabase.getInstance().reference.child("Bookings")
-    private val authProvider = Autenticacion()
 
     fun getBooking(): com.google.firebase.database.Query {
         // Para obtener reservas del conductor actual (por idDriver)
-        return db.orderByChild("idDriver").equalTo(authProvider.obtenerId())
+        return db.orderByChild("idDriver").equalTo(DriverProvider.datosConductor?.id)
     }
 
     fun updateStatus(bookingId: String, status: String): Task<Void> {

@@ -165,14 +165,25 @@
 
 
 
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="150dp"
+                        android:layout_height="wrap_content"
+                        style="@style/EditTextGrey"
+                        app:hintTextColor="@color/grey_dark"
+                        app:startIconTint="@color/grey_dark">
 
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/textFielAsisentos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Asientos Disponibles"
+                            android:textColorHint="@color/grey_dark"
+                            android:inputType="number"
+                            android:text="4"
+                            android:textSize="16sp"
+                            android:textColor="@color/grey_dark" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
-                    <Spinner
-                        android:id="@+id/spinner"
-                        android:layout_weight="1"
-                        android:layout_width="wrap_content"
-                        android:entries="@array/tipoVehiculos"
-                        android:layout_height="wrap_content" />
 
                     <Switch
                         android:id="@+id/switchMaletero"
@@ -187,33 +198,45 @@
                 </LinearLayout>
 
 
-                <com.google.android.material.textfield.TextInputLayout
+             <LinearLayout
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_marginLeft="30dp"
+                 android:layout_marginRight="30dp"
+                 android:layout_marginTop="5dp"
+                 android:orientation="horizontal">
+
+                 <TextView
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:text="Tipo: "
+                     android:layout_gravity="center"
+                     android:gravity="center"
+                     android:textSize="16sp" />
+
+                 <Spinner
+                     android:id="@+id/spinner"
+                     android:layout_weight="1"
+                     android:layout_width="wrap_content"
+                     android:entries="@array/tipoVehiculos"
+                     android:layout_height="wrap_content" />
+             </LinearLayout>
+
+                <View
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    style="@style/EditTextGrey"
+                    android:layout_height="1dp"
+                    android:background="@color/grey"
+                    android:layout_marginTop="10dp"
                     android:layout_marginLeft="30dp"
                     android:layout_marginRight="30dp"
-                    android:layout_marginTop="5dp"
-                    app:hintTextColor="@color/grey_dark"
-                    app:startIconTint="@color/grey_dark">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/textFielAsisentos"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Asientos Disponibles"
-                        android:textColorHint="@color/grey_dark"
-                        android:inputType="number"
-                        android:text="4"
-                        android:textSize="16sp"
-                        android:textColor="@color/grey_dark" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-
+                    android:layout_marginBottom="15dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
                     android:orientation="horizontal">
 
                     <LinearLayout

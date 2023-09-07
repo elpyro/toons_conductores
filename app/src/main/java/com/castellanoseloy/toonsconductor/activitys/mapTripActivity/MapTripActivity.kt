@@ -24,6 +24,7 @@ import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapTripBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomTripInfo
 import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
@@ -42,6 +43,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.models.History
 import com.optic.uberclonedriverkotlin.providers.HistoryProvider
 import java.util.Date
@@ -144,21 +148,31 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun getBooking(){
-        bookingAceptedsProvider.getBookingAccepteds().get().addOnSuccessListener { query->
 
-            if(query!=null){
-                if(query.size()>0){
+        var bookingQuery = bookingAceptedsProvider.getBookingAccepteds()
+
+        bookingQuery!!.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                for (childSnapshot in snapshot.children) {
+                    booking = childSnapshot.getValue(Booking::class.java)
+
                     mostrarBotonesOcultos()
-                    booking=  query.documents[0].toObject(Booking::class.java)
-                    originLatLng= LatLng(booking!!.originLat!!, booking!!.originLng!!)
-                    destinationLatLng=LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
+
+                    originLatLng = LatLng(booking!!.originLat!!, booking!!.originLng!!)
+                    destinationLatLng = LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
                     medirDistacia()
                     dibujarRuta(originLatLng!!)
                     addOriginMarker(originLatLng!!)
-                    //getClientInfo()
                 }
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Este método se llama si ocurre un error al recuperar los datos
+                Log.d("REALTIME DATABASE", "ERROR: ${error.message}")
+                ErroresFirebase.imprimirError(error.toException(), this@MapTripActivity)
+            }
+        })
     }
 
     private fun mostrarBotonesOcultos() {

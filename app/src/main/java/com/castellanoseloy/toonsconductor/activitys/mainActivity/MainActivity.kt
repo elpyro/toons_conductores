@@ -12,12 +12,17 @@ import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActiv
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.activitys.registro_usuario.RegistroUsuarioActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding
+import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
@@ -110,16 +115,25 @@ class MainActivity : AppCompatActivity() {
     }
     private fun verificarViajesPendientes() {
 
-        bookingAceptedsProvider.getBookingAccepteds().get().addOnSuccessListener { query ->
-            if (query != null) {
-                if (query.size() > 0) {
-                    //viaje pendiente encontrado
+        var bookingQuery = bookingAceptedsProvider.getBookingAccepteds()
+
+        bookingQuery!!.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                if(snapshot.exists()){
                     crearAlertaDeViajePendiente()
                 }else{
                     abrirMapaInicio()
                 }
             }
-        }
+            override fun onCancelled(error: DatabaseError) {
+                // Este método se llama si ocurre un error al recuperar los datos
+                Log.d("REALTIME DATABASE", "ERROR: ${error.message}")
+                ErroresFirebase.imprimirError(error.toException(), this@MainActivity)
+            }
+        })
+
+
     }
 
     private fun crearAlertaDeViajePendiente() {

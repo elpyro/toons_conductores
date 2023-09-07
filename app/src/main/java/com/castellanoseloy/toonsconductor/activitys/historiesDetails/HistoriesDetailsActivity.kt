@@ -48,8 +48,8 @@ class HistoriesDetailActivity : AppCompatActivity() {
                 binding.textViewDate.text =
                     RelativeTime.getTimeAgo(history?.timestamp!!, this@HistoriesDetailActivity)
                 binding.textViewPrice.text = history.price.toString().formatoMonenda()
-                binding.textViewMyCalification.text = "${history?.calificationToDriver}"
-                binding.textViewClientCalification.text = "${history?.calificationToClient}"
+                binding.textViewMyCalification.text = "${history?.calificationToDriver}    ${history?.commentClient}"
+                binding.textViewClientCalification.text = "${history?.calificationToClient}    ${history?.commentDriver}"
                 binding.textViewTimeAndDistance.text =
                     "${history?.time} Min - ${String.format("%.1f", history?.km)} Km"
                 getClientInfo(history?.idClient!!)
