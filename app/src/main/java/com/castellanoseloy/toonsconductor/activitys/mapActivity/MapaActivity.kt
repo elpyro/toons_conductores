@@ -21,21 +21,22 @@ import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetMenu
-import com.castellanoseloy.toonsconductor.fragments.ModalBottomTripInfo
 import com.castellanoseloy.toonsconductor.modelos.Booking
-import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
+import com.example.easywaylocation.draw_path.DirectionUtil
+import com.example.easywaylocation.draw_path.PolyLineDataBean
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
@@ -48,8 +49,11 @@ import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.util.Date
 
 
-class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
+class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,DirectionUtil.DirectionCallBack {
 
+
+    var distanceString: String? =null
+    var timeString: String? = null
     var modalMostrado: Boolean=false
     private var bookingQuery: Query? =null
     private var bookingListener: ValueEventListener? =null
@@ -71,6 +75,10 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private val modalMenu = ModalBottomSheetMenu()
     var currentTimerValue: Long ? =null
 
+    //dibujar ruta
+    private var wayPoints: ArrayList<LatLng> = ArrayList()
+    private val WAY_POINT_TAG = "way_point_tag"
+    private lateinit var directionUtil: DirectionUtil
 
     var modalBooking = ModalBottomSheetBooking()
 
@@ -150,6 +158,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
     private fun showModalBooking(booking: Booking) {
 
         if (!modalMostrado) {
+            val ubicacionCliente= LatLng(booking?.originLat!!, booking?.originLng!!)
+            addClientMarker(ubicacionCliente)
+            Log.d("Firestore", "Ubicacion Actual: $ubicacionLatLong")
+            ubicacionLatLong?.let { dibujarRutaEntreCliente(it, ubicacionCliente) }
+
             Log.d("Firestore", "Modal agregado para el booking ${booking}")
 
             val bundle = Bundle()
@@ -246,6 +259,12 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         binding.btnConnect.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
     }
 
+    fun borrarRuta(){
+        Log.d("FIRESTORE", "Ruta borrada")
+        googleMaps?.clear()
+        agregarMarca()
+    }
+
 
     fun agregarMarca(){
         crearIcono()
@@ -262,6 +281,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                     .icon(iconoMarca)
             )
         }
+    }
+
+    private fun addClientMarker(clientLatLng:LatLng) {
+     googleMaps?.addMarker(MarkerOptions().position(clientLatLng!!).title("Mi posicion")
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_location_red)))
     }
     override fun onMapReady(mapa: GoogleMap) {
         googleMaps=mapa
@@ -355,6 +379,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
                     if (booking?.status == "create") {
                         Log.d("REALTIME DATABASE", "Booking cargado: $booking")
 
+
                         showModalBooking(booking!!)
                         break // Sal del bucle si se encuentra un booking válido
                     }
@@ -385,4 +410,45 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener {
         bookingQuery?.removeEventListener(bookingListener!!)
     }
 
+
+    private fun dibujarRutaEntreCliente(originLatLng:LatLng,destinationLatLng:LatLng){
+        wayPoints.clear()
+        wayPoints.add(originLatLng!!)
+        wayPoints.add(destinationLatLng!!)
+        directionUtil = DirectionUtil.Builder()
+            .setDirectionKey(resources.getString(R.string.google_maps_key))
+            .setOrigin(originLatLng!!)
+            .setWayPoints(wayPoints)
+            .setGoogleMap(googleMaps!!)
+            .setPolyLinePrimaryColor(R.color.black)
+            .setPolyLineWidth(25)
+            .setPathAnimation(true)
+            .setCallback(this)
+            .setDestination(destinationLatLng!!)
+            .build()
+
+        directionUtil.initPath()
+    }
+
+    override fun pathFindFinish(
+        polyLineDetailsMap: HashMap<String, PolyLineDataBean>,
+        polyLineDetailsArray: ArrayList<PolyLineDataBean>
+    ) {
+        //medir distancia y tiempo
+        var distance = polyLineDetailsArray[1].distance.toDouble() // METROS
+        var time = polyLineDetailsArray[1].time.toDouble() // SEGUNDOS
+        distance = if (distance < 1000.0) 1000.0 else distance // SI ES MENOS DE 1000 METROS EN 1 KM
+        time = if (time < 60.0) 60.0 else time
+
+        distance = distance / 1000 // KM
+        time = time / 60 // MIN
+
+        timeString = String.format("%.2f", time)
+        distanceString = String.format("%.2f", distance)
+        Log.d("Firestore", "Distancia entre Cliente: $distanceString tiempo: $timeString")
+
+
+        //dibujar ruta
+        directionUtil.drawPath(WAY_POINT_TAG)
+    }
 }

@@ -1,16 +1,17 @@
 package com.castellanoseloy.toonsconductor.activitys.addCar
 
+import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.bumptech.glide.Glide
+import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.databinding.ActivityAddCarBinding
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.io.File
-import java.util.UUID
 
 class AddCarViewModel : ViewModel() {
 
@@ -35,13 +36,14 @@ class AddCarViewModel : ViewModel() {
     }
 
     fun salveData(
+        idCar:String,
         binding: ActivityAddCarBinding,
         fotoFrontal: File?,
         fotoLateral: File?,
         Imagedocumento: File?,
         colorSeleccionado: Int
     ) {
-           val idCar=UUID.randomUUID().toString()
+
            guardarOnline(binding,idCar, colorSeleccionado)
            guardarImagenes(idCar,fotoFrontal,fotoLateral,Imagedocumento)
     }
@@ -156,22 +158,27 @@ class AddCarViewModel : ViewModel() {
         binding: ActivityAddCarBinding,
         fotoFrontal: File?,
         fotoLateral: File?,
-        Imagedocumento: File?
+        Imagedocumento: File?,
+        editarDatos: Boolean
     ): Boolean {
 
         var datosValidos=true
-        if(fotoFrontal==null) {
-            mensaje.value= "Se requiere una foto fontal del vehiculo"
-            datosValidos=false
+
+        if(!editarDatos){
+            if(fotoFrontal==null) {
+                mensaje.value= "Se requiere una foto fontal del vehiculo"
+                datosValidos=false
+            }
+            if(fotoLateral==null) {
+                mensaje.value= "Se requiere una foto lateral del vehiculo"
+                datosValidos=false
+            }
+            if(Imagedocumento==null) {
+                mensaje.value= "Se requiere una foto del SOAT"
+                datosValidos=false
+            }
         }
-        if(fotoLateral==null) {
-            mensaje.value= "Se requiere una foto lateral del vehiculo"
-            datosValidos=false
-        }
-        if(Imagedocumento==null) {
-            mensaje.value= "Se requiere una foto del SOAT"
-            datosValidos=false
-        }
+
         if(binding.textFieldPlaca.text.toString().isEmpty()){
             datosValidos=false
             binding.textFieldPlaca.setError("Obligatorio")
@@ -186,6 +193,40 @@ class AddCarViewModel : ViewModel() {
         }
 
         return datosValidos
+
+    }
+
+    fun cargarDatos(carModel: CarModel, binding: ActivityAddCarBinding, applicationContext: Context) {
+
+
+        if (carModel?.imagenFrontal != null) {
+                try {
+                    Glide.with(applicationContext).load(carModel?.imagenFrontal).into(binding.circleImageFotoFrontal!!)
+                }catch (e: Exception){  }
+        }
+        if (carModel?.imagenLateral != null) {
+            try {
+                Glide.with(applicationContext).load(carModel?.imagenLateral).into(binding.circleImageFotoLateral!!)
+            }catch (e: Exception){  }
+        }
+        if (carModel?.imagenDocumento != null) {
+            try {
+                Glide.with(applicationContext).load(carModel?.imagenDocumento).into(binding.imageViewDocumentSOAT!!)
+            }catch (e: Exception){  }
+        }
+        binding.textFieldPlaca.setText(carModel.placa)
+        binding.textFielMarca.setText(carModel.bland)
+       binding.textFielAsisentos.setText(carModel.pasajeros!!.toString())
+        binding.switchMaletero.setChecked(carModel.malero!!)
+
+        //estblecer el valor del spinner
+        val opcionesArray = applicationContext.resources.getStringArray(R.array.tipoVehiculos)
+        val indiceValorPredeterminado = opcionesArray.indexOf(carModel.tipo)
+        if (indiceValorPredeterminado != -1) {
+            // Establecer el valor predeterminado en el Spinner
+            binding?.spinner?.setSelection(indiceValorPredeterminado)
+        }
+        binding.imageViewCarColor.setColorFilter(carModel.color!!)
 
     }
 

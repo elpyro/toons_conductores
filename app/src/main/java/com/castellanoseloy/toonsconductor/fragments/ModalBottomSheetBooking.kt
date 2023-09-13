@@ -1,10 +1,8 @@
 package com.castellanoseloy.toonsconductor.fragments
 
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -32,6 +30,8 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     companion object {
         const val TAG = "ModalBottomSheetBooking"
     }
+
+    private lateinit var textViewTimeAndDistanceEntreCliente: TextView
     private lateinit var textViewSolicitudViaje:TextView
     private lateinit var textViewOrigin: TextView
     private lateinit var textViewDestination: TextView
@@ -62,6 +62,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         textViewOrigin = view.findViewById(R.id.textViewOrigin)
         textViewDestination = view.findViewById(R.id.textViewDestination)
         textViewTimeAndDistance = view.findViewById(R.id.textViewTimeAndDistance)
+        textViewTimeAndDistanceEntreCliente = view.findViewById(R.id.textViewTimeAndDistanceCliente)
         textView_tarifa = view.findViewById(R.id.textView_tarifa)
         textView_equipaje=view.findViewById(R.id.textView_equipaje)
         textView_pasajeros=view.findViewById(R.id.textView_pasajeros)
@@ -79,9 +80,13 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         textView_pasajeros.text=booking.pasajeros
         textView_equipaje.text=booking.equipaje
         textViewComentario.text=booking.comentario
-        textView_tarifa.text=booking?.price.toString().formatoMonenda()
+        textView_tarifa.text=booking?.tarifas?.totalComisionConductor.toString().formatoMonenda()
 
         textViewTimeAndDistance.text = "${String.format("%.1f", booking?.time)} Min - ${String.format("%.1f", booking?.km)} Km"
+
+        val distanciaEntreCliente=(activity as MapaActivity).distanceString.toString()
+        val tiempoEntreCliente=(activity as MapaActivity).timeString?.toString()
+        textViewTimeAndDistanceEntreCliente.text = "$tiempoEntreCliente Min - $distanciaEntreCliente Km"
 
         sonidos.crearTonoInformativo(requireContext())
 
@@ -133,7 +138,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     }
 
     fun ocultarModal(){
-
+        (activity as? MapaActivity)?.borrarRuta()
         val modalBooking = (activity as? MapaActivity)?.modalBooking
         if (modalBooking != null && modalBooking.isAdded) {
             modalBooking.dismiss()
@@ -178,6 +183,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
 
     private fun viajeRechazado() {
         Toast.makeText(activity, "No se pudo aceptar el viaje", Toast.LENGTH_LONG).show()
+        (activity as? MapaActivity)?.borrarRuta()
         (activity as? MapaActivity)?.listenerBooking()
         ocultarModal()
     }

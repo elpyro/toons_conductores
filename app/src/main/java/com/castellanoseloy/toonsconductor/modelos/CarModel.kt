@@ -1,6 +1,7 @@
 package com.castellanoseloy.toonsconductor.modelos
 
 import com.beust.klaxon.*
+import java.io.Serializable
 
 private val klaxon = Klaxon()
 
@@ -18,7 +19,7 @@ data class CarModel (
     val pasajeros: Int? = null,
     val malero:Boolean? =null
 
-) {
+):Serializable {
     public fun toJson() = klaxon.toJsonString(this)
 
     companion object {

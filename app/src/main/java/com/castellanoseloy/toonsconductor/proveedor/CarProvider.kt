@@ -41,7 +41,18 @@ class CarProvider {
 
 
     fun create(car: CarModel): Task<Void> {
-        return bd.document(car.id!!).set(car)
+        val carData: MutableMap<String, Any> = HashMap()
+        carData["id"] = car.id!!
+        carData["estado"] = car.estado!!
+        carData["idDriver"] = car.idDriver!!
+        carData["bland"] = car.bland!!
+        carData["tipo"] = car.tipo!!
+        carData["placa"] = car.placa!!
+        carData["color"] = car.color!!
+        carData["pasajeros"] = car.pasajeros!!
+        carData["malero"] = car.malero!!
+
+        return bd.document(car.id!!).update(carData)
     }
 
     fun uploadImage(id: String, nombreImagen: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
@@ -67,7 +78,7 @@ class CarProvider {
         return storageLateral?.downloadUrl!!
     }
     fun getStorageLicencia(): Task<Uri> {
-        return storageFotoFrontal?.downloadUrl!!
+        return storageDocumento?.downloadUrl!!
     }
 
     fun updateImagenFrontal(car: CarModel): Task<Void> {

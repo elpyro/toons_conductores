@@ -22,7 +22,8 @@ class CarListAdapter  (
 ) : RecyclerView.Adapter<CarListAdapter.CarViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(car: CarModel)
+        fun onSwitchClick(car: CarModel)
+        fun onCarItemClick(car: CarModel)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CarViewHolder {
@@ -72,12 +73,12 @@ class CarListAdapter  (
 
             cambiar.setOnClickListener {
                 // Llamar a la función onItemClick del listener cuando se presiona la imagen
-                itemClickListener.onItemClick(car)
+                itemClickListener.onSwitchClick(car)
             }
 
-            linearLayoutCar.setOnLongClickListener{
-
-                true
+            linearLayoutCar.setOnClickListener {
+                // Llamar a un método de la actividad CarList cuando se hace clic en linearLayoutCar
+                (itemView.context as? CarList)?.onCarItemClick(car)
             }
 
 

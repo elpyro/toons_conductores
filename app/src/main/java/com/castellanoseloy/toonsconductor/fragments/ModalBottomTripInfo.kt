@@ -1,30 +1,19 @@
 package com.castellanoseloy.toonsconductor.fragments
 
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.lifecycle.Observer
-import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.R
-import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
-import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
-import com.castellanoseloy.toonsconductor.activitys.utils.Sonidos
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
-import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
-import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.optic.uberclonedriverkotlin.models.Client
@@ -49,7 +38,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     var textViewOrigin: TextView? = null
     var textViewDestination: TextView? = null
     var textView_comision: TextView? = null
-    var textView_tarifa: TextView? = null
     var textView_total: TextView? = null
     var textViewReferidor: TextView? = null
     var textViewComentario: TextView? = null
@@ -65,8 +53,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
 
     val REQUEST_PHONE_CALL = 30
 
-    private val geoProvider = GeoProveedor()
-    private val authProvider = Autenticacion()
+
     private val clientProvider= ClienteProveedor()
 
 
@@ -81,7 +68,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textViewComentario=view.findViewById(R.id.textViewComentario)
         textViewReferidor=view.findViewById(R.id.textViewReferidor)
         textView_total=view.findViewById(R.id.textView_total)
-        textView_tarifa=view.findViewById(R.id.textView_tarifa)
         textView_comision= view.findViewById(R.id.textView_comision)
         textViewClientName = view.findViewById(R.id.textViewClientName)
         textViewOrigin = view.findViewById(R.id.textViewOrigin)
@@ -97,8 +83,8 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         val data = arguments?.getString("booking")
         booking = Booking.fromJson(data!!)!!
 
-        val comision = booking?.comision?.toDouble() ?: 0.0
-        val precio = booking?.price?.toDouble() ?: 0.0
+        val comision = booking?.tarifas?.totalComisionReferido?.toDouble() ?: 0.0
+        val precio = booking?.tarifas?.totalViaje?.toDouble() ?: 0.0
 
         textViewOrigin?.text = booking.origin
         textViewDestination?.text = booking.destination
@@ -109,9 +95,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textView_comision?.text = comision.toString().formatoMonenda()
         textView_total?.text = precio.toString().formatoMonenda()
 
-        val tarifa =  precio -  comision
-
-        textView_tarifa?.text = (tarifa).toString().formatoMonenda()
         textViewClientName?.text=booking.nombrePasajero
 
         getClientInfo()
@@ -121,20 +104,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         return view
     }
 
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<out String>,
-//        grantResults: IntArray
-//    ) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-//
-//        if (requestCode == REQUEST_PHONE_CALL) {
-//            if (booking?.telefonoPasajero != null) {
-//                call(booking?.telefonoPasajero !!)
-//            }
-//        }
-//
-//    }
 
     private fun getClientInfo() {
         clientProvider.getClientById(booking.idClient!!).addOnSuccessListener { document ->
@@ -159,7 +128,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                     }
                 }
 
-//                textViewUsername?.text = "${driver?.name} ${driver?.lastname}"
             }
         }
     }

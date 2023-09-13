@@ -30,9 +30,13 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="31">
         <activity
+            android:name=".activitys.configuracion.Configuracion"
+            android:parentActivityName=".activitys.mapActivity.MapaActivity"
+            android:exported="false" />
+        <activity
             android:name=".activitys.addCar.AddCar"
             android:exported="false"
-            android:parentActivityName=".activitys.carList.CarList"/>
+            android:parentActivityName=".activitys.carList.CarList" />
         <activity
             android:name=".activitys.carList.CarList"
             android:exported="false"

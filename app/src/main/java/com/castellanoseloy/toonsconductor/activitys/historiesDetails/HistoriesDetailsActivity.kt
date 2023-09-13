@@ -47,7 +47,7 @@ class HistoriesDetailActivity : AppCompatActivity() {
                 binding.textViewDestination.text = history?.destination
                 binding.textViewDate.text =
                     RelativeTime.getTimeAgo(history?.timestamp!!, this@HistoriesDetailActivity)
-                binding.textViewPrice.text = history.price.toString().formatoMonenda()
+                binding.textViewPrice.text = history.tarifas?.totalViaje.toString().formatoMonenda()
                 binding.textViewMyCalification.text = "${history?.calificationToDriver}    ${history?.commentClient}"
                 binding.textViewClientCalification.text = "${history?.calificationToClient}    ${history?.commentDriver}"
                 binding.textViewTimeAndDistance.text =

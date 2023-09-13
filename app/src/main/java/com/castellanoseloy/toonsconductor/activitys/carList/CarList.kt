@@ -90,7 +90,7 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
         startActivity(i)
     }
 
-    override fun onItemClick(car: CarModel) {
+    override fun onSwitchClick(car: CarModel) {
         val driverProvider=DriverProvider()
         driverProvider.updateCar(car.id!!)
             .addOnCompleteListener {
@@ -100,6 +100,13 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
                     adaptador.notifyDataSetChanged()
                 }
             }
+    }
+
+    override fun onCarItemClick(car: CarModel) {
+        //editar carro
+        val i = Intent(this@CarList, AddCar::class.java)
+        i.putExtra("carModelo", car)
+        startActivity(i)
     }
 
 }

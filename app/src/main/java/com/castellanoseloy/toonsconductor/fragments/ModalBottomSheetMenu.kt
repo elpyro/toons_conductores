@@ -9,6 +9,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
+import com.castellanoseloy.toonsconductor.activitys.configuracion.Configuracion
 import com.castellanoseloy.toonsconductor.activitys.historial.HistoriesActivity
 import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
@@ -25,6 +26,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
 
     val authProvider = Autenticacion()
 
+    private var linearLayoutConfinguracion: LinearLayout ? = null
     private var linearLayoutCar: LinearLayout ? = null
     private var textViewUsername: TextView? = null
     private var linearLayoutLogout: LinearLayout? = null
@@ -43,6 +45,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         linearLayoutProfile = view.findViewById(R.id.linearLayoutProfile)
         linearLayoutHistory = view.findViewById(R.id.linearLayoutHistory)
         linearLayoutCar = view.findViewById(R.id.linearLayoutCar)
+        linearLayoutConfinguracion = view.findViewById(R.id.linearLayoutConfiguracion)
 
         getDriver()
 
@@ -56,6 +59,13 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         linearLayoutProfile?.setOnClickListener { goToProfile() }
         linearLayoutHistory?.setOnClickListener { goToHistories() }
         linearLayoutCar?.setOnClickListener{goToCarList()}
+        linearLayoutConfinguracion?.setOnClickListener{ goToConfig()}
+
+    }
+
+    private fun goToConfig() {
+        val i = Intent(activity, Configuracion::class.java)
+        startActivity(i)
     }
 
     private fun goToProfile() {
@@ -74,7 +84,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     }
 
     private fun goToMain() {
-
         val i = Intent(activity, MainActivity::class.java)
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(i)
@@ -82,6 +91,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     }
 
     private fun getDriver() {
-                textViewUsername?.text = DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
+        textViewUsername?.text = DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
         }
 }

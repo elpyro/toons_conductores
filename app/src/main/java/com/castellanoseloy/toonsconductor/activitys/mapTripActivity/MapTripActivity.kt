@@ -231,7 +231,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             destinationLng = booking?.destinationLng,
             time = min,
             km = km,
-            price = booking?.price,
+            tarifas = booking?.tarifas,
             timestamp = Date().time
         )
         historyProvider.create(history)
@@ -450,7 +450,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     private fun goToCalificationClient() {
         val i = Intent(this, CalificationClientActivity::class.java)
-        i.putExtra("price", booking!!.price)
+        i.putExtra("price", booking!!.tarifas?.totalViaje)
         i.putExtra("origin", booking!!.origin)
         i.putExtra("destination", booking!!.destination)
         i.putExtra("time", time/60)

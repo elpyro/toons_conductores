@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
-
+       
         listeners()
     }
 
@@ -103,13 +103,15 @@ class MainActivity : AppCompatActivity() {
     private fun obtenerDatosCarro(){
 
         var carProvider=CarProvider()
-        carProvider.getCarById(DriverProvider.datosConductor?.vehiculo!!).addOnSuccessListener { document ->
-            if (document.exists()) {
-                val car = document.toObject(CarModel::class.java)
-                CarProvider.datosCarroEnUso = car
-                Log.d("Firestore", "Obteniendo datos del carro en uso")
-            }else{
-                Log.d("Firestore", "No se encontraron datos del carro en uso")
+        DriverProvider.datosConductor?.vehiculo?.let {
+            carProvider.getCarById(it).addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val car = document.toObject(CarModel::class.java)
+                    CarProvider.datosCarroEnUso = car
+                    Log.d("Firestore", "Obteniendo datos del carro en uso")
+                }else{
+                    Log.d("Firestore", "No se encontraron datos del carro en uso")
+                }
             }
         }
     }

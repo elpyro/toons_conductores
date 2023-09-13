@@ -11,14 +11,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.databinding.ActivityAddCarBinding
+import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.github.dhaval2404.imagepicker.ImagePicker
 import java.io.File
+import java.util.UUID
 
 
 class AddCar : AppCompatActivity() {
 
+    private lateinit var idCar: String
+    private lateinit var carModel: CarModel
     var colorSeleccionado= Color.BLACK
     private var Imagedocumento: File? =null
     private var fotoFrontal: File? =null
@@ -39,6 +43,17 @@ class AddCar : AppCompatActivity() {
 
         viewModel= AddCarViewModel()
 
+
+        if (intent.hasExtra("carModelo")) {
+            carModel = intent.getSerializableExtra("carModelo") as CarModel
+            idCar=carModel.id.toString()
+            colorSeleccionado=carModel.color!!
+            binding?.btnUpdate?.text = "Guardar"
+            viewModel.cargarDatos(carModel,binding, applicationContext)
+        }else{
+            idCar= UUID.randomUUID().toString()
+        }
+
         binding.imageViewCarColor.setColorFilter(colorSeleccionado)//color negro por defecto para el carro
 
         observador()
@@ -52,7 +67,6 @@ class AddCar : AppCompatActivity() {
         viewModel?.elementosActualizar?.observe(this, Observer { it ->
             if( it==0){
                 progressDialog!!.dismiss()
-                Utilidades.mostrarToast("Vehiculo creado",this)
                 finish()
             }
         })
@@ -73,11 +87,12 @@ class AddCar : AppCompatActivity() {
         binding.imageViewDocumentSOAT.setOnClickListener { selectDocument() }
         binding.imageViewCarColor.setOnClickListener{selectColor()}
         binding.btnUpdate.setOnClickListener{
-
-            val datosValidados= viewModel.validarDatos(binding,fotoFrontal,fotoLateral, Imagedocumento)
+            var editarDatos=false
+            if(carModel!=null)editarDatos=true
+            val datosValidados= viewModel.validarDatos(binding,fotoFrontal,fotoLateral, Imagedocumento,editarDatos)
             if(datosValidados){
                 prepararDialogProcess()
-                viewModel.salveData(binding, fotoFrontal,fotoLateral,Imagedocumento,colorSeleccionado)
+                viewModel.salveData(idCar,binding, fotoFrontal,fotoLateral,Imagedocumento,colorSeleccionado)
             }
 
         }

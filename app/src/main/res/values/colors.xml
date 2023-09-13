@@ -6,9 +6,10 @@
     <color name="blancoTransparente">#32FBFBFB</color>
     <color name="red">#FF1739</color>
     <color name="red_claro">#F398A5</color>
+    <color name="red_fondo">#BEB4B4</color>
     <color name="blue">#3665F4</color>
 
-    <color name="grey">#BFBFBF</color>
+    <color name="grey">#EDD2D2</color>
     <color name="grey_dark">#353535</color>
 
     <color name="starSelectedColor">#FFC107</color> <!-- Color de estrellas seleccionadas (amarillo en este ejemplo) -->
