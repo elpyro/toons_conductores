@@ -7,6 +7,7 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
@@ -33,6 +34,20 @@ class DriverProvider {
         return db.document(driver.id!!).set(driver)
     }
 
+    fun createToken(idDriver: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener {
+            if (it.isSuccessful) {
+                val token = it.result // TOKEN DE NOTIFICACIONES
+                updateToken(idDriver, token)
+            }
+        }
+    }
+
+    fun updateToken(idDriver: String, token: String): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["token"] = token
+        return db.document(idDriver).update(map)
+    }
 
     fun uploadImage(id: String, nombreImagen: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
         var fromFile = Uri.fromFile(file)

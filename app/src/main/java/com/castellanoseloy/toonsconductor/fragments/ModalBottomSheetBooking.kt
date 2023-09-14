@@ -24,6 +24,7 @@ import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
 class ModalBottomSheetBooking: BottomSheetDialogFragment() {
@@ -156,7 +157,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                         (activity as? MapaActivity)?.timer?.cancel()
                         if (it.isSuccessful) {
                             (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
-                            geoProvider.eliminarLocalizacion(authProvider.obtenerId())
+                            geoProvider.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
                             booking!!.status = "accept" // Crear el booking aceptado
 
                             booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso

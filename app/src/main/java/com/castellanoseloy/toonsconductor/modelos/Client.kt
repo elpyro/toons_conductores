@@ -13,7 +13,8 @@ data class Client (
     var imagenPerfil: String? = null,
     var imagenDocumento: String? = null,
     var areaTrabajo: String? = null,
-    val validacion: String? =null
+    val validacion: String? =null,
+    val token: String ? = null
 ) {
 
 

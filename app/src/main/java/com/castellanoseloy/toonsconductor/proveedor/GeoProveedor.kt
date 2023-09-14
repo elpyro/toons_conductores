@@ -26,7 +26,8 @@ class GeoProveedor {
        // Guardar el tiempo en la colección "Localizacion"
        val data = hashMapOf(
            "time" to tiempoDisponible,
-           "idConductor" to idConductor
+           "idConductor" to idConductor,
+           "ultima_conexion" to Date().time
        )
        localizacionTime.document(idConductor).set(data)
 

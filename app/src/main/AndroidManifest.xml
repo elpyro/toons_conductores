@@ -29,6 +29,13 @@
         android:theme="@style/Theme.ToonsConductor"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="31">
+
+        <receiver android:name=".receivers.AcceptReceiver"
+            android:enabled="true" />
+
+        <receiver android:name=".receivers.CancelReceiver"
+            android:enabled="true" />
+
         <activity
             android:name=".activitys.configuracion.Configuracion"
             android:parentActivityName=".activitys.mapActivity.MapaActivity"
@@ -72,10 +79,10 @@
         <activity
             android:name=".activitys.mainActivity.MainActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -83,6 +90,20 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyDGhEIcM1iNg5JJ-ZUevJ_4v8y57kDmakQ" />
+
+        <service
+            android:name=".services.MyFirebaseMessagingClient"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id" />
+
+
     </application>
 
 </manifest>

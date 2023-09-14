@@ -24,10 +24,14 @@ import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapTripBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomTripInfo
 import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.FCMBody
+import com.castellanoseloy.toonsconductor.modelos.FCMResponse
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
+import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
+import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -46,13 +50,18 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.models.History
 import com.optic.uberclonedriverkotlin.providers.HistoryProvider
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Date
 
 
 class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, DirectionUtil.DirectionCallBack {
 
+    private var client: Client? = null
     private var start: LatLng?=null
     private var markerDestination: Marker? =null
     private var isCloseToOrigin: Boolean = false
@@ -71,6 +80,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var bookingAceptedsProvider =BookingAceptedsProvider()
     private val historyProvider = HistoryProvider()
     private val modalTrip=ModalBottomTripInfo()
+    private val notificationProvider = NotificationProvider()
+    private val clientProvider = ClienteProveedor()
+
 
     private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
 
@@ -164,6 +176,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     medirDistacia()
                     dibujarRuta(originLatLng!!)
                     addOriginMarker(originLatLng!!)
+                    getClientInfo()
                 }
             }
 
@@ -368,6 +381,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                 crearIcono()
                 agregarMarca()
                 getBooking()
+
             }
 
             if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
@@ -408,7 +422,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                         markerOrigin?.remove()
                         addDestinationMarker()
                         startTimer()
-//                        sendNotification("Viaje iniciado")
+
+                        sendNotification("Viaje iniciado")
                     }
                     showButtonFinish()
                 }else{
@@ -440,7 +455,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "finished").addOnCompleteListener {
 
             if (it.isSuccessful) {
-//                sendNotification("Viaje terminado")
+                sendNotification("Viaje terminado")
                 goToCalificationClient()
                 createHistory()
             }
@@ -536,6 +551,52 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
         distance = originLocation.distanceTo(destinationLocation)
         return distance
+    }
+
+
+    private fun getClientInfo() {
+        clientProvider.getClientById(booking?.idClient!!).addOnSuccessListener { document ->
+            if (document.exists()) {
+                client = document.toObject(Client::class.java)
+            }
+        }
+    }
+
+    private fun sendNotification(status: String) {
+
+        val map = HashMap<String, String>()
+        map.put("title", "ESTADO DEL VIAJE")
+        map.put("body", status)
+
+        val body = FCMBody(
+            to = client?.token!!,
+            priority = "high",
+            ttl = "4500s",
+            data = map
+        )
+
+        notificationProvider.sendNotification(body).enqueue(object: Callback<FCMResponse> {
+            override fun onResponse(call: Call<FCMResponse>, response: Response<FCMResponse>) {
+                if (response.body() != null) {
+
+                    if (response.body()!!.success == 1) {
+                        Toast.makeText(this@MapTripActivity, "Se envio la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()
+                    }
+                    else {
+                        Toast.makeText(this@MapTripActivity, "No se pudo enviar la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()
+                    }
+
+                }
+                else {
+                    Toast.makeText(this@MapTripActivity, "hubo un error enviando la notificacion", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onFailure(call: Call<FCMResponse>, t: Throwable) {
+                Log.d("NOTIFICATION", "ERROR: ${t.message}")
+            }
+
+        })
     }
 
 }

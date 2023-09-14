@@ -84,7 +84,10 @@ class MainActivity : AppCompatActivity() {
     private fun obtenerDatosConductor(){
         val idConductor=autenticacion.obtenerId()
 
+
+
         var driverProvideer=DriverProvider()
+        driverProvideer.createToken(idConductor)
         driverProvideer.getDriver(idConductor!!).addOnSuccessListener { document ->
             if (document.exists()) {
                 val driver = document.toObject(ConductorModelo::class.java)

@@ -110,7 +110,9 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             }
             try{
                 modalMostrado=false
+                borrarRuta()
                 modalBooking.dismiss()
+
             }catch (e: Exception){
                 Log.d("FIRESTORE", "booking actualizado a cancelado")
             }
@@ -130,7 +132,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
        // window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
-
+        idConductor=DriverProvider.datosConductor?.id!!
         //cargar mapa del fragmento
         val fragmentManager = supportFragmentManager
         val mapaFragment= fragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
@@ -172,8 +174,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
             modalMostrado = true // Marcar el modal como mostrado
 
-            modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
-            timer.start()
+            try {
+                modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
+                timer.start()
+            }catch (e: Exception){ timer.cancel() }
+
         }
     }
 
@@ -218,7 +223,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun salvarLocalizacion(){
         if(ubicacionLatLong!=null){
-            geoProveedor.guardarLocalizacion(autenticacion.obtenerId(),ubicacionLatLong!!, tiempoActivo!!)
+            geoProveedor.guardarLocalizacion(idConductor!!,ubicacionLatLong!!, tiempoActivo!!)
         }
     }
 
@@ -404,8 +409,9 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     override fun onDestroy() {
         super.onDestroy()
+        geoProveedor.eliminarLocalizacion(idConductor!!)
+
         if(easyWayLocation!=null)  easyWayLocation!!.endUpdates()
-        disconnectDriver()
         Log.d("FIRESTORE", "Booking listenener detenido")
         bookingQuery?.removeEventListener(bookingListener!!)
     }
