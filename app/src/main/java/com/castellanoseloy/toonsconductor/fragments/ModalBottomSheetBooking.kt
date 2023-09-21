@@ -23,6 +23,8 @@ import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
+import com.castellanoseloy.toonsconductor.services.LocationService
+import com.castellanoseloy.toonsconductor.utils.RelativeTime.stopService
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
@@ -156,6 +158,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                     bookingProvider.updateStatus(idClient, "accept").addOnCompleteListener {
                         (activity as? MapaActivity)?.timer?.cancel()
                         if (it.isSuccessful) {
+                            (activity as? MapaActivity)?.detenerServico()
                             (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
                             geoProvider.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
                             booking!!.status = "accept" // Crear el booking aceptado
@@ -180,6 +183,8 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
             }
         }
     }
+
+
 
 
     private fun viajeRechazado() {

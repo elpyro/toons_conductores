@@ -1,6 +1,7 @@
 package com.castellanoseloy.toonsconductor.activitys.mapTripActivity
 
 import android.Manifest
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -32,6 +33,7 @@ import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
+import com.castellanoseloy.toonsconductor.services.LocationService
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -52,6 +54,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.models.History
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import com.optic.uberclonedriverkotlin.providers.HistoryProvider
 import retrofit2.Call
 import retrofit2.Callback
@@ -142,12 +145,16 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         binding= ActivityMapTripBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        detenerServico()
+
         viewModel = ViewModelProvider(this).get(MapTripActivityViewModel::class.java)
 
         //cargar mapa del fragmento
         val fragmentManager = supportFragmentManager
         val mapaFragment= fragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapaFragment.getMapAsync(this)
+
+        progressDialog.show()
 
         ubicacionPorDefecto()
 
@@ -177,6 +184,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     dibujarRuta(originLatLng!!)
                     addOriginMarker(originLatLng!!)
                     getClientInfo()
+                    progressDialog.dismiss()
                 }
             }
 
@@ -275,7 +283,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     private fun salvarLocalizacion(){
         if(ubicacionLatLong!=null){
-            geoProveedor.guardarLocalizacionTrabajando(autenticacion.obtenerId(),ubicacionLatLong!!)
+            geoProveedor.guardarLocalizacionTrabajando(DriverProvider.datosConductor?.id!!,ubicacionLatLong!!)
         }
     }
     private fun ubicacionPorDefecto() {
@@ -330,11 +338,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     override fun onMapReady(mapa: GoogleMap) {
         googleMaps=mapa
 
-        googleMaps?.isMyLocationEnabled=true
-        googleMaps?.uiSettings?.isZoomControlsEnabled=true
-        // Habilitar el botón de "My Location" (ubicación actual)
-        googleMaps?.uiSettings?.isMyLocationButtonEnabled = true
-
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -345,6 +348,12 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         ) {
             return
         }
+
+        googleMaps?.isMyLocationEnabled=true
+        googleMaps?.uiSettings?.isZoomControlsEnabled=true
+        // Habilitar el botón de "My Location" (ubicación actual)
+        googleMaps?.uiSettings?.isMyLocationButtonEnabled = true
+
     }
 
     override fun locationOn() {
@@ -354,6 +363,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     //ACTUALIZACION DE LA UBICACION EN TIEMPO REAL
 
     override fun currentLocation(location: Location) {
+
         if (ubicacionLatLong!=null) {
             start=ubicacionLatLong
         }
@@ -447,7 +457,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         handler.removeCallbacks(runnable) // DETENER CONTADOR
         isStartedTrip = false
         easyWayLocation?.endUpdates()
-        geoProveedor.eliminarLocalizacionTrabajo(autenticacion.obtenerId())
+        geoProveedor.eliminarLocalizacionTrabajo(DriverProvider.datosConductor?.id!!)
         if (min == 0) {
             min = 1
         }
@@ -474,8 +484,17 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(i)
 
-        bookingAceptedsProvider.deleteBookingsForDriver(autenticacion.obtenerId())
+        bookingAceptedsProvider.deleteBookingsForDriver(DriverProvider.datosConductor?.id!!)
     }
+
+    val progressDialog: ProgressDialog by lazy {
+        ProgressDialog(this).apply {
+            setMessage("Conectando Conductor...")
+            setCancelable(false)
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        }
+    }
+
     private fun crearIcono() {
         // Crear el BitmapDescriptor una sola vez
         val imagenDrawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_carro_48)
@@ -504,12 +523,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
         distance = distance / 1000 // KM
         time = time / 60 // MIN
-
-        val timeString = String.format("%.2f", time)
-        val distanceString = String.format("%.2f", distance)
-
-//        getPrices(distance, time)
-      //  binding.textViewTimeAndDistance.text = "$timeString mins - $distanceString km"
 
         //dibujar ruta
         directionUtil.drawPath(WAY_POINT_TAG)
@@ -562,6 +575,10 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         }
     }
 
+    fun detenerServico() {
+        val serviceIntent = Intent(this, LocationService::class.java)
+        stopService(serviceIntent)
+    }
     private fun sendNotification(status: String) {
 
         val map = HashMap<String, String>()
@@ -580,7 +597,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                 if (response.body() != null) {
 
                     if (response.body()!!.success == 1) {
-                        Toast.makeText(this@MapTripActivity, "Se envio la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@MapTripActivity, "Se envio la notificacion a: "+client?.nombre+" "+client?.apellido!!, Toast.LENGTH_LONG).show()
                     }
                     else {
                         Toast.makeText(this@MapTripActivity, "No se pudo enviar la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()

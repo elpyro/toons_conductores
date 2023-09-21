@@ -1,8 +1,10 @@
 package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import android.Manifest
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
@@ -18,14 +20,16 @@ import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
+import com.castellanoseloy.toonsconductor.activitys.utils.DistanciaAreopuerto
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetMenu
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
-import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import kotlin.math.*
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
+import com.castellanoseloy.toonsconductor.services.LocationService
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -38,9 +42,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.Query
@@ -51,14 +57,16 @@ import java.util.Date
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,DirectionUtil.DirectionCallBack {
 
-
+    companion object{
+        var tiempoActivo: Long? =null
+    }
     var distanceString: String? =null
     var timeString: String? = null
     var modalMostrado: Boolean=false
     private var bookingQuery: Query? =null
     private var bookingListener: ValueEventListener? =null
     private var booking: Booking? =null
-    private var tiempoActivo: Long? =null
+
     private var idConductor: String? = null
     private var start: LatLng? =null
 
@@ -70,10 +78,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     private  var ubicacionLatLong:LatLng? = null
     private var iconoMarca: BitmapDescriptor? = null
     private var geoProveedor= GeoProveedor()
-    private var autenticacion=Autenticacion ()
+    private var distanciaAreopuerto=DistanciaAreopuerto()
     private var bookingProvider=BookingProvider()
     private val modalMenu = ModalBottomSheetMenu()
     var currentTimerValue: Long ? =null
+    private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
 
     //dibujar ruta
     private var wayPoints: ArrayList<LatLng> = ArrayList()
@@ -116,8 +125,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             }catch (e: Exception){
                 Log.d("FIRESTORE", "booking actualizado a cancelado")
             }
-
-
         }
 
     }
@@ -127,9 +134,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         binding= ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        //COLOCAR LA BARRA SUPERIOR TRANSAPENTE
-       // window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
         idConductor=DriverProvider.datosConductor?.id!!
@@ -142,7 +146,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         permisoLocalizacion.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION
         ))
 
         //si el conductor es nuevo enviar a pantalla de perfil
@@ -152,6 +157,26 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
          listeners()
     }
 
+
+
+    // Función para calcular la distancia entre dos puntos geográficos
+    private fun calculateDistance(
+        startLat: Double, startLng: Double,
+        endLat: Double, endLng: Double
+    ): Double {
+        val earthRadius = 6371 // Radio de la Tierra en kilómetros
+
+        val dLat = Math.toRadians(endLat - startLat)
+        val dLng = Math.toRadians(endLng - startLng)
+
+        val a = sin(dLat / 2) * sin(dLat / 2) +
+                cos(Math.toRadians(startLat)) * cos(Math.toRadians(endLat)) *
+                sin(dLng / 2) * sin(dLng / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return earthRadius * c
+    }
+
     private fun goToProfile() {
         val i = Intent(this, ProfileActivity::class.java)
         startActivity(i)
@@ -159,7 +184,10 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun showModalBooking(booking: Booking) {
 
+        Log.d("Firestore", "Modal mostrado= $modalMostrado para  ${booking}  ")
+
         if (!modalMostrado) {
+            progressDialog.dismiss()
             val ubicacionCliente= LatLng(booking?.originLat!!, booking?.originLng!!)
             addClientMarker(ubicacionCliente)
             Log.d("Firestore", "Ubicacion Actual: $ubicacionLatLong")
@@ -183,12 +211,21 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
     private fun listeners() {
-        listenerBooking()
+
         binding.btnConnect.setOnClickListener { connectDriver() }
         binding.btnDisconnect.setOnClickListener { disconnectDriver() }
         binding.imageViewMenu.setOnClickListener{ showModalMenu() }
     }
 
+    fun detenerServico() {
+        val serviceIntent = Intent(this, LocationService::class.java)
+        stopService(serviceIntent)
+    }
+    override fun onResume() {
+        super.onResume()
+        modalMostrado=false
+        listenerBooking()
+    }
     private fun showModalMenu() {
         // Verifica si el menú modal ya está agregado al FragmentManager
         val existingMenuFragment = supportFragmentManager.findFragmentByTag(ModalBottomSheetMenu.TAG)
@@ -199,26 +236,36 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         }
     }
 
-    var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            when{
-                permiso.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false)->{
-                    Log.d("Pemisos","Permiso gps concedido")
+    val permisoLocalizacion = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permiso ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            when {
+                permiso.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                    Log.d("Permisos", "Permiso GPS concedido")
+                    progressDialog.show()
                     easyWayLocation!!.startLocation()
                     verificarConductorConectado()
                 }
-                permiso.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false)->{
-                    Log.d("Pemisos","Permiso gps concedido con limitacion")
+                permiso.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                    Log.d("Permisos", "Permiso GPS concedido con limitación")
+                    progressDialog.show()
                     easyWayLocation!!.startLocation()
                     verificarConductorConectado()
                 }
-                else->{
-                    Log.d("Pemisos","Permiso gps NO concedidos")
+                permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false) -> {
+                    Log.d("Permisos", "Permiso de ubicación en segundo plano concedido")
+                    progressDialog.show()
+                    easyWayLocation!!.startLocation()
+                    verificarConductorConectado()
                 }
-
+                else -> {
+                    Log.d("Permisos", "Permisos de ubicación NO concedidos")
+                    val rootView = findViewById<View>(android.R.id.content) // Puedes obtener la vista raíz de la actividad o el diseño
+                    Snackbar.make(rootView, "Requiere todos los permisos de ubicacion", Snackbar.LENGTH_LONG).show()
+                }
             }
         }
     }
+
 
 
     private fun salvarLocalizacion(){
@@ -226,6 +273,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             geoProveedor.guardarLocalizacion(idConductor!!,ubicacionLatLong!!, tiempoActivo!!)
         }
     }
+
+
 
     private fun ubicacionPorDefecto() {
         val respuestaLocalizacion= LocationRequest.create().apply {
@@ -247,7 +296,16 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
            if(idConductor!=null) geoProveedor.eliminarLocalizacion(idConductor!!)
         }
     }
+
+    val progressDialog: ProgressDialog by lazy {
+        ProgressDialog(this).apply {
+            setMessage("Conectando Conductor...")
+            setCancelable(false)
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        }
+    }
     private fun connectDriver() {
+        progressDialog.show()
         easyWayLocation?.endUpdates() // OTROS HILOS DE EJECUCION
         easyWayLocation?.startLocation()
         showButtonDisconnect()
@@ -292,14 +350,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
      googleMaps?.addMarker(MarkerOptions().position(clientLatLng!!).title("Mi posicion")
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_location_red)))
     }
+
+
     override fun onMapReady(mapa: GoogleMap) {
+
         googleMaps=mapa
-
-        googleMaps?.isMyLocationEnabled=true
-        googleMaps?.uiSettings?.isZoomControlsEnabled=true
-        // Habilitar el botón de "My Location" (ubicación actual)
-        googleMaps?.uiSettings?.isMyLocationButtonEnabled = true
-
 
         if (ActivityCompat.checkSelfPermission(
                 this,
@@ -311,15 +366,31 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         ) {
             return
         }
+
+        googleMaps?.isMyLocationEnabled=true
+        googleMaps?.uiSettings?.isZoomControlsEnabled=true
+        // Habilitar el botón de "My Location" (ubicación actual)
+        googleMaps?.uiSettings?.isMyLocationButtonEnabled = true
+
+        val circleOptions = CircleOptions()
+            .center(LatLng(distanciaAreopuerto.aeropuertoLat, distanciaAreopuerto.aeropuertoLng)) // Ubicación del centro del círculo (aeropuerto)
+            .radius(distanciaAreopuerto.maxDistanceKm*1000) // Radio en metros
+            .strokeWidth(2f) // Ancho de la línea del borde del círculo
+            .strokeColor(Color.GREEN) // Color del borde del círculo
+            .fillColor(Color.argb(25, 0, 255, 0)) // Color del relleno del círculo (con transparencia)
+
+        // Agregar el círculo al mapa
+        googleMaps?.addCircle(circleOptions)
+
     }
 
     override fun locationOn() {
 
     }
 
-    //ACTUALIZACION DE LA UBICACION EN TIEMPO REAL
-    private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
+
     override fun currentLocation(location: Location) {
+        progressDialog.dismiss()
             if (ubicacionLatLong!=null) {
                  start=ubicacionLatLong
             }
@@ -340,6 +411,24 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
                 CarMoveAnim.carAnim(marcaConductor!!, start!!, ubicacionLatLong!!)
             }
             salvarLocalizacion()
+
+        // Calcular la distancia entre la ubicación actual y el aeropuerto
+        val distanciaAlAeropuerto = calculateDistance(
+            ubicacionLatLong?.latitude ?: 0.0,
+            ubicacionLatLong?.longitude ?: 0.0,
+            distanciaAreopuerto.aeropuertoLat,
+            distanciaAreopuerto. aeropuertoLng
+        )
+
+        Log.d("Firestore", "Distancia del arepuerto $distanciaAlAeropuerto")
+        // Verificar si la distancia es mayor que la distancia máxima permitida
+        val distanciaAreopuerto=distanciaAreopuerto.adentroArepouerto(location)
+        if (!distanciaAreopuerto) {
+            // Si la distancia es mayor, desconectar al conductor
+            val rootView = findViewById<View>(android.R.id.content) // Puedes obtener la vista raíz de la actividad o el diseño
+            Snackbar.make(rootView, "Estas fuera del area de trabajo", Snackbar.LENGTH_LONG).show()
+            disconnectDriver()
+        }
     }
 
     private fun crearIcono() {
@@ -349,7 +438,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
     private fun verificarConductorConectado(){
-        geoProveedor.obtenerLocalizacion(autenticacion.obtenerId(),this@MapaActivity)
+        geoProveedor.obtenerLocalizacion(DriverProvider.datosConductor?.id!!,this@MapaActivity)
             .addOnSuccessListener { documento->
                 if(documento.exists()){
                     if(documento.contains("l")){
@@ -397,14 +486,12 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
                 ErroresFirebase.imprimirError(error.toException(), this@MapaActivity)
             }
         })
-
-
     }
 
     override fun onPause() {
         super.onPause()
-//        if(easyWayLocation!=null) easyWayLocation!!.endUpdates()
-//        disconnectDriver()
+        val serviceIntent = Intent(this, LocationService::class.java)
+        startService(serviceIntent)
     }
 
     override fun onDestroy() {
