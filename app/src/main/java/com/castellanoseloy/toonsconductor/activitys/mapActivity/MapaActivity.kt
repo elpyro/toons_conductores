@@ -1,6 +1,7 @@
 package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import android.Manifest
+import android.app.ActivityManager
 import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
@@ -53,13 +55,21 @@ import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.util.Date
+import android.content.Context
+import android.content.res.Resources
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.android.gms.maps.model.MapStyleOptions
 
 
 class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,DirectionUtil.DirectionCallBack {
 
     companion object{
         var tiempoActivo: Long? =null
+
     }
+
+    private lateinit var serviceIntent: Intent
+    var viajeAceptado: Boolean =false
     var distanceString: String? =null
     var timeString: String? = null
     var modalMostrado: Boolean=false
@@ -137,12 +147,15 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
         idConductor=DriverProvider.datosConductor?.id!!
+
         //cargar mapa del fragmento
         val fragmentManager = supportFragmentManager
         val mapaFragment= fragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
         mapaFragment.getMapAsync(this)
 
         ubicacionPorDefecto()
+
+        serviceIntent = Intent(this, LocationService::class.java)
 
         permisoLocalizacion.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -218,12 +231,28 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
     fun detenerServico() {
-        val serviceIntent = Intent(this, LocationService::class.java)
         stopService(serviceIntent)
+
+        Log.d("Localizacion", "El servicio fue detenido")
+        if (!isServiceRunning(LocationService::class.java)) {
+            Log.d("Localizacion", "No esta funcionando el servicio ")
+        }
     }
+
+    private fun isServiceRunning(serviceClass: Class<*>): Boolean {
+        val manager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.name == service.service.className) {
+                return true
+            }
+        }
+        return false
+    }
+
     override fun onResume() {
         super.onResume()
         modalMostrado=false
+        detenerServico()
         listenerBooking()
     }
     private fun showModalMenu() {
@@ -287,6 +316,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
      fun disconnectDriver() {
+         detenerServico()
         easyWayLocation?.endUpdates()
         if (ubicacionLatLong != null) {
             showButtonConnect()
@@ -300,7 +330,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     val progressDialog: ProgressDialog by lazy {
         ProgressDialog(this).apply {
             setMessage("Conectando Conductor...")
-            setCancelable(false)
+            setCancelable(true)
             setProgressStyle(ProgressDialog.STYLE_SPINNER)
         }
     }
@@ -351,6 +381,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_location_red)))
     }
 
+    val latitudBogota = 4.6097100
+    val longitudBogota = -74.0817500
 
     override fun onMapReady(mapa: GoogleMap) {
 
@@ -367,6 +399,24 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             return
         }
 
+        try {
+            val success = googleMaps?.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(this, R.raw.styles)
+            )
+            if (!success!!) {
+                Log.d("MAPAS", "No se pudo encontrar el estilo")
+            }
+
+        } catch (e: Resources.NotFoundException) {
+            Log.d("MAPAS", "Error: ${e.toString()}")
+        }
+
+        CameraPosition.builder()
+            .target(LatLng(latitudBogota, longitudBogota))  // Establece las coordenadas de Bogotá como destino
+            .zoom(17f)  // Nivel de zoom deseado
+            .build()
+
+
         googleMaps?.isMyLocationEnabled=true
         googleMaps?.uiSettings?.isZoomControlsEnabled=true
         // Habilitar el botón de "My Location" (ubicación actual)
@@ -381,6 +431,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         // Agregar el círculo al mapa
         googleMaps?.addCircle(circleOptions)
+
+
 
     }
 
@@ -490,8 +542,14 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     override fun onPause() {
         super.onPause()
-        val serviceIntent = Intent(this, LocationService::class.java)
-        startService(serviceIntent)
+
+        if(binding.btnDisconnect.isVisible){
+            if(!viajeAceptado){
+                Log.d("Localizacion", "Se ha iniciado el servicio de LocalizatioService")
+
+                startService(serviceIntent)
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -500,6 +558,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         if(easyWayLocation!=null)  easyWayLocation!!.endUpdates()
         Log.d("FIRESTORE", "Booking listenener detenido")
+
         bookingQuery?.removeEventListener(bookingListener!!)
     }
 

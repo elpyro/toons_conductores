@@ -1,5 +1,6 @@
 package com.castellanoseloy.toonsconductor.activitys.mainActivity
 
+import android.app.ProgressDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -7,6 +8,7 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
@@ -59,6 +61,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    val progressDialog: ProgressDialog by lazy {
+        ProgressDialog(this).apply {
+            setMessage("Verificando Cuenta...")
+            setCancelable(false)
+            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+        }
+    }
     private fun iniciarSesion() {
         val datosValidos=viewModel!!.validarDatos(binding)
 
@@ -66,6 +75,7 @@ class MainActivity : AppCompatActivity() {
             autenticacion.login(binding.editTextCorreo.text.toString(),binding.editTextContrasena.text.toString())
                 .addOnCompleteListener {
                     if (it.isSuccessful){
+//                        progressDialog.show()
                         obtenerDatosConductor()
                     }else{
                         ErroresFirebase.imprimirError(it.exception,this@MainActivity)
@@ -77,6 +87,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun registrar() {
+//        progressDialog.show()
         val intent = Intent(this@MainActivity, RegistroUsuarioActivity::class.java)
         startActivity(intent)
     }
@@ -84,21 +95,19 @@ class MainActivity : AppCompatActivity() {
     private fun obtenerDatosConductor(){
         val idConductor=autenticacion.obtenerId()
 
-
-
         var driverProvideer=DriverProvider()
         driverProvideer.createToken(idConductor)
         driverProvideer.getDriver(idConductor!!).addOnSuccessListener { document ->
             if (document.exists()) {
                 val driver = document.toObject(ConductorModelo::class.java)
                 DriverProvider.datosConductor = driver
-
                 Log.d("Firestore", "Obteniendo datos del conductor ${driver?.validacion}")
-
                 verificarViajesPendientes()
                 obtenerDatosCarro()
             }else{
                 Log.d("Firestore", "No se encontraron datos del conductor")
+                Utilidades.mostrarToast("No se encontraron datos del conductor",this)
+                progressDialog.dismiss()
             }
         }
     }
@@ -126,6 +135,7 @@ class MainActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 if(snapshot.exists()){
+                    progressDialog.dismiss()
                     crearAlertaDeViajePendiente()
                 }else{
                     abrirMapaInicio()
@@ -179,6 +189,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStart() {
+
         if(autenticacion.sesionExistente()) obtenerDatosConductor()
         super.onStart()
     }

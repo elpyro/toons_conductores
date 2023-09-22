@@ -21,6 +21,7 @@ class DriverProvider {
 
     companion object {
         var datosConductor: ConductorModelo ? =null
+
     }
 
 

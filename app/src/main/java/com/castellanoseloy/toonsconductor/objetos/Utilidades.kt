@@ -181,7 +181,7 @@ object Utilidades {
         formatoMoneda.maximumFractionDigits = 2
         val valorDouble = this.toDoubleOrNull()
             ?: return this // Retorna el string original si no se puede convertir a double
-        return formatoMoneda.format(valorDouble)
+        return formatoMoneda.format(valorDouble)+"$"
     }
 
     fun mostrarToast( message: String, context: Context) {

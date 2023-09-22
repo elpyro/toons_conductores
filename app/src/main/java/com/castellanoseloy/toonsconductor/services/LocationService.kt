@@ -85,7 +85,14 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-    //    removeLocationUpdates()
+        removeLocationUpdates()
+        handler.removeCallbacksAndMessages(null)
+
+        geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
+        Log.d("Localizacion", "Conductor desconectado por onDestroy")
+
+        // Detén el servicio
+        stopSelf()
     }
 
     private fun createNotification(): Notification {
@@ -149,11 +156,17 @@ class LocationService : Service() {
         super.onTaskRemoved(rootIntent)
         Log.d("LocalizacionServicio", "La aplicación se ha cerrado inesperadamente o en segundo plano")
 
+        // Cancela las actualizaciones programadas
+        handler.removeCallbacksAndMessages(null)
+
         geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
         Log.d("Localizacion", "Conductor desconectado por cierre inesperado")
-        handler.removeCallbacksAndMessages(null)
+
+        // Detén el servicio
         stopSelf()
     }
+
+
 
 
     private fun removeLocationUpdates() {
@@ -163,7 +176,6 @@ class LocationService : Service() {
     private fun handleNewLocation(location: Location) {
         // Coloca aquí tu código de currentLocation y sus funciones anidadas
         // ...
-        Log.d("Localizacion", "la actual localización es $location")
         val distanciaAreopuerto=DistanciaAreopuerto()
         val dentroAreopuerto=distanciaAreopuerto.adentroArepouerto(location)
         Log.d("Localizacion", "Fuera del rango de trabajo: $dentroAreopuerto")
@@ -177,8 +189,12 @@ class LocationService : Service() {
         }else{
             val ubicacion=convertLocationToLatLng(location)
             val tiempoActivo = MapaActivity.tiempoActivo
-            geoProveedor.guardarLocalizacion(DriverProvider.datosConductor?.id!!,ubicacion!!, tiempoActivo!!)
-            Log.d("Localizacion", "Ubicacion del conductor actualizada")
+
+
+                geoProveedor.guardarLocalizacion(DriverProvider.datosConductor?.id!!,ubicacion!!, tiempoActivo!!)
+                Log.d("Localizacion", "Ubicacion del conductor  actualizada en segundo plano")
+
+
         }
     }
 

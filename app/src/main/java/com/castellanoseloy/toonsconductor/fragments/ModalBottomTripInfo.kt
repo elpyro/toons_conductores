@@ -21,7 +21,9 @@ import de.hdodenhof.circleimageview.CircleImageView
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.widget.LinearLayout
 import com.bumptech.glide.Glide
+import com.castellanoseloy.toonsconductor.promts.MostrarTarifas
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 
 
@@ -43,6 +45,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     var textViewComentario: TextView? = null
     var textView_pasajeros: TextView? = null
     var textView_equipaje: TextView? = null
+    var linearLayout_detalleCobro:LinearLayout? =null
 
 
 
@@ -67,12 +70,13 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textView_pasajeros=view.findViewById(R.id.textView_pasajeros)
         textViewComentario=view.findViewById(R.id.textViewComentario)
         textViewReferidor=view.findViewById(R.id.textViewReferidor)
+
         textView_total=view.findViewById(R.id.textView_total)
         textView_comision= view.findViewById(R.id.textView_comision)
         textViewClientName = view.findViewById(R.id.textViewClientName)
         textViewOrigin = view.findViewById(R.id.textViewOrigin)
         textViewDestination = view.findViewById(R.id.textViewDestination)
-
+        linearLayout_detalleCobro= view.findViewById(R.id.linearLayout_detalleCobro)
         imageViewPhoneReferidor = view.findViewById(R.id.imageViewPhoneReferidor)
         imageViewPhone = view.findViewById(R.id.imageViewPhone)
 
@@ -155,6 +159,10 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
 
     private fun listeners() {
 
+        linearLayout_detalleCobro?.setOnClickListener{
+            var mostrarTarifas= MostrarTarifas()
+            mostrarTarifas.mostrarTarifas(requireContext(), booking?.tarifas!!)
+        }
         imageViewPhone?.setOnClickListener {
             if (booking?.telefonoPasajero != null) {
                 verificarPermisos(booking?.telefonoPasajero!!)

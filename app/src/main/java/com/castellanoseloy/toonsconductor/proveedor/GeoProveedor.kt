@@ -35,25 +35,7 @@ class GeoProveedor {
 
    }
 
-    fun guardarLocalizacionConFecha(idConductor: String, localizacion: LatLng) {
-        val currentTimestamp = Timestamp.now()
 
-        val localizacionData = hashMapOf(
-            "latitude" to localizacion.latitude,
-            "longitude" to localizacion.longitude,
-            "timestamp" to currentTimestamp
-        )
-
-        val docRef = localizacionTime.document(idConductor)
-        docRef
-            .set(localizacionData)
-            .addOnSuccessListener {
-                Log.d("FIRESTORE", "Localización con fecha guardada exitosamente")
-            }
-            .addOnFailureListener { exception ->
-                Log.d("FIRESTORE", "Error al guardar la localización con fecha: ${exception.message}")
-            }
-    }
 
     fun guardarLocalizacionTrabajando(idConductor:String,localizacion:LatLng){
         geoLocalizacionTrabajo.setLocation(idConductor, GeoPoint(localizacion.latitude,localizacion.longitude))

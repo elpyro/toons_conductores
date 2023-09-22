@@ -71,6 +71,7 @@
             android:parentActivityName=".activitys.mapActivity.MapaActivity" />
         <activity
             android:name=".activitys.calificationClientActivity.CalificationClientActivity"
+            android:screenOrientation="portrait"
             android:exported="false" />
         <activity
             android:name=".activitys.mapTripActivity.MapTripActivity"
@@ -120,6 +121,9 @@
             android:name=".services.LocationService"
             android:enabled="true"
             android:exported="false">
+            <intent-filter>
+                <action android:name="com.castellanoseloy.toonsconductor" />
+            </intent-filter>
         </service>
 
     </application>

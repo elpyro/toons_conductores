@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.location.Location
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -47,6 +48,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.DataSnapshot
@@ -184,6 +186,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     dibujarRuta(originLatLng!!)
                     addOriginMarker(originLatLng!!)
                     getClientInfo()
+
                     progressDialog.dismiss()
                 }
             }
@@ -349,6 +352,18 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             return
         }
 
+        try {
+            val success = googleMaps?.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(this, R.raw.styles)
+            )
+            if (!success!!) {
+                Log.d("MAPAS", "No se pudo encontrar el estilo")
+            }
+
+        } catch (e: Resources.NotFoundException) {
+            Log.d("MAPAS", "Error: ${e.toString()}")
+        }
+
         googleMaps?.isMyLocationEnabled=true
         googleMaps?.uiSettings?.isZoomControlsEnabled=true
         // Habilitar el botón de "My Location" (ubicación actual)
@@ -416,7 +431,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private fun updateToStarted() {
 
 
-        if (isCloseToOrigin) {
 
             bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "started").addOnCompleteListener {
                 if (it.isSuccessful) {
@@ -442,10 +456,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     getBooking()
                 }
             }
-        }
-        else {
-            Toast.makeText(this, "Debes estar mas cerca a la posicion de recogida", Toast.LENGTH_LONG).show()
-        }
+
     }
 
     private fun mostrarBotonesDeNavegacion() {
@@ -571,6 +582,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         clientProvider.getClientById(booking?.idClient!!).addOnSuccessListener { document ->
             if (document.exists()) {
                 client = document.toObject(Client::class.java)
+                sendNotification("Un conductor ha aceptado el viaje")
             }
         }
     }

@@ -34,6 +34,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         const val TAG = "ModalBottomSheetBooking"
     }
 
+
     private lateinit var textViewTimeAndDistanceEntreCliente: TextView
     private lateinit var textViewSolicitudViaje:TextView
     private lateinit var textViewOrigin: TextView
@@ -158,6 +159,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                     bookingProvider.updateStatus(idClient, "accept").addOnCompleteListener {
                         (activity as? MapaActivity)?.timer?.cancel()
                         if (it.isSuccessful) {
+                            (activity as? MapaActivity)?.viajeAceptado=true
                             (activity as? MapaActivity)?.detenerServico()
                             (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
                             geoProvider.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)

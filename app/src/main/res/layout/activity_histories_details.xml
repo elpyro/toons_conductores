@@ -296,6 +296,14 @@
 
             </LinearLayout>
 
+            <Button
+                android:layout_margin="8dp"
+                android:id="@+id/button_ver_detalle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Ver detalle" />
+
         </LinearLayout>
 
     </LinearLayout>

@@ -25,6 +25,10 @@ class BookingProvider {
         val bookingUpdateMap = HashMap<String, Any>()
         bookingUpdateMap["status"] = status
 
+        if(status.equals("cancel")){
+            bookingUpdateMap["idDriver"] =""
+        }
+
         return db.child(bookingId).updateChildren(bookingUpdateMap)
             .addOnFailureListener { exception ->
                 Log.d("REALTIME DATABASE", "ERROR: ${exception.message}")
