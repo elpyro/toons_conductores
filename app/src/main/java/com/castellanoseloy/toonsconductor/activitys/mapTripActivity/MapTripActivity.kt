@@ -35,6 +35,7 @@ import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
 import com.castellanoseloy.toonsconductor.services.LocationService
+import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -588,8 +589,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     fun detenerServico() {
-        val serviceIntent = Intent(this, LocationService::class.java)
-        stopService(serviceIntent)
+        val serviceManager = ServiceLocalizationManager.getInstance()
+        serviceManager.stopLocationService(this)//detener servicio de localizacion en segundo plano
     }
     private fun sendNotification(status: String) {
 

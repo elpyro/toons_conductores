@@ -103,7 +103,7 @@ class LocationService : Service() {
             val channel = NotificationChannel(
                 channelId,
                 channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
@@ -112,7 +112,7 @@ class LocationService : Service() {
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Ubicación en segundo plano activada")
             .setSmallIcon(R.drawable.my_location_red)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setSound(null) // Desactivar sonido de la notificación
             .setVibrate(null) // Desactivar vibración de la notificación
@@ -178,7 +178,7 @@ class LocationService : Service() {
         // ...
         val distanciaAreopuerto=DistanciaAreopuerto()
         val dentroAreopuerto=distanciaAreopuerto.adentroArepouerto(location)
-        Log.d("Localizacion", "Fuera del rango de trabajo: $dentroAreopuerto")
+        Log.d("Localizacion", "El conductor esta dentro del areopuerto: $dentroAreopuerto")
         if(!dentroAreopuerto){
             geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
             Log.d("Localizacion", "Conductor desconectado por salir de area de trabajo")

@@ -9,6 +9,7 @@ import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActiv
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
+import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 
 
 class ShowTravel: BroadcastReceiver() {
@@ -32,6 +33,9 @@ class ShowTravel: BroadcastReceiver() {
                     bookingProvider.updateStatus(idBooking, "accept").addOnCompleteListener {
 
                         if (it.isSuccessful) {
+                            val serviceManager = ServiceLocalizationManager.getInstance()
+                            serviceManager.stopLocationService(context)//detener servicio de localizacion en segundo plano
+
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
                                 Utilidades.mostrarToast("Viaje Aceptado", context)
                                 inciarViaje(context)
@@ -52,6 +56,7 @@ class ShowTravel: BroadcastReceiver() {
     }
 
     private fun inciarViaje(context: Context) {
+
         val i = Intent(context, MapTripActivity::class.java)
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         i.action = Intent.ACTION_RUN

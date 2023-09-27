@@ -22,7 +22,6 @@ class GeoProveedor {
     val db = FirebaseFirestore.getInstance()
     val localizacionTime = db.collection("Localizacion")
    fun guardarLocalizacion(idConductor:String,localizacion:LatLng, tiempoDisponible: Long){
-
        // Guardar el tiempo en la colección "Localizacion"
        val data = hashMapOf(
            "time" to tiempoDisponible,
@@ -30,7 +29,6 @@ class GeoProveedor {
            "ultima_conexion" to Date().time
        )
        localizacionTime.document(idConductor).set(data)
-
        geoLocalizacion.setLocation(idConductor,  GeoPoint(localizacion.latitude,localizacion.longitude))
 
    }
