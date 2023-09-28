@@ -71,6 +71,9 @@
     <string name="ComisionReferidor">Comisión Referidor</string>
     <string name="TuGanancia">Tú Ganancía</string>
     <string name="TotalACobrar">Total a Cobrar</string>
+    <string name="frontal">Frontal</string>
+    <string name="trasera">Trasera</string>
+    <string name="Documento">Documento del Vehiculo</string>
 
     <array name="tipoVehiculos">
         <item>Carro</item>

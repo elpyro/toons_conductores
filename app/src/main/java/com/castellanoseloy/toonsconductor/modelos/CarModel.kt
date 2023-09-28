@@ -15,9 +15,12 @@ data class CarModel (
     val imagenFrontal: String? = null,
     val imagenLateral: String? = null,
     val imagenDocumento: String? = null,
+    val imagenDocumentoTrasero: String? = null,
     val color: Int? = null,
     val pasajeros: Int? = null,
-    val malero:Boolean? =null
+    val malero:Boolean? =null,
+    var tecnomecanica:Boolean?=false,
+    var SOAT:Boolean?=false
 
 ):Serializable {
     public fun toJson() = klaxon.toJsonString(this)

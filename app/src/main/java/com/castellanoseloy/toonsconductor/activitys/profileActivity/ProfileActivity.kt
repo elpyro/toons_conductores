@@ -7,7 +7,6 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.graphics.Color
 import android.util.Log
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -16,7 +15,6 @@ import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.databinding.ActivityProfileBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
-import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.github.dhaval2404.imagepicker.ImagePicker
 
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
@@ -29,11 +27,12 @@ class ProfileActivity : AppCompatActivity() {
     val driverProvider = DriverProvider()
 
     private var fotoPerfil: File? = null
-    private var licencia: File? =null
     private var documento: File? = null
-    
-    private var imagenSeleccionada: String? = null
+    private var documentoTrasero: File? =null
+    private var licenciaFrontal: File? =null
+    private var licenciaTrasera: File? =null
 
+    private var imagenSeleccionada: String? = null
 
     private var viewModel: ProfileActivityViewModel ? = null
 
@@ -69,7 +68,9 @@ class ProfileActivity : AppCompatActivity() {
         binding.btnUpdate.setOnClickListener { updateInfo() }
         binding.circleImageProfile.setOnClickListener { selectImage() }
         binding.imageViewDocumento.setOnClickListener{ selectDocument()}
-        binding.imageViewLicencia.setOnClickListener{selectLicence()}
+        binding.imageViewDocumentoTrasero.setOnClickListener{selectDocumentoTrasero()}
+        binding.imageViewLicenciaFrontal.setOnClickListener{selectLicenceFrontal()}
+        binding.imageViewLicenciaTrasera.setOnClickListener{selectLicenceTrasera()}
     }
 
     private val startImageForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -88,9 +89,17 @@ class ProfileActivity : AppCompatActivity() {
                 documento = File(fileUri?.path)
                 binding.imageViewDocumento?.setImageURI(fileUri)
             }
-            if(imagenSeleccionada.equals("licenciaConducir")) {
-                licencia = File(fileUri?.path)
-                binding.imageViewLicencia?.setImageURI(fileUri)
+            if(imagenSeleccionada.equals("documentoIdentidadTrasero")) {
+                documentoTrasero = File(fileUri?.path)
+                binding.imageViewDocumentoTrasero?.setImageURI(fileUri)
+            }
+            if(imagenSeleccionada.equals("licenciaFrontal")){
+                licenciaFrontal = File(fileUri?.path)
+                binding.imageViewLicenciaFrontal?.setImageURI(fileUri)
+            }
+            if(imagenSeleccionada.equals("licenciaTrasera")) {
+                licenciaTrasera = File(fileUri?.path)
+                binding.imageViewLicenciaTrasera?.setImageURI(fileUri)
             }
 
         }
@@ -123,8 +132,30 @@ class ProfileActivity : AppCompatActivity() {
                 startImageForResult.launch(intent)
             }
     }
-    private fun selectLicence() {
-        imagenSeleccionada= "licenciaConducir"
+    private fun selectDocumentoTrasero() {
+        imagenSeleccionada= "documentoIdentidadTrasero"
+        ImagePicker.with(this)
+            .crop()
+            .compress(1024)
+            .maxResultSize(1080,1080)
+            .createIntent { intent ->
+                startImageForResult.launch(intent)
+            }
+    }
+
+    private fun selectLicenceFrontal() {
+        imagenSeleccionada= "licenciaFrontal"
+        ImagePicker.with(this)
+            .crop()
+            .compress(1024)
+            .maxResultSize(1080,1080)
+            .createIntent { intent ->
+                startImageForResult.launch(intent)
+            }
+    }
+
+    private fun selectLicenceTrasera() {
+        imagenSeleccionada= "licenciaTrasera"
         ImagePicker.with(this)
             .crop()
             .compress(1024)
@@ -149,10 +180,13 @@ class ProfileActivity : AppCompatActivity() {
 
         binding.btnUpdate.isEnabled=false
 
-
+        //cuantos elementos va se van a guardar
         if(fotoPerfil!=null) viewModel?.incrementarElementos()
         if(documento!=null)viewModel?.incrementarElementos()
-        if(licencia!=null)viewModel?.incrementarElementos()
+        if(documentoTrasero!=null)viewModel?.incrementarElementos()
+        if(licenciaFrontal!=null)viewModel?.incrementarElementos()
+        if(licenciaTrasera!=null)viewModel?.incrementarElementos()
+
 
 
         val name = binding.textFieldName.text.toString()
@@ -166,7 +200,7 @@ class ProfileActivity : AppCompatActivity() {
             telefono = phone,
             imagenPerfil = DriverProvider.datosConductor?.imagenPerfil,
             imagenDocumento = DriverProvider.datosConductor?.imagenDocumento,
-            imagenLicencia = DriverProvider.datosConductor?.imagenLicencia,
+            imagenDocumentoTrasero = DriverProvider.datosConductor?.imagenDocumentoTrasero,
             validacion = "Verificando Datos"
         )
 
@@ -230,14 +264,14 @@ class ProfileActivity : AppCompatActivity() {
                 }
             }
         }
-        if (licencia != null) {
-            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "licencia", licencia!!)
+        if (documentoTrasero != null) {
+            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "documentoIdentidadTrasero", documentoTrasero!!)
                 .addOnSuccessListener { taskSnapshot ->
-                    driverProvider.getStorageLicencia().addOnSuccessListener { url ->
+                    driverProvider.getStorageDocumentoTrasero().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
                         Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
-                        driver.imagenLicencia = imageUrl
-                        driverProvider.updateLicencia(driver).addOnCompleteListener {
+                        driver.imagenDocumentoTrasero = imageUrl
+                        driverProvider.updateDocumentoTrasero(driver).addOnCompleteListener {
                             viewModel?.decrementarElementos()
                             if (!it.isSuccessful) {
                                 Toast.makeText(
@@ -251,6 +285,50 @@ class ProfileActivity : AppCompatActivity() {
                     }
                 }
             }
+
+        if (licenciaFrontal != null) {
+            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "licenciaFrontal", licenciaFrontal!!)
+                .addOnSuccessListener { taskSnapshot ->
+                    driverProvider.getStorageLicenciaFrontal().addOnSuccessListener { url ->
+                        val imageUrl = url.toString()
+                        Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
+                        driver.imagenLicenciaDelantera = imageUrl
+                        driverProvider.updateLicenciaDelantera(driver).addOnCompleteListener {
+                            viewModel?.decrementarElementos()
+                            if (!it.isSuccessful) {
+                                Toast.makeText(
+                                    this@ProfileActivity,
+                                    "No se pudo guardar la licencia de conducir",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            Log.d("STORAGE", "$imageUrl")
+                        }
+                    }
+                }
+        }
+
+        if (licenciaTrasera != null) {
+            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "licenciaTrasera", licenciaTrasera!!)
+                .addOnSuccessListener { taskSnapshot ->
+                    driverProvider.getStorageLicenciaTrasera().addOnSuccessListener { url ->
+                        val imageUrl = url.toString()
+                        Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
+                        driver.imagenLicenciaTrasera = imageUrl
+                        driverProvider.updateLicenciaTrasera(driver).addOnCompleteListener {
+                            viewModel?.decrementarElementos()
+                            if (!it.isSuccessful) {
+                                Toast.makeText(
+                                    this@ProfileActivity,
+                                    "No se pudo guardar la licencia de conducir",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            Log.d("STORAGE", "$imageUrl")
+                        }
+                    }
+                }
+        }
         }
 
 
@@ -310,10 +388,24 @@ class ProfileActivity : AppCompatActivity() {
                             }
                         }
 
-                        if (driver?.imagenLicencia != null) {
-                            if (driver.imagenLicencia != "") {
-                                Glide.with(this).load(driver.imagenLicencia)
-                                    .into(binding.imageViewLicencia)
+                        if (driver?.imagenDocumentoTrasero != null) {
+                            if (driver.imagenDocumentoTrasero != "") {
+                                Glide.with(this).load(driver.imagenDocumentoTrasero)
+                                    .into(binding.imageViewDocumentoTrasero)
+                            }
+                        }
+
+                        if (driver?.imagenLicenciaDelantera != null) {
+                            if (driver.imagenLicenciaDelantera != "") {
+                                Glide.with(this).load(driver.imagenLicenciaDelantera)
+                                    .into(binding.imageViewLicenciaFrontal)
+                            }
+                        }
+
+                        if (driver?.imagenLicenciaTrasera != null) {
+                            if (driver.imagenLicenciaTrasera != "") {
+                                Glide.with(this).load(driver.imagenLicenciaTrasera)
+                                    .into(binding.imageViewLicenciaTrasera)
                             }
                         }
                         

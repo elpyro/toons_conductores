@@ -41,6 +41,10 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
     }
 
     private fun obtenerCars() {
+        if(DriverProvider.datosConductor?.id ==null){
+            return
+        }
+
         val carProvider=CarProvider()
         carProvider.getCarByDriverId(DriverProvider.datosConductor?.id!!)
             .addOnCompleteListener {listaCars->

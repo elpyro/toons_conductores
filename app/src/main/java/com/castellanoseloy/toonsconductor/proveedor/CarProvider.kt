@@ -3,7 +3,6 @@ package com.castellanoseloy.toonsconductor.proveedor
 import android.net.Uri
 import android.util.Log
 import com.castellanoseloy.toonsconductor.modelos.CarModel
-import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
@@ -27,6 +26,7 @@ class CarProvider {
     private lateinit var storageFotoFrontal: StorageReference
     private lateinit var storageLateral: StorageReference
     private lateinit var storageDocumento: StorageReference
+    private lateinit var storageDocumentoTrasero: StorageReference
     private var storage = FirebaseStorage.getInstance().getReference().child("Cars")
 
 
@@ -51,6 +51,8 @@ class CarProvider {
         carData["color"] = car.color!!
         carData["pasajeros"] = car.pasajeros!!
         carData["malero"] = car.malero!!
+        carData["tecnomecanica"] = car.tecnomecanica!!
+        carData["SOAT"] = car.SOAT!!
 
         return bd.document(car.id!!).update(carData)
     }
@@ -62,7 +64,9 @@ class CarProvider {
 
         if (nombreImagen.equals("fotoFrontal")) storageFotoFrontal= ref
         if (nombreImagen.equals("fotoLateral"))storageLateral = ref
-        if (nombreImagen.equals("documentoSOAT"))storageDocumento = ref
+        if (nombreImagen.equals("documentoVehiculo_frontal"))storageDocumento = ref
+        if (nombreImagen.equals("documentoVehiculo_trasero"))storageDocumentoTrasero = ref
+
 
         val uploadTask = ref.putFile(fromFile)
 
@@ -74,13 +78,15 @@ class CarProvider {
     fun getStorageImagenFrontal(): Task<Uri> {
         return storageFotoFrontal?.downloadUrl!!
     }
-    fun getStorageDocumento(): Task<Uri> {
+    fun getStorageImagenLateral(): Task<Uri> {
         return storageLateral?.downloadUrl!!
     }
-    fun getStorageLicencia(): Task<Uri> {
+    fun getStorageDocumentoFrontal(): Task<Uri> {
         return storageDocumento?.downloadUrl!!
     }
-
+    fun getStorageDocumentoTrasero(): Task<Uri> {
+        return storageDocumentoTrasero?.downloadUrl!!
+    }
     fun updateImagenFrontal(car: CarModel): Task<Void> {
         val map: MutableMap<String, Any> = HashMap()
         map["imagenFrontal"] = car?.imagenFrontal!!
@@ -98,4 +104,10 @@ class CarProvider {
         map["imagenDocumento"] = car?.imagenDocumento!!
         return bd.document(car?.id!!).update(map)
     }
+    fun updateDocumentoTrasero(car: CarModel): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenDocumentoTrasero"] = car?.imagenDocumentoTrasero!!
+        return bd.document(car?.id!!).update(map)
+    }
+
 }

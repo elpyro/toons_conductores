@@ -117,7 +117,9 @@
 
     </LinearLayout>
 
-<LinearLayout
+
+
+    <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
@@ -125,24 +127,45 @@
     android:layout_marginLeft="70dp"
     android:layout_marginBottom="12dp"
     android:orientation="vertical">
-    <Button
-        android:visibility="gone"
-        android:id="@+id/btnStartTrip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="INICIAR VIAJE"
-        android:background="@drawable/rounded_button"
-        android:textColor="@color/white" />
+        <Button
 
+            android:id="@+id/btnStartTrip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ir a punto de encuentro"
+            android:backgroundTint="@color/rojoClaro1"
+            android:background="@drawable/rounded_button"
+            android:textColor="@color/white" />
 
-    <Button
-        android:id="@+id/btnFinishTrip"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="FINALIZAR VIAJE"
-        android:background="@drawable/rounded_button"
-        app:backgroundTint="@color/blue"
-        android:visibility="gone"/>
+        <Button
+            android:id="@+id/btnHellegado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="He llegado"
+            android:backgroundTint="@color/rojoClaro2"
+            android:background="@drawable/rounded_button"
+
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnInciarViaje"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Iniciar Viaje"
+            android:backgroundTint="@color/rojoClaro3"
+            android:background="@drawable/rounded_button"
+
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnFinishTrip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="FINALIZAR VIAJE"
+            android:backgroundTint="@color/rojoClaro4"
+            android:background="@drawable/rounded_button"
+
+            android:visibility="gone"/>
 
     <ImageView
         android:visibility="gone"

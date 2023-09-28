@@ -24,10 +24,12 @@ class DriverProvider {
 
     }
 
-
-    private lateinit var storageLicencia: StorageReference
     private lateinit var storageDocumento: StorageReference
+    private lateinit var storageDocumentoTrasero: StorageReference
     private lateinit var storageFotoPerfil: StorageReference
+    private lateinit var storageLicenciaDelantera: StorageReference
+    private lateinit var storageLicenciaTrasera: StorageReference
+
     val db = Firebase.firestore.collection("Conductores")
     var storage = FirebaseStorage.getInstance().getReference().child("profile")
 
@@ -57,7 +59,9 @@ class DriverProvider {
 
         if (nombreImagen.equals("fotoPerfil"))storageFotoPerfil = ref
         if (nombreImagen.equals("documento"))storageDocumento = ref
-        if (nombreImagen.equals("licencia"))storageLicencia = ref
+        if (nombreImagen.equals("documentoIdentidadTrasero"))storageDocumentoTrasero = ref
+        if (nombreImagen.equals("licenciaFrontal"))storageLicenciaDelantera = ref
+        if (nombreImagen.equals("licenciaTrasera"))storageLicenciaTrasera = ref
 
         val uploadTask = ref.putFile(fromFile)
 
@@ -74,8 +78,14 @@ class DriverProvider {
     fun getStorageDocumento(): Task<Uri> {
         return storageDocumento?.downloadUrl!!
     }
-    fun getStorageLicencia(): Task<Uri> {
-        return storageLicencia?.downloadUrl!!
+    fun getStorageDocumentoTrasero(): Task<Uri> {
+        return storageDocumentoTrasero?.downloadUrl!!
+    }
+    fun getStorageLicenciaFrontal(): Task<Uri> {
+        return storageLicenciaDelantera?.downloadUrl!!
+    }
+    fun getStorageLicenciaTrasera(): Task<Uri> {
+        return storageLicenciaTrasera?.downloadUrl!!
     }
 
     fun getDriver(idDriver: String): Task<DocumentSnapshot> {
@@ -108,11 +118,24 @@ class DriverProvider {
         return db.document(driver?.id!!).update(map)
     }
 
-    fun updateLicencia(driver: ConductorModelo): Task<Void> {
+    fun updateDocumentoTrasero(driver: ConductorModelo): Task<Void> {
         val map: MutableMap<String, Any> = HashMap()
-        map["imagenLicencia"] = driver?.imagenLicencia!!
+        map["imagenDocumentoTrasero"] = driver?.imagenDocumentoTrasero!!
         return db.document(driver?.id!!).update(map)
     }
+
+    fun updateLicenciaDelantera(driver: ConductorModelo): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenLicenciaDelantera"] = driver?.imagenLicenciaDelantera!!
+        return db.document(driver?.id!!).update(map)
+    }
+
+    fun updateLicenciaTrasera(driver: ConductorModelo): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenLicenciaTrasera"] = driver?.imagenLicenciaTrasera!!
+        return db.document(driver?.id!!).update(map)
+    }
+
 
 
 }

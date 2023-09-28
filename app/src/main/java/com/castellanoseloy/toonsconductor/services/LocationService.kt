@@ -34,6 +34,7 @@ class LocationService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
     private val geoProveedor= GeoProveedor()
+    private var isServiceRunning = false  //verificacion del que el servicio fue detenido
     override fun onBind(intent: Intent?): IBinder? {
         return binder
     }
@@ -69,6 +70,8 @@ class LocationService : Service() {
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Establece isServiceRunning en true
+        isServiceRunning = true
         // Configura la notificación para el servicio en primer plano.
         val notification = createNotification()
 //
@@ -85,6 +88,7 @@ class LocationService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isServiceRunning = false
         removeLocationUpdates()
         handler.removeCallbacksAndMessages(null)
 
@@ -174,27 +178,34 @@ class LocationService : Service() {
     }
 
     private fun handleNewLocation(location: Location) {
-        // Coloca aquí tu código de currentLocation y sus funciones anidadas
-        // ...
-        val distanciaAreopuerto=DistanciaAreopuerto()
-        val dentroAreopuerto=distanciaAreopuerto.adentroArepouerto(location)
-        Log.d("Localizacion", "El conductor esta dentro del areopuerto: $dentroAreopuerto")
-        if(!dentroAreopuerto){
-            geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
-            Log.d("Localizacion", "Conductor desconectado por salir de area de trabajo")
 
-            // Detiene el servicio actual
-            handler.removeCallbacksAndMessages(null)
-            stopSelf()
-        }else{
-            val ubicacion=convertLocationToLatLng(location)
-            val tiempoActivo = MapaActivity.tiempoActivo
+        if (isServiceRunning) {
+            // Coloca aquí tu código de currentLocation y sus funciones anidadas
+            // ...
+            val distanciaAreopuerto = DistanciaAreopuerto()
+            val dentroAreopuerto = distanciaAreopuerto.adentroArepouerto(location)
+            Log.d("Localizacion", "El conductor esta dentro del areopuerto: $dentroAreopuerto")
+            if (!dentroAreopuerto) {
+                geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
+                Log.d("Localizacion", "Conductor desconectado por salir de area de trabajo")
+
+                // Detiene el servicio actual
+                handler.removeCallbacksAndMessages(null)
+                stopSelf()
+            } else {
+                val ubicacion = convertLocationToLatLng(location)
+                val tiempoActivo = MapaActivity.tiempoActivo
 
 
-                geoProveedor.guardarLocalizacion(DriverProvider.datosConductor?.id!!,ubicacion!!, tiempoActivo!!)
+                geoProveedor.guardarLocalizacion(
+                    DriverProvider.datosConductor?.id!!,
+                    ubicacion!!,
+                    tiempoActivo!!
+                )
                 Log.d("Localizacion", "Ubicacion del conductor  actualizada en segundo plano")
 
 
+            }
         }
     }
 

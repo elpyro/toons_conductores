@@ -151,13 +151,12 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <View
+
+        <TextView
+            android:gravity="center"
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/grey"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
+            android:layout_height="wrap_content"
+            android:text="@string/documentoIdentidad"
             android:layout_marginBottom="15dp"/>
 
         <LinearLayout
@@ -178,7 +177,7 @@
                     android:gravity="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/documentoIdentidad" />
+                    android:text="@string/frontal" />
 
                 <ImageView
 
@@ -201,16 +200,84 @@
 
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/licencia" />
+                    android:text="@string/trasera" />
 
                 <ImageView
-                    android:id="@+id/imageView_licencia"
+                    android:id="@+id/imageView_documentoTrasero"
                     android:layout_gravity="center"
                     android:layout_width="150dp"
                     android:layout_height="150dp"
-                    app:srcCompat="@drawable/ic_licencia" />
+                    app:srcCompat="@drawable/ic_documento_trasera" />
             </LinearLayout>
 
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/grey"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp" />
+
+        <TextView
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/licencia"
+            android:layout_marginBottom="15dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/frontal" />
+
+                <ImageView
+
+                    android:layout_gravity="center"
+                    android:id="@+id/imageView_licencia_frontal"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    app:srcCompat="@drawable/ico_licencia_frontal" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_gravity="center"
+                    android:gravity="center"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/trasera" />
+
+                <ImageView
+                    android:id="@+id/imageView_licencia_trasera"
+                    android:layout_gravity="center"
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    app:srcCompat="@drawable/ico_licencia_trasera" />
+            </LinearLayout>
 
         </LinearLayout>
 

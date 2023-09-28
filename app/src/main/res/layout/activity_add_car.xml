@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     tools:context=".activitys.profileActivity.ProfileActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -192,7 +193,6 @@
                         android:gravity="center"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:thumbTint="@color/colorThumb"
                         android:text="Maletero Disponible" />
 
                 </LinearLayout>
@@ -215,12 +215,104 @@
                      android:textSize="16sp" />
 
                  <Spinner
+
+                     android:layout_gravity="center"
                      android:id="@+id/spinner"
                      android:layout_weight="1"
+                     android:layout_margin="4dp"
                      android:layout_width="wrap_content"
                      android:entries="@array/tipoVehiculos"
                      android:layout_height="wrap_content" />
+
+                 <LinearLayout
+                     android:layout_width="wrap_content"
+                     android:layout_height="wrap_content"
+                     android:layout_weight="0.5"
+                     android:orientation="vertical">
+
+                     <TextView
+
+                         android:layout_width="match_parent"
+                         android:layout_height="16dp"
+                         android:gravity="center"
+                         android:text="@string/ColorVehiculo" />
+
+                     <ImageView
+                         android:layout_gravity="center"
+                         android:id="@+id/imageView_car_color"
+                         android:layout_width="80dp"
+                         android:layout_height="80dp"
+                         app:srcCompat="@drawable/ic_paralel_car" />
+                 </LinearLayout>
              </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/grey"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp" />
+
+                <TextView
+                    android:gravity="center"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Documento"
+                    android:layout_marginBottom="15dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="30dp"
+                    android:layout_marginRight="30dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+
+                            android:gravity="center"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/frontal" />
+
+                        <ImageView
+
+                            android:layout_gravity="center"
+                            android:id="@+id/imageView_documentoVehiculo_fontal"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            app:srcCompat="@drawable/ic_documento_vehiculo_frontal" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_gravity="center"
+                            android:gravity="center"
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/trasera" />
+
+                        <ImageView
+                            android:id="@+id/imageView_documentoVehiculo_trasero"
+                            android:layout_gravity="center"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            app:srcCompat="@drawable/ic_documento_vehiculo_trasera" />
+                    </LinearLayout>
+
+                </LinearLayout>
 
                 <View
                     android:layout_width="match_parent"
@@ -238,7 +330,6 @@
                     android:layout_marginLeft="30dp"
                     android:layout_marginRight="30dp"
                     android:orientation="horizontal">
-
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -246,41 +337,28 @@
                         android:orientation="vertical">
 
                         <TextView
-
-                            android:gravity="center"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/ColorVehiculo" />
+                            android:text="Yo declaro que tengo vigente para este vehiculo:" />
 
-                        <ImageView
-                            android:layout_gravity="center"
-                            android:id="@+id/imageView_car_color"
-                            android:layout_width="150dp"
-                            android:layout_height="150dp"
-                            app:srcCompat="@drawable/ic_paralel_car" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_gravity="center"
-                            android:gravity="center"
-
-                            android:layout_width="match_parent"
+                        <CheckBox
+                            android:id="@+id/checkBox_tecnomecanica"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="SOAT" />
+                            android:layout_weight="1"
+                            android:text="Revisión Tecnomecánica" />
 
-                        <ImageView
-                            android:id="@+id/imageView_document_SOAT"
-                            android:layout_gravity="center"
-                            android:layout_width="150dp"
-                            android:layout_height="150dp"
-                            app:srcCompat="@drawable/ic_document" />
+                        <CheckBox
+                            android:id="@+id/checkBox_soat"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Seguro Obligatorio de Accidentes de Transito (SOAT)" />
+
                     </LinearLayout>
+
+
+
 
 
                 </LinearLayout>

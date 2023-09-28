@@ -2,6 +2,7 @@ package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import android.Manifest
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -53,6 +54,7 @@ import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.util.Date
 import android.content.res.Resources
+import android.os.PowerManager
 import androidx.appcompat.app.AlertDialog
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -102,6 +104,9 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     var modalBooking = ModalBottomSheetBooking()
 
+    // Declara una variable miembro para el PowerManager.WakeLock
+    private var wakeLock: PowerManager.WakeLock? = null
+
     val timer = object: CountDownTimer(10000, 1000) {
 
 
@@ -146,6 +151,14 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         binding= ActivityMapBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+        // Obtiene una instancia del servicio PowerManager
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(
+            PowerManager.FULL_WAKE_LOCK or PowerManager.ACQUIRE_CAUSES_WAKEUP,
+            "MiApp::WakelockTag"
+        )
+
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
         idConductor=DriverProvider.datosConductor?.id!!
 
@@ -156,18 +169,42 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         ubicacionPorDefecto()
 
-        permisoLocalizacion.launch(arrayOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_BACKGROUND_LOCATION
-        ))
+
+            permisoLocalizacion.launch(arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ))
+
 
         //si el conductor es nuevo enviar a pantalla de perfil
         if(DriverProvider.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
 
         tiempoActivo= Date().time
+
          listeners()
     }
+
+
+    var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+            when{
+
+                permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false)->{
+                    easyWayLocation!!.startLocation()
+                    connectDriver()
+                }
+                else->{
+                    Log.d("Pemisos","Permiso gps NO concedidos")
+                    mostrarDialogoPermisos()
+                }
+
+            }
+        }
+    }
+
+
+
 
 
 
@@ -198,6 +235,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         Log.d("Firestore", "Modal mostrado= $modalMostrado para  ${booking}  ")
 
+
+
         if (!modalMostrado) {
 
             val ubicacionCliente= LatLng(booking?.originLat!!, booking?.originLng!!)
@@ -206,7 +245,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             ubicacionLatLong?.let { dibujarRutaEntreCliente(it, ubicacionCliente) }
 
             Log.d("Firestore", "Modal agregado para el booking ${booking}")
-
+            try {
             val bundle = Bundle()
             bundle.putString("booking", booking.toJson())
             modalBooking.arguments = bundle
@@ -214,13 +253,16 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
             modalMostrado = true // Marcar el modal como mostrado
 
-            try {
-                modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
-                timer.start()
-            }catch (e: Exception){ timer.cancel() }
+            modalBooking.show(supportFragmentManager, ModalBottomSheetBooking.TAG)
+            timer.start()
+            } catch (e: Exception) {
+                timer.cancel()
+            }
 
         }
     }
+
+
 
     private fun listeners() {
 
@@ -236,7 +278,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     override fun onResume() {
         super.onResume()
         modalMostrado=false
-
+        // Adquiere el WakeLock al entrar en primer plano
+        wakeLock?.acquire()
         listenerBooking()
     }
     private fun showModalMenu() {
@@ -249,56 +292,33 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         }
     }
 
-    val permisoLocalizacion = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permiso ->
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            when {
-//                permiso.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
-//                    Log.d("Permisos", "Permiso GPS concedido")
-//                    easyWayLocation!!.startLocation()
-//                    connectDriver()
-//                }
-//                permiso.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
-//                    Log.d("Permisos", "Permiso GPS concedido con limitación")
-//                    mostrarDialogoPermisos()
-//                }
-                permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false) -> {
-                    Log.d("Permisos", "Permiso de ubicación en segundo plano concedido")
-                    easyWayLocation!!.startLocation()
-                    connectDriver()
-                }
-                else -> {
-                    Log.d("Permisos", "Permisos de ubicación NO concedidos")
-                    mostrarDialogoPermisos()
-                }
-            }
-        }
-    }
+
 
     private fun mostrarDialogoPermisos() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Permisos Requeridos")
-        builder.setMessage("Esta aplicación requiere todos los permisos de ubicación diponibles para funcionar correctamente.")
+        builder.setMessage("Esta aplicación requiere permisos de ubicación TODO EL TIEMPO para funcionar correctamente. \n Información de la aplicación -> Permisos -> Ubicación -> PERMITIR TODO EL TIEMPO")
         builder.setPositiveButton("Aceptar") { _, _ ->
             solicitarPermisos() // Llama a la función para solicitar permisos
-        }
-        builder.setNegativeButton("Cancelar") { dialog, _ ->
-            dialog.dismiss()
         }
         builder.setCancelable(false) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
         builder.show()
     }
 
-    private fun solicitarPermisos() {
-        ActivityCompat.requestPermissions(
-            this,
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION
-            ),
-            CODIGO_SOLICITUD_PERMISOS
-        )
-    }
+
+     private fun solicitarPermisos() {
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+             ActivityCompat.requestPermissions(
+                 this,
+                 arrayOf(
+                     Manifest.permission.ACCESS_FINE_LOCATION,
+                     Manifest.permission.ACCESS_COARSE_LOCATION,
+                     Manifest.permission.ACCESS_BACKGROUND_LOCATION
+                 ),
+                 CODIGO_SOLICITUD_PERMISOS
+             )
+         }
+     }
 
 
 
@@ -345,7 +365,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         easyWayLocation?.startLocation()
         showButtonDisconnect()
         isCameraMoved=false
-
         serviceManager.startLocationService(this)//iniciamos el servicio de localizacion en segundo plano
 
     }
@@ -540,7 +559,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     override fun onPause() {
         super.onPause()
-
+        // Libera el WakeLock al salir del primer plano
+        wakeLock?.release()
     }
 
     override fun onDestroy() {

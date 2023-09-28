@@ -17,7 +17,6 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
@@ -34,7 +33,6 @@ import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
-import com.castellanoseloy.toonsconductor.services.LocationService
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
@@ -67,6 +65,7 @@ import java.util.Date
 
 class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, DirectionUtil.DirectionCallBack {
 
+    private lateinit var nombrePasajero: String
     private var client: Client? = null
     private var start: LatLng?=null
     private var markerDestination: Marker? =null
@@ -183,7 +182,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
                     originLatLng = LatLng(booking!!.originLat!!, booking!!.originLng!!)
                     destinationLatLng = LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
-                    medirDistacia()
+                   // medirDistacia()
                     dibujarRuta(originLatLng!!)
                     addOriginMarker(originLatLng!!)
                     getClientInfo()
@@ -220,7 +219,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     private fun listeners() {
 
-        binding.btnStartTrip.setOnClickListener { updateToStarted()}
+        binding.btnStartTrip.setOnClickListener { actualizarAlEncuentro()}
+        binding.btnHellegado.setOnClickListener { heLLegado()}
+        binding.btnInciarViaje.setOnClickListener { inicarViaje()}
         binding.btnFinishTrip.setOnClickListener { updateToFinish() }
         binding.imageViewInfo.setOnClickListener{ showModalInfo() }
 
@@ -301,9 +302,22 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     }
 
+    private fun mostrarBotonHeLlegado() {
+        binding.btnHellegado.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
+        binding.btnStartTrip.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
+    }
+
+    private fun mostrarBottonIniciarViaje() {
+        binding.btnInciarViaje.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
+        binding.btnHellegado.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
+    }
     private fun showButtonFinish() {
         binding.btnFinishTrip.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
-        binding.btnStartTrip.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
+        binding.btnInciarViaje.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
         binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
         binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
     }
@@ -413,7 +427,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
                 CarMoveAnim.carAnim(marcaConductor!!, start!!, ubicacionLatLong!!)
             }
-        medirDistacia()
+       // medirDistacia()
         salvarLocalizacion()
     }
 
@@ -429,40 +443,81 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         }
     }
 
-    private fun updateToStarted() {
+    private fun actualizarAlEncuentro() {
 
-
-
-            bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "started").addOnCompleteListener {
+            bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Al punto de encuentro").addOnCompleteListener {
                 if (it.isSuccessful) {
-
-                    mostrarBotonesDeNavegacion()
 
                     if (destinationLatLng != null) {
                         isStartedTrip = true
                         googleMaps?.clear()
                         agregarMarca()
-//                        addDirectionMarker(myLocationLatLng!!, angle)
                         dibujarRuta(destinationLatLng!!)
                         markerOrigin?.remove()
                         addDestinationMarker()
                         startTimer()
 
-                        sendNotification("Viaje iniciado")
+                        sendNotification("El conductor va en camino al punto de encuentro")
                     }
-                    showButtonFinish()
+                    mostrarBotonHeLlegado()
                 }else{
                     Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
                     Log.d("Booking", "ERROR: ${booking}")
                     getBooking()
                 }
             }
-
     }
 
-    private fun mostrarBotonesDeNavegacion() {
+    private fun heLLegado() {
 
+        bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Ha llegado al punto de encuentro").addOnCompleteListener {
+            if (it.isSuccessful) {
+
+                if (destinationLatLng != null) {
+                    isStartedTrip = true
+                    googleMaps?.clear()
+                    agregarMarca()
+                    dibujarRuta(destinationLatLng!!)
+                    markerOrigin?.remove()
+                    addDestinationMarker()
+                    startTimer()
+
+                    sendNotification("El conductor ha llegado a tu encuentro")
+                }
+                mostrarBottonIniciarViaje()
+            }else{
+                Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
+                Log.d("Booking", "ERROR: ${booking}")
+                getBooking()
+            }
+        }
     }
+
+    private fun inicarViaje() {
+
+        bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Viaje en proceso").addOnCompleteListener {
+            if (it.isSuccessful) {
+
+                if (destinationLatLng != null) {
+                    isStartedTrip = true
+                    googleMaps?.clear()
+                    agregarMarca()
+                    dibujarRuta(destinationLatLng!!)
+                    markerOrigin?.remove()
+                    addDestinationMarker()
+                    startTimer()
+                    showButtonFinish()
+                    sendNotification("Viaje en proceso")
+                }
+
+            }else{
+                Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
+                Log.d("Booking", "ERROR: ${booking}")
+                getBooking()
+            }
+        }
+    }
+
 
     private fun updateToFinish() {
 
@@ -474,10 +529,10 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             min = 1
         }
       //  getPrices(km, min.toDouble())
-        bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "finished").addOnCompleteListener {
+        bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Finalizado").addOnCompleteListener {
 
             if (it.isSuccessful) {
-                sendNotification("Viaje terminado")
+                sendNotification("El viaje de $nombrePasajero ha terminado")
                 goToCalificationClient()
                 createHistory()
             }
@@ -583,7 +638,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         clientProvider.getClientById(booking?.idClient!!).addOnSuccessListener { document ->
             if (document.exists()) {
                 client = document.toObject(Client::class.java)
-                sendNotification("Un conductor ha aceptado el viaje")
+                val nombreConductor= DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
+                nombrePasajero= DriverProvider.datosConductor?.nombre +" "+booking?.nombrePasajero
+                sendNotification("$nombreConductor ha aceptado el viaje del pasajero: $nombrePasajero")
             }
         }
     }

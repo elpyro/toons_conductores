@@ -36,23 +36,25 @@ class AddCarViewModel : ViewModel() {
     }
 
     fun salveData(
-        idCar:String,
+        idCar: String,
         binding: ActivityAddCarBinding,
         fotoFrontal: File?,
         fotoLateral: File?,
         Imagedocumento: File?,
+        imageDocumentoTrasero: File?,
         colorSeleccionado: Int
     ) {
 
            guardarOnline(binding,idCar, colorSeleccionado)
-           guardarImagenes(idCar,fotoFrontal,fotoLateral,Imagedocumento)
+           guardarImagenes(idCar,fotoFrontal,fotoLateral,Imagedocumento,imageDocumentoTrasero)
     }
 
     private fun guardarImagenes(
         idCar: String,
         fotoFrontal: File?,
         fotoLateral: File?,
-        imagenDocumento: File?
+        imagenDocumento: File?,
+        imageDocumentoTrasero: File?
     ) {
         val carProvider= CarProvider()
         if (fotoFrontal != null) {
@@ -82,7 +84,7 @@ class AddCarViewModel : ViewModel() {
                 "fotoLateral",
                 fotoLateral!!
             ).addOnSuccessListener { taskSnapshot ->
-                carProvider.getStorageDocumento().addOnSuccessListener { url ->
+                carProvider.getStorageImagenLateral().addOnSuccessListener { url ->
                     val imageUrl = url.toString()
 
                     Log.d("Firestore", "la ruta de la imagen documento es: ${imageUrl}")
@@ -99,22 +101,44 @@ class AddCarViewModel : ViewModel() {
             }
         }
         if ( imagenDocumento!= null) {
-            carProvider.uploadImage(idCar, "documentoSOAT", imagenDocumento!!)
+            carProvider.uploadImage(idCar, "documentoVehiculo_frontal", imagenDocumento!!)
                 .addOnSuccessListener { taskSnapshot ->
-                    carProvider.getStorageLicencia().addOnSuccessListener { url ->
+                    carProvider.getStorageDocumentoFrontal().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
                         Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
                         val car=CarModel(id=idCar, imagenDocumento =imageUrl )
                         carProvider.updateDocumento(car).addOnCompleteListener {
-                            decrementarElementos()
+
                             if (!it.isSuccessful) {
                               mensaje.value="No se pudo guardar el documento"
+                            }else{
+                                decrementarElementos()
                             }
                             Log.d("STORAGE", "$imageUrl")
                         }
                     }
                 }
         }
+
+        if ( imageDocumentoTrasero!= null) {
+            carProvider.uploadImage(idCar, "documentoVehiculo_trasero", imageDocumentoTrasero!!)
+                .addOnSuccessListener { taskSnapshot ->
+                    carProvider.getStorageDocumentoTrasero().addOnSuccessListener { url ->
+                        val imageUrl = url.toString()
+                        Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
+                        val car=CarModel(id=idCar, imagenDocumentoTrasero =imageUrl )
+                        carProvider.updateDocumentoTrasero(car).addOnCompleteListener {
+                            if (!it.isSuccessful) {
+                                mensaje.value="No se pudo guardar el documento"
+                            }else{
+                                decrementarElementos()
+                            }
+                            Log.d("STORAGE", "$imageUrl")
+                        }
+                    }
+                }
+        }
+
     }
 
     private fun guardarOnline(
@@ -129,6 +153,8 @@ class AddCarViewModel : ViewModel() {
         val pasajeros = binding.textFielAsisentos.text.toString().toInt()
         val idConductor= DriverProvider.datosConductor?.id
         val malero=binding.switchMaletero.isChecked
+        val tecnomecanica=binding.checkBoxTecnomecanica.isChecked
+        val SOAT=binding.checkBoxSoat.isChecked
 
         val car = CarModel(
             id= idCar,
@@ -139,14 +165,15 @@ class AddCarViewModel : ViewModel() {
             placa = placa,
             color=colorSeleccionado,
             pasajeros= pasajeros,
-            malero= malero
+            malero= malero,
+            tecnomecanica= tecnomecanica,
+            SOAT=SOAT
         )
 
         val carProvider=CarProvider()
         carProvider.create(car).addOnCompleteListener {
             if(it.isSuccessful){
                 decrementarElementos()
-                mensaje.value="Datos Guardados"
             }else{
                 mensaje.value="Error guardando datos"
             }
@@ -159,6 +186,7 @@ class AddCarViewModel : ViewModel() {
         fotoFrontal: File?,
         fotoLateral: File?,
         Imagedocumento: File?,
+        imageDocumentoTrasero: File?,
         editarDatos: Boolean
     ): Boolean {
 
@@ -174,11 +202,24 @@ class AddCarViewModel : ViewModel() {
                 datosValidos=false
             }
             if(Imagedocumento==null) {
-                mensaje.value= "Se requiere una foto del SOAT"
+                mensaje.value= "Se requiere imagen frontal del documento del vehiculo"
                 datosValidos=false
             }
+            if(imageDocumentoTrasero==null) {
+                mensaje.value= "Se requiere imagen trasera del documento del vehiculo"
+                datosValidos=false
+            }
+
+        }
+        if(!binding.checkBoxTecnomecanica.isChecked){
+            mensaje.value="Debe tener la revisión tecnomecánica vigente para registrar el vehiculo"
+            datosValidos=false
         }
 
+        if(!binding.checkBoxSoat.isChecked){
+            mensaje.value="Debe tener el SOAT vigente para registrar el vehiculo"
+            datosValidos=false
+        }
         if(binding.textFieldPlaca.text.toString().isEmpty()){
             datosValidos=false
             binding.textFieldPlaca.setError("Obligatorio")
@@ -211,13 +252,21 @@ class AddCarViewModel : ViewModel() {
         }
         if (carModel?.imagenDocumento != null) {
             try {
-                Glide.with(applicationContext).load(carModel?.imagenDocumento).into(binding.imageViewDocumentSOAT!!)
+                Glide.with(applicationContext).load(carModel?.imagenDocumento).into(binding.imageViewDocumentoVehiculoFontal!!)
             }catch (e: Exception){  }
         }
+        if (carModel?.imagenDocumentoTrasero != null) {
+            try {
+                Glide.with(applicationContext).load(carModel?.imagenDocumentoTrasero).into(binding.imageViewDocumentoVehiculoTrasero!!)
+            }catch (e: Exception){  }
+        }
+
         binding.textFieldPlaca.setText(carModel.placa)
         binding.textFielMarca.setText(carModel.bland)
-       binding.textFielAsisentos.setText(carModel.pasajeros!!.toString())
+        binding.textFielAsisentos.setText(carModel.pasajeros!!.toString())
         binding.switchMaletero.setChecked(carModel.malero!!)
+        binding.checkBoxTecnomecanica.isChecked=carModel.tecnomecanica!!
+        binding.checkBoxSoat.isChecked=carModel.SOAT!!
 
         //estblecer el valor del spinner
         val opcionesArray = applicationContext.resources.getStringArray(R.array.tipoVehiculos)

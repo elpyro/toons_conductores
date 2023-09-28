@@ -10,6 +10,7 @@ import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -45,6 +46,10 @@ class AcceptReceiver: BroadcastReceiver() {
                             booking!!.status = "accept" // Crear el booking aceptado
                             booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
                             bookingAceptedsProvider.create(booking).addOnCompleteListener {
+
+                                val serviceManager = ServiceLocalizationManager.getInstance()
+                                serviceManager.stopLocationService(context)
+
                                 Utilidades.mostrarToast("Viaje Aceptado", context)
                                 goToMapTrip(context)
                             }
