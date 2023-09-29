@@ -1,6 +1,7 @@
 package com.castellanoseloy.toonsconductor.fragments
 
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -22,10 +23,13 @@ import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.castellanoseloy.toonsconductor.services.LocationService
+import com.castellanoseloy.toonsconductor.utils.NotificarEstados
 import com.castellanoseloy.toonsconductor.utils.RelativeTime.stopService
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
@@ -169,6 +173,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
 
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
                                 Log.d("FIRESTORE", "Viaje aceptado: ${booking}")
+                                enviarNotificacion(booking.idClient!!,requireContext())
                                 Utilidades.mostrarToast("Viaje Aceptado", requireContext())
                                 goToMapTrip()
                             }
@@ -186,7 +191,19 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         }
     }
 
+    private fun enviarNotificacion(idClient: String, context: Context) {
 
+        val clienteProveedor= ClienteProveedor()
+        clienteProveedor.getClientById(idClient).addOnSuccessListener { document ->
+            if (document.exists()) {
+                val client = document.toObject(Client::class.java)
+                val nombreConductor= DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
+                val notificarEstados= NotificarEstados()
+                notificarEstados.sendNotification("$nombreConductor ha aceptado el viaje",
+                    client!!,context)
+            }
+        }
+    }
 
 
     private fun viajeRechazado() {

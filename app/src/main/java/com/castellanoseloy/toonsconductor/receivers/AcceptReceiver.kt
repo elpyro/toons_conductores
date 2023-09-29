@@ -4,18 +4,19 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
 import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
+import com.castellanoseloy.toonsconductor.utils.NotificarEstados
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.firestore.DocumentSnapshot
-
+import com.optic.uberclonedriverkotlin.models.Client
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
 class AcceptReceiver: BroadcastReceiver() {
@@ -50,7 +51,9 @@ class AcceptReceiver: BroadcastReceiver() {
                                 val serviceManager = ServiceLocalizationManager.getInstance()
                                 serviceManager.stopLocationService(context)
 
-                                Utilidades.mostrarToast("Viaje Aceptado", context)
+
+                               enviarNotificacion(booking?.idClient!!, context)
+
                                 goToMapTrip(context)
                             }
                         }
@@ -66,7 +69,19 @@ class AcceptReceiver: BroadcastReceiver() {
         })
 
     }
+    private fun enviarNotificacion(idClient: String, context: Context) {
 
+        val clienteProveedor=ClienteProveedor()
+        clienteProveedor.getClientById(idClient).addOnSuccessListener { document ->
+            if (document.exists()) {
+               val client = document.toObject(Client::class.java)
+                val nombreConductor= DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
+                val notificarEstados= NotificarEstados()
+                notificarEstados.sendNotification("$nombreConductor ha aceptado el viaje",
+                    client!!,context)
+            }
+        }
+    }
     private fun goToMapTrip(context: Context) {
         val i = Intent(context, MapTripActivity::class.java)
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK

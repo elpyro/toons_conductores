@@ -34,6 +34,7 @@ import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
+import com.castellanoseloy.toonsconductor.utils.NotificarEstados
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -87,6 +88,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private val modalTrip=ModalBottomTripInfo()
     private val notificationProvider = NotificationProvider()
     private val clientProvider = ClienteProveedor()
+    private val notificarEstados=NotificarEstados()
 
 
     private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
@@ -457,7 +459,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                         addDestinationMarker()
                         startTimer()
 
-                        sendNotification("El conductor va en camino al punto de encuentro")
+                        notificarEstados.sendNotification("El conductor va en camino al punto de encuentro",client!!,this)
                     }
                     mostrarBotonHeLlegado()
                 }else{
@@ -482,7 +484,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     addDestinationMarker()
                     startTimer()
 
-                    sendNotification("El conductor ha llegado a tu encuentro")
+
+                    notificarEstados.sendNotification("El conductor ha llegado a tu encuentro",client!!,this)
                 }
                 mostrarBottonIniciarViaje()
             }else{
@@ -507,7 +510,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     addDestinationMarker()
                     startTimer()
                     showButtonFinish()
-                    sendNotification("Viaje en proceso")
                 }
 
             }else{
@@ -532,7 +534,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Finalizado").addOnCompleteListener {
 
             if (it.isSuccessful) {
-                sendNotification("El viaje de $nombrePasajero ha terminado")
                 goToCalificationClient()
                 createHistory()
             }
@@ -638,9 +639,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         clientProvider.getClientById(booking?.idClient!!).addOnSuccessListener { document ->
             if (document.exists()) {
                 client = document.toObject(Client::class.java)
-                val nombreConductor= DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
-                nombrePasajero= DriverProvider.datosConductor?.nombre +" "+booking?.nombrePasajero
-                sendNotification("$nombreConductor ha aceptado el viaje del pasajero: $nombrePasajero")
             }
         }
     }
@@ -649,41 +647,41 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         val serviceManager = ServiceLocalizationManager.getInstance()
         serviceManager.stopLocationService(this)//detener servicio de localizacion en segundo plano
     }
-    private fun sendNotification(status: String) {
-
-        val map = HashMap<String, String>()
-        map.put("title", "ESTADO DEL VIAJE")
-        map.put("body", status)
-
-        val body = FCMBody(
-            to = client?.token!!,
-            priority = "high",
-            ttl = "4500s",
-            data = map
-        )
-
-        notificationProvider.sendNotification(body).enqueue(object: Callback<FCMResponse> {
-            override fun onResponse(call: Call<FCMResponse>, response: Response<FCMResponse>) {
-                if (response.body() != null) {
-
-                    if (response.body()!!.success == 1) {
-                        Toast.makeText(this@MapTripActivity, "Se envio la notificacion a: "+client?.nombre+" "+client?.apellido!!, Toast.LENGTH_LONG).show()
-                    }
-                    else {
-                        Toast.makeText(this@MapTripActivity, "No se pudo enviar la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()
-                    }
-
-                }
-                else {
-                    Toast.makeText(this@MapTripActivity, "hubo un error enviando la notificacion", Toast.LENGTH_LONG).show()
-                }
-            }
-
-            override fun onFailure(call: Call<FCMResponse>, t: Throwable) {
-                Log.d("NOTIFICATION", "ERROR: ${t.message}")
-            }
-
-        })
-    }
+//    private fun sendNotification(status: String, client: Client) {
+//
+//        val map = HashMap<String, String>()
+//        map.put("title", "ESTADO DEL VIAJE")
+//        map.put("body", status)
+//
+//        val body = FCMBody(
+//            to = client?.token!!,
+//            priority = "high",
+//            ttl = "4500s",
+//            data = map
+//        )
+//
+//        notificationProvider.sendNotification(body).enqueue(object: Callback<FCMResponse> {
+//            override fun onResponse(call: Call<FCMResponse>, response: Response<FCMResponse>) {
+//                if (response.body() != null) {
+//
+//                    if (response.body()!!.success == 1) {
+//                        Toast.makeText(this@MapTripActivity, "Se envio la notificacion a: "+client?.nombre+" "+client?.apellido!!, Toast.LENGTH_LONG).show()
+//                    }
+//                    else {
+//                        Toast.makeText(this@MapTripActivity, "No se pudo enviar la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()
+//                    }
+//
+//                }
+//                else {
+//                    Toast.makeText(this@MapTripActivity, "hubo un error enviando la notificacion", Toast.LENGTH_LONG).show()
+//                }
+//            }
+//
+//            override fun onFailure(call: Call<FCMResponse>, t: Throwable) {
+//                Log.d("NOTIFICATION", "ERROR: ${t.message}")
+//            }
+//
+//        })
+//    }
 
 }
