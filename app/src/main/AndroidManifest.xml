@@ -10,20 +10,15 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
-
 
     <application
         android:allowBackup="true"
@@ -36,51 +31,57 @@
         android:theme="@style/Theme.ToonsConductor"
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="31">
+        <activity
+            android:name=".activitys.saldo.Saldo"
+            android:exported="false"
+            android:parentActivityName=".activitys.mapActivity.MapaActivity"
+            android:screenOrientation="portrait" />
 
-        <receiver android:name=".receivers.AcceptReceiver"
+        <receiver
+            android:name=".receivers.AcceptReceiver"
             android:enabled="true" />
-
-        <receiver android:name=".receivers.CancelReceiver"
+        <receiver
+            android:name=".receivers.CancelReceiver"
             android:enabled="true" />
 
         <activity
             android:name=".activitys.configuracion.Configuracion"
+            android:exported="false"
             android:parentActivityName=".activitys.mapActivity.MapaActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.addCar.AddCar"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".activitys.carList.CarList" />
+            android:parentActivityName=".activitys.carList.CarList"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.carList.CarList"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".activitys.mapActivity.MapaActivity" />
+            android:parentActivityName=".activitys.mapActivity.MapaActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.historiesDetails.HistoriesDetailActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".activitys.historial.HistoriesActivity" />
+            android:parentActivityName=".activitys.historial.HistoriesActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.historial.HistoriesActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".activitys.mapActivity.MapaActivity" />
+            android:parentActivityName=".activitys.mapActivity.MapaActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.profileActivity.ProfileActivity"
             android:exported="false"
-            android:screenOrientation="portrait"
-            android:parentActivityName=".activitys.mapActivity.MapaActivity" />
+            android:parentActivityName=".activitys.mapActivity.MapaActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.calificationClientActivity.CalificationClientActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.mapTripActivity.MapTripActivity"
-            android:screenOrientation="portrait"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activitys.registro_usuario.RegistroUsuarioActivity"
             android:exported="false"
@@ -96,11 +97,12 @@
         <activity
             android:name=".activitys.mainActivity.MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -129,7 +131,6 @@
                 <action android:name="com.castellanoseloy.toonsconductor" />
             </intent-filter>
         </service>
-
     </application>
 
 </manifest>

@@ -42,6 +42,7 @@ class DriverProvider {
             if (it.isSuccessful) {
                 val token = it.result // TOKEN DE NOTIFICACIONES
                 updateToken(idDriver, token)
+                Log.d("Firebase", "Token creado con exito")
             }
         }
     }
@@ -100,7 +101,7 @@ class DriverProvider {
         map["validacion"] = driver?.validacion!!
         return db.document(driver?.id!!).update(map)
     }
-    fun updateCar(idCar:String, ): Task<Void>{
+    fun updateCar(idCar:String ): Task<Void>{
         val map: MutableMap<String, Any> = HashMap()
         map["vehiculo"] = idCar
         return db.document(datosConductor?.id!!).update(map)
@@ -136,6 +137,23 @@ class DriverProvider {
         return db.document(driver?.id!!).update(map)
     }
 
+    fun descontarComisionesApp(descuento:Double): Task<Void> {
+    // Calcular la nueva cantidad de saldo después de descontar la comisión
+
+        var nuevoSaldo = datosConductor?.saldo?.minus(descuento!!)
+
+        val map: MutableMap<String, Any> = HashMap()
+        map["saldo"] = nuevoSaldo!!
+
+        return db.document(datosConductor?.id!!).update(map).addOnCompleteListener{
+            if(it.isSuccessful){
+                datosConductor?.saldo=nuevoSaldo
+                Log.d("Saldo","Se ha descontado saldo a la cuenta")
+            }else{
+                Log.e("Saldo","No se ha logrado realizar el cobro")
+            }
+        }
+    }
 
 
 }

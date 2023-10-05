@@ -58,7 +58,8 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                         apellido="",
                         telefono="",
                         correo=binding.editTexCorreo.text.toString(),
-                        validacion = "Valida tu usuario"
+                        validacion = "Valida tu usuario",
+                        saldo= 100000.0
                     )
 
                     driverProvider.create(conductor).addOnCompleteListener {

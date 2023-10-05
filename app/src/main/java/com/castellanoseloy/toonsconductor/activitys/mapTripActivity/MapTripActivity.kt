@@ -15,6 +15,7 @@ import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -66,7 +67,6 @@ import java.util.Date
 
 class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, DirectionUtil.DirectionCallBack {
 
-    private lateinit var nombrePasajero: String
     private var client: Client? = null
     private var start: LatLng?=null
     private var markerDestination: Marker? =null
@@ -86,7 +86,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var bookingAceptedsProvider =BookingAceptedsProvider()
     private val historyProvider = HistoryProvider()
     private val modalTrip=ModalBottomTripInfo()
-    private val notificationProvider = NotificationProvider()
     private val clientProvider = ClienteProveedor()
     private val notificarEstados=NotificarEstados()
 
@@ -97,6 +96,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var  time= 0.00
 
     private var originLatLng: LatLng? = null
+    private var destinoOtrosMapas: LatLng? = null
     private var destinationLatLng: LatLng? = null
 
     private var booking:Booking? =null
@@ -167,6 +167,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
 
+
         listeners()
     }
 
@@ -182,7 +183,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
                     mostrarBotonesOcultos()
 
+
                     originLatLng = LatLng(booking!!.originLat!!, booking!!.originLng!!)
+                    destinoOtrosMapas=originLatLng
                     destinationLatLng = LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
                    // medirDistacia()
                     dibujarRuta(originLatLng!!)
@@ -205,7 +208,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         binding?.imageViewInfo?.visibility=View.VISIBLE
         binding?.btnStartTrip?.visibility=View.VISIBLE
 
-        binding.LinearCompartirRuta.visibility= View.VISIBLE
+
 
         var wazeIntalado= viewModel?.isWazeInstalled(this)
         var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
@@ -214,8 +217,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
 
         //cuando incia el primer punto de busqueda es en el origen
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,originLatLng!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,originLatLng!!) }
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
     }
 
 
@@ -307,21 +310,21 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private fun mostrarBotonHeLlegado() {
         binding.btnHellegado.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
         binding.btnStartTrip.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
     }
 
     private fun mostrarBottonIniciarViaje() {
         binding.btnInciarViaje.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
         binding.btnHellegado.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
     }
     private fun showButtonFinish() {
         binding.btnFinishTrip.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
         binding.btnInciarViaje.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinationLatLng!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinationLatLng!!) }
+        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
+        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
     }
 
 
@@ -345,7 +348,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     private fun addOriginMarker(position: LatLng) {
         markerOrigin = googleMaps?.addMarker(MarkerOptions().position(position!!).title("Recogida")
-            .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons_location_person)))
+            .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_location_white)))
     }
 
     private fun addDestinationMarker() {
@@ -433,31 +436,26 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         salvarLocalizacion()
     }
 
-    private fun medirDistacia() {
-
-        if (booking != null && originLatLng != null) {
-            var distance = getDistanceBetween(ubicacionLatLong!!, originLatLng!!)
-            if (distance <= 300) {
-                isCloseToOrigin = true
-            }
-
-            Log.d("LOCATION", "Distance: ${distance}")
-        }
-    }
+//    private fun medirDistacia() {
+//
+//        if (booking != null && originLatLng != null) {
+//            var distance = getDistanceBetween(ubicacionLatLong!!, originLatLng!!)
+//            if (distance <= 300) {
+//                isCloseToOrigin = true
+//            }
+//
+//            Log.d("LOCATION", "Distance: ${distance}")
+//        }
+//    }
 
     private fun actualizarAlEncuentro() {
 
             bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Al punto de encuentro").addOnCompleteListener {
                 if (it.isSuccessful) {
-
+                    binding.LinearCompartirRuta.visibility= View.VISIBLE
+                    preguntarNavegador()
                     if (destinationLatLng != null) {
                         isStartedTrip = true
-                        googleMaps?.clear()
-                        agregarMarca()
-                        dibujarRuta(destinationLatLng!!)
-                        markerOrigin?.remove()
-                        addDestinationMarker()
-                        startTimer()
 
                         notificarEstados.sendNotification("El conductor va en camino al punto de encuentro",client!!,this)
                     }
@@ -470,20 +468,45 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             }
     }
 
+    private fun preguntarNavegador() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Navegador")
+        alertDialogBuilder.setMessage("Elije navegador")
+
+        var wazeIntalado= viewModel?.isWazeInstalled(this)
+        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
+
+        if(wazeIntalado!!) {
+
+            alertDialogBuilder.setPositiveButton("Waze") { dialog, which ->
+                viewModel!!.irAWaze(this,destinoOtrosMapas!!)
+            }
+        }
+        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
+        // Botón Aceptar
+
+        if(googleMapsInstado){
+            alertDialogBuilder.setNegativeButton("Google Maps") { dialog, which ->
+                viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!)
+            }
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
     private fun heLLegado() {
 
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Ha llegado al punto de encuentro").addOnCompleteListener {
             if (it.isSuccessful) {
-
+                binding?.LinearCompartirRuta?.visibility=View.GONE
+                binding.btnHellegado.visibility = View.GONE
                 if (destinationLatLng != null) {
                     isStartedTrip = true
                     googleMaps?.clear()
                     agregarMarca()
-                    dibujarRuta(destinationLatLng!!)
+//                    dibujarRuta(destinationLatLng!!)
                     markerOrigin?.remove()
-                    addDestinationMarker()
-                    startTimer()
-
+//                    addDestinationMarker()
 
                     notificarEstados.sendNotification("El conductor ha llegado a tu encuentro",client!!,this)
                 }
@@ -501,6 +524,11 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Viaje en proceso").addOnCompleteListener {
             if (it.isSuccessful) {
 
+                binding?.LinearCompartirRuta?.visibility=View.VISIBLE
+                destinoOtrosMapas=destinationLatLng
+                binding.tiempoRecorrido.visibility=View.VISIBLE
+                startTimer()
+
                 if (destinationLatLng != null) {
                     isStartedTrip = true
                     googleMaps?.clear()
@@ -511,7 +539,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     startTimer()
                     showButtonFinish()
                 }
-
+                binding?.btnHellegado?.visibility=View.GONE
             }else{
                 Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
                 Log.d("Booking", "ERROR: ${booking}")
@@ -647,41 +675,4 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         val serviceManager = ServiceLocalizationManager.getInstance()
         serviceManager.stopLocationService(this)//detener servicio de localizacion en segundo plano
     }
-//    private fun sendNotification(status: String, client: Client) {
-//
-//        val map = HashMap<String, String>()
-//        map.put("title", "ESTADO DEL VIAJE")
-//        map.put("body", status)
-//
-//        val body = FCMBody(
-//            to = client?.token!!,
-//            priority = "high",
-//            ttl = "4500s",
-//            data = map
-//        )
-//
-//        notificationProvider.sendNotification(body).enqueue(object: Callback<FCMResponse> {
-//            override fun onResponse(call: Call<FCMResponse>, response: Response<FCMResponse>) {
-//                if (response.body() != null) {
-//
-//                    if (response.body()!!.success == 1) {
-//                        Toast.makeText(this@MapTripActivity, "Se envio la notificacion a: "+client?.nombre+" "+client?.apellido!!, Toast.LENGTH_LONG).show()
-//                    }
-//                    else {
-//                        Toast.makeText(this@MapTripActivity, "No se pudo enviar la notificacion"+client?.token!!, Toast.LENGTH_LONG).show()
-//                    }
-//
-//                }
-//                else {
-//                    Toast.makeText(this@MapTripActivity, "hubo un error enviando la notificacion", Toast.LENGTH_LONG).show()
-//                }
-//            }
-//
-//            override fun onFailure(call: Call<FCMResponse>, t: Throwable) {
-//                Log.d("NOTIFICATION", "ERROR: ${t.message}")
-//            }
-//
-//        })
-//    }
-
 }

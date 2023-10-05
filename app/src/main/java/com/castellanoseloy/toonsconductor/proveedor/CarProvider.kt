@@ -39,8 +39,13 @@ class CarProvider {
         return bd.document(id).get()
     }
 
+    fun createCarId(carID: String): Task<Void> {
+        val carData: MutableMap<String, Any> = HashMap()
+        carData["id"] = carID
+    return bd.document(carID).set(carData)
+    }
 
-    fun create(car: CarModel): Task<Void> {
+    fun updateCar(car: CarModel): Task<Void> {
         val carData: MutableMap<String, Any> = HashMap()
         carData["id"] = car.id!!
         carData["estado"] = car.estado!!

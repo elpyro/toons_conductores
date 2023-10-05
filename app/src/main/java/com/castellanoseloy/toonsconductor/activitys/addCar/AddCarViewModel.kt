@@ -42,11 +42,25 @@ class AddCarViewModel : ViewModel() {
         fotoLateral: File?,
         Imagedocumento: File?,
         imageDocumentoTrasero: File?,
-        colorSeleccionado: Int
+        colorSeleccionado: Int,
+        editarDatos: Boolean
     ) {
 
-           guardarOnline(binding,idCar, colorSeleccionado)
-           guardarImagenes(idCar,fotoFrontal,fotoLateral,Imagedocumento,imageDocumentoTrasero)
+        if(!editarDatos){
+            val carProvinder= CarProvider()
+            carProvinder.createCarId(idCar).addOnCompleteListener { //si el vehiculo es nuevo, primero creamos el id para luego editar
+                if(it.isSuccessful){
+                    guardarOnline(binding,idCar, colorSeleccionado)
+                    guardarImagenes(idCar,fotoFrontal,fotoLateral,Imagedocumento,imageDocumentoTrasero)
+                }
+            }
+        }else{
+            guardarOnline(binding,idCar, colorSeleccionado)
+            guardarImagenes(idCar,fotoFrontal,fotoLateral,Imagedocumento,imageDocumentoTrasero)
+        }
+
+
+
     }
 
     private fun guardarImagenes(
@@ -71,6 +85,7 @@ class AddCarViewModel : ViewModel() {
                         decrementarElementos()
                         if (!it.isSuccessful) {
                            mensaje.value="No se pudo guardar la foto frontal"
+                            Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                         }
                     }
                     Log.d("STORAGE", "$imageUrl")
@@ -94,6 +109,7 @@ class AddCarViewModel : ViewModel() {
                         decrementarElementos()
                         if (!it.isSuccessful) {
                             mensaje.value="No se pudo guardar la imagen lateral"
+                            Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                         }
                     }
                     Log.d("STORAGE", "$imageUrl")
@@ -108,11 +124,10 @@ class AddCarViewModel : ViewModel() {
                         Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
                         val car=CarModel(id=idCar, imagenDocumento =imageUrl )
                         carProvider.updateDocumento(car).addOnCompleteListener {
-
+                            decrementarElementos()
                             if (!it.isSuccessful) {
                               mensaje.value="No se pudo guardar el documento"
-                            }else{
-                                decrementarElementos()
+                                Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                             }
                             Log.d("STORAGE", "$imageUrl")
                         }
@@ -128,10 +143,10 @@ class AddCarViewModel : ViewModel() {
                         Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
                         val car=CarModel(id=idCar, imagenDocumentoTrasero =imageUrl )
                         carProvider.updateDocumentoTrasero(car).addOnCompleteListener {
+                            decrementarElementos()
                             if (!it.isSuccessful) {
                                 mensaje.value="No se pudo guardar el documento"
-                            }else{
-                                decrementarElementos()
+                                Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                             }
                             Log.d("STORAGE", "$imageUrl")
                         }
@@ -171,11 +186,13 @@ class AddCarViewModel : ViewModel() {
         )
 
         val carProvider=CarProvider()
-        carProvider.create(car).addOnCompleteListener {
+        carProvider.updateCar(car).addOnCompleteListener {
             if(it.isSuccessful){
                 decrementarElementos()
             }else{
+                decrementarElementos()
                 mensaje.value="Error guardando datos"
+                Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
             }
         }
 

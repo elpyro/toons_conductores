@@ -15,9 +15,8 @@ data class ConductorModelo (
     var imagenLicenciaDelantera: String? = null,
     var imagenLicenciaTrasera: String? = null,
     val validacion: String? =null,
-    var vehiculo:String? = null
-
-
+    var vehiculo:String? = null,
+    var saldo:Double?=null
 ) {
     public fun toJson() = klaxon.toJsonString(this)
 

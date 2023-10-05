@@ -22,7 +22,7 @@ import java.util.UUID
 class AddCar : AppCompatActivity() {
 
     private lateinit var idCar: String
-    private lateinit var carModel: CarModel
+    private var carModel: CarModel? = null
     var colorSeleccionado= Color.BLACK
 
     private var imageDocumentoDelantero: File? =null
@@ -49,10 +49,10 @@ class AddCar : AppCompatActivity() {
 
         if (intent.hasExtra("carModelo")) {
             carModel = intent.getSerializableExtra("carModelo") as CarModel
-            idCar=carModel.id.toString()
-            colorSeleccionado=carModel.color!!
+            idCar= carModel!!.id.toString()
+            colorSeleccionado= carModel!!.color!!
             binding?.btnUpdate?.text = "Guardar"
-            viewModel.cargarDatos(carModel,binding, applicationContext)
+            viewModel.cargarDatos(carModel!!,binding, applicationContext)
         }else{
             idCar= UUID.randomUUID().toString()
         }
@@ -91,17 +91,23 @@ class AddCar : AppCompatActivity() {
         binding.imageViewDocumentoVehiculoFontal.setOnClickListener { selectDocumentFrontal() }
         binding.imageViewDocumentoVehiculoTrasero.setOnClickListener { selectDocumentTrasero() }
         binding.imageViewCarColor.setOnClickListener{selectColor()}
-        binding.btnUpdate.setOnClickListener{
-            var editarDatos=false
-            if(carModel!=null)editarDatos=true
-            val datosValidados= viewModel.validarDatos(binding,fotoFrontal,fotoLateral, imageDocumentoDelantero,imageDocumentoTrasero,editarDatos)
-            if(datosValidados){
-                prepararDialogProcess()
-                viewModel.salveData(idCar,binding, fotoFrontal,fotoLateral,imageDocumentoDelantero,imageDocumentoTrasero,colorSeleccionado)
-            }
+        binding.btnUpdate.setOnClickListener{ actualizarCarro()  }
 
         }
-    }
+
+    private fun actualizarCarro() {
+        var editarDatos=false
+        if(carModel!=null)editarDatos=true
+
+        val datosValidados= viewModel.validarDatos(binding,fotoFrontal,fotoLateral, imageDocumentoDelantero,imageDocumentoTrasero,editarDatos)
+
+        if(datosValidados){
+            prepararDialogProcess()
+
+                viewModel.salveData(idCar,binding, fotoFrontal,fotoLateral,imageDocumentoDelantero,imageDocumentoTrasero,colorSeleccionado, editarDatos)
+
+        }
+}
 
     private fun prepararDialogProcess() {
         progressDialog!!.show()

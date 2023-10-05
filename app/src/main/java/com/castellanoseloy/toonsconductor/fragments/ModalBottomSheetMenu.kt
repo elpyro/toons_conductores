@@ -13,6 +13,7 @@ import com.castellanoseloy.toonsconductor.activitys.configuracion.Configuracion
 import com.castellanoseloy.toonsconductor.activitys.historial.HistoriesActivity
 import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
+import com.castellanoseloy.toonsconductor.activitys.saldo.Saldo
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
@@ -24,6 +25,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     }
 
 
+
     val authProvider = Autenticacion()
 
     private var linearLayoutConfinguracion: LinearLayout ? = null
@@ -32,7 +34,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     private var linearLayoutLogout: LinearLayout? = null
     private var linearLayoutProfile: LinearLayout? = null
     private var linearLayoutHistory: LinearLayout? = null
-
+    private var linearLayoutRecagas: LinearLayout?=null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -46,6 +48,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         linearLayoutHistory = view.findViewById(R.id.linearLayoutHistory)
         linearLayoutCar = view.findViewById(R.id.linearLayoutCar)
         linearLayoutConfinguracion = view.findViewById(R.id.linearLayoutConfiguracion)
+        linearLayoutRecagas= view.findViewById(R.id.linearLayoutRecagas)
 
         getDriver()
 
@@ -60,7 +63,12 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         linearLayoutHistory?.setOnClickListener { goToHistories() }
         linearLayoutCar?.setOnClickListener{goToCarList()}
         linearLayoutConfinguracion?.setOnClickListener{ goToConfig()}
+        linearLayoutRecagas?.setOnClickListener{ goToSaldo()}
+    }
 
+    private fun goToSaldo() {
+        val i = Intent(activity, Saldo::class.java)
+        startActivity(i)
     }
 
     private fun goToConfig() {

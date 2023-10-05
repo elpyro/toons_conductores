@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Toons Conductor</string>
+    <string name="app_name">Ixi Conductor</string>
     <string name="google_maps_key">AIzaSyDGhEIcM1iNg5JJ-ZUevJ_4v8y57kDmakQ</string>
     <string name="Login">LOGIN</string>
     <string name="Correo">Correo</string>
@@ -76,7 +76,7 @@
     <string name="Documento">Documento del Vehiculo</string>
 
     <array name="tipoVehiculos">
-        <item>Carro</item>
+        <item>Vehiculo</item>
         <item>Moto</item>
         <item>Camioneta</item>
         <item>Bus</item>

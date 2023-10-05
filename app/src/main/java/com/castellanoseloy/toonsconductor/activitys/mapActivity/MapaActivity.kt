@@ -56,6 +56,9 @@ import java.util.Date
 import android.content.res.Resources
 import android.os.PowerManager
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
+import com.castellanoseloy.toonsconductor.activitys.carList.CarList
+import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.google.android.gms.maps.model.MapStyleOptions
 
@@ -125,6 +128,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
                 if(task.isSuccessful){
                     bookingProvider.updateStatus(idClient, "cancel").addOnCompleteListener { task->
                         if (task.isSuccessful) {
+                            borrarRuta()
                             modalBooking.dismiss()
                             modalMostrado=false
                             listenerBooking()
@@ -342,14 +346,12 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
      fun disconnectDriver() {
          detenerServico()
-        easyWayLocation?.endUpdates()
-        if (ubicacionLatLong != null) {
-            showButtonConnect()
-            easyWayLocation?.endUpdates()
-            marcaConductor?.remove()
-           
-           if(idConductor!=null) geoProveedor.eliminarLocalizacion(idConductor!!)
-        }
+         marcaConductor?.remove()
+         easyWayLocation?.endUpdates()
+         showButtonConnect()
+         easyWayLocation?.endUpdates()
+         if(idConductor!=null) geoProveedor.eliminarLocalizacion(idConductor!!)
+
     }
 
 //    val progressDialog: ProgressDialog by lazy {
@@ -361,12 +363,47 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 //    }
     private fun connectDriver() {
 
-        easyWayLocation?.endUpdates() // OTROS HILOS DE EJECUCION
-        easyWayLocation?.startLocation()
-        showButtonDisconnect()
-        isCameraMoved=false
-        serviceManager.startLocationService(this)//iniciamos el servicio de localizacion en segundo plano
+        val conductorValidado=verificarConductor()
+        if(conductorValidado){
+            showButtonDisconnect()
+            easyWayLocation?.endUpdates() // OTROS HILOS DE EJECUCION
+            easyWayLocation?.startLocation()
+            isCameraMoved=false
+            serviceManager.startLocationService(this)//iniciamos el servicio de localizacion en segundo plano
+        }else{
+            disconnectDriver()
+        }
 
+    }
+
+    private fun verificarConductor() : Boolean{
+        if(CarProvider.datosCarroEnUso==null){
+            disconnectDriver()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Seleccionar Vehiculo")
+            builder.setMessage("Necesita seleccionar un vehiculo de trabajo")
+            builder.setPositiveButton("Aceptar") { _, _ ->
+                val i = Intent(this, CarList::class.java)
+                startActivity(i)
+            }
+            builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
+            builder.show()
+            return false
+        }
+        if(!DriverProvider.datosConductor?.validacion.equals("Validado")){
+            disconnectDriver()
+
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Usuario no validado")
+            builder.setMessage("El usuario aun no ha sido validado")
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+            }
+            builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
+            builder.show()
+            return true //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
+        }
+        return true
     }
 
     private fun showButtonConnect() {
@@ -486,7 +523,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
                 )
                 isCameraMoved = true // Marca moveCamera como ya ejecutado
 
-                agregarMarca()
+                if(binding?.btnDisconnect?.isVisible == true) agregarMarca()
             }
 
             if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
@@ -541,8 +578,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
                      booking = childSnapshot.getValue(Booking::class.java)
                     if (booking?.status == "create") {
                         Log.d("REALTIME DATABASE", "Booking cargado: $booking")
-
-
                         showModalBooking(booking!!)
                         break // Sal del bucle si se encuentra un booking válido
                     }

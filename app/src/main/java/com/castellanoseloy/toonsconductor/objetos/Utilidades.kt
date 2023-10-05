@@ -175,6 +175,9 @@ object Utilidades {
         addTextChangedListener(textWatcher)
     }
 
+    fun calcularPorcentaje(valor: Double, porcentaje: Double): Double {
+        return (valor * porcentaje) / 100.0
+    }
     fun String.formatoMonenda(): String? {
         val formatoMoneda = DecimalFormat("###,###.###")
         formatoMoneda.decimalFormatSymbols = DecimalFormatSymbols(Locale("es", "CO"))
