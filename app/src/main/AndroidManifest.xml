@@ -32,6 +32,9 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="31">
         <activity
+            android:name=".activitys.codigoMensajeVerificacion.CodigoMensajeVerificacion"
+            android:exported="false" />
+        <activity
             android:name=".activitys.saldo.Saldo"
             android:exported="false"
             android:parentActivityName=".activitys.mapActivity.MapaActivity"

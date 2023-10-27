@@ -211,7 +211,7 @@ class AddCarViewModel : ViewModel() {
 
         if(!editarDatos){
             if(fotoFrontal==null) {
-                mensaje.value= "Se requiere una foto fontal del vehiculo"
+                mensaje.value= "Se requiere una foto frontal del vehiculo"
                 datosValidos=false
             }
             if(fotoLateral==null) {

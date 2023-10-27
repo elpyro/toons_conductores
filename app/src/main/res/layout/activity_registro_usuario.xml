@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".activitys.registro_usuario.RegistroUsuarioActivity">
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -16,7 +15,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
-            android:src="@drawable/imagen_login" />
+            android:src="@drawable/imagen_login"
+            tools:ignore="ContentDescription" />
 
         <View
             android:layout_width="match_parent"
@@ -28,14 +28,16 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center"
         android:layout_marginLeft="40dp"
         android:layout_marginRight="40dp">
 
         <LinearLayout
             android:layout_width="match_parent"
+            android:layout_gravity="center"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:orientation="vertical" >
 
 
@@ -45,6 +47,7 @@
                 android:layout_height="wrap_content"
                 android:backgroundTint="@color/blancoTransparente"
                 android:elevation="8dp"
+                android:layout_weight="1"
                 app:cardCornerRadius="10dp">
 
                 <LinearLayout
@@ -55,130 +58,136 @@
 
                     <ImageView
                         android:layout_width="match_parent"
-                        android:layout_height="40dp"
-                        android:layout_marginTop="5dp"
-                        android:src="@drawable/ic_pesona_blanco"></ImageView>
+                        android:layout_height="60dp"
+                        android:layout_marginTop="10dp"
+                        android:src="@drawable/ic_pesona_blanco"
+                        tools:ignore="ContentDescription"></ImageView>
 
                     <TextView
+                        android:id="@+id/textViewActualizaContrena_inf"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:gravity="center"
-                        android:text="@string/Registro"
+                        android:layout_margin="8dp"
+                        android:text="Crea tu contraseña"
                         android:textColor="@color/white"
-                        android:textSize="18dp"
+                        android:textSize="16sp"
                         android:textStyle="bold">
-
                     </TextView>
 
-<!--                    <com.google.android.material.textfield.TextInputLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        app:startIconDrawable="@drawable/ic_persona_blanco24"-->
-<!--                        app:startIconTint="@color/white">-->
-
-<!--                        <com.google.android.material.textfield.TextInputEditText-->
-<!--                            android:id="@+id/editTextName"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:hint="@string/Nombre"-->
-<!--                            android:inputType="textPersonName|textCapWords"-->
-<!--                            android:textColor="@color/white"-->
-<!--                            android:textSize="14sp" />-->
-<!--                    </com.google.android.material.textfield.TextInputLayout>-->
-
-<!--                    <com.google.android.material.textfield.TextInputLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        app:startIconDrawable="@drawable/ic_persona2_blanco24"-->
-<!--                        app:startIconTint="@color/white">-->
-
-<!--                        <com.google.android.material.textfield.TextInputEditText-->
-<!--                            android:id="@+id/editTextApellido"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:hint="@string/Apellido"-->
-<!--                            android:inputType="textPersonName|textCapWords"-->
-<!--                            android:textColor="@color/white"-->
-<!--                            android:textSize="14sp" />-->
-<!--                    </com.google.android.material.textfield.TextInputLayout>-->
-
-<!--                    <com.google.android.material.textfield.TextInputLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        app:startIconDrawable="@drawable/ic_telefono_blanco24"-->
-<!--                        app:startIconTint="@color/white">-->
-
-<!--                        <com.google.android.material.textfield.TextInputEditText-->
-<!--                            android:id="@+id/editTexTelefono"-->
-<!--                            android:layout_width="match_parent"-->
-<!--                            android:layout_height="wrap_content"-->
-<!--                            android:hint="@string/Telefono"-->
-<!--                            android:inputType="phone"-->
-<!--                            android:textColor="@color/white"-->
-<!--                            android:textSize="14sp" />-->
-<!--                    </com.google.android.material.textfield.TextInputLayout>-->
-
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:startIconDrawable="@drawable/ic_email_blanco"
-                        app:startIconTint="@color/white">
+                        android:layout_gravity="center"
+                        android:orientation="horizontal">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTexCorreo"
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="35dp"
+                            android:layout_gravity="center"
+                            android:layout_margin="8dp"
+                            android:layout_marginTop="10dp"
+                            android:src="@drawable/ic_validado"
+                            tools:ignore="ContentDescription"></ImageView>
+
+                        <TextView
+                            android:id="@+id/texview_telefono"
+                            android:layout_margin="8dp"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="@string/Correo"
-                            android:inputType="textEmailAddress"
+                            android:layout_gravity="center"
+                            android:gravity="center"
+                            android:foregroundGravity="center"
+                            android:text="telefono"
                             android:textColor="@color/white"
-                            android:textSize="14sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:textSize="20sp"
+                            android:textStyle="bold">
+                        </TextView>
+                    </LinearLayout>
 
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <!--                    <com.google.android.material.textfield.TextInputLayout-->
+                    <!--                        android:layout_width="match_parent"-->
+                    <!--                        android:layout_height="wrap_content"-->
+                    <!--                        app:startIconDrawable="@drawable/ic_email_blanco"-->
+                    <!--                        app:startIconTint="@color/white">-->
 
+                    <!--                        <com.google.android.material.textfield.TextInputEditText-->
+                    <!--                            android:id="@+id/editTexCorreo"-->
+                    <!--                            android:layout_width="match_parent"-->
+                    <!--                            android:layout_height="wrap_content"-->
+                    <!--                            android:hint="@string/Correo"-->
+                    <!--                            android:inputType="textEmailAddress"-->
+                    <!--                            android:textColor="@color/white"-->
+                    <!--                            android:textSize="14sp" />-->
+                    <!--                    </com.google.android.material.textfield.TextInputLayout>-->
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:startIconDrawable="@drawable/ic_lock"
-                        app:startIconTint="@color/white">
+                        android:orientation="horizontal">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextContrasena"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="@string/Contraseña"
-                            android:inputType="textPassword"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <com.google.android.material.textfield.TextInputLayout
 
-                    <com.google.android.material.textfield.TextInputLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:startIconDrawable="@drawable/ic_lock"
+                                app:startIconTint="@color/white">
 
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:startIconDrawable="@drawable/ic_contrasena2_blanco24"
-                        app:startIconTint="@color/white">
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/editTextContrasena"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/Contraseña"
+                                    android:inputType="textPassword"
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/editTextVerificarContrasena"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="@string/VerificarContrasena"
-                            android:inputType="textPassword"
-                            android:textColor="@color/white"
-                            android:textSize="14sp" />
-                    </com.google.android.material.textfield.TextInputLayout>
+                            <com.google.android.material.textfield.TextInputLayout
 
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                app:startIconDrawable="@drawable/ic_contrasena2_blanco24"
+                                app:startIconTint="@color/white">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/editTextVerificarContrasena"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/VerificarContrasena"
+                                    android:inputType="textPassword"
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <Button
+                            android:id="@+id/buttonMostrarContrasena"
+                            android:layout_width="70dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/boton_redondo"
+                            android:backgroundTint="@color/white"
+                            android:gravity="center"
+                            android:text="Mostrar"
+                            android:textColor="@color/black"
+                            android:textSize="10sp" />
+                    </LinearLayout>
                     <Button
                         android:id="@+id/buttonRegistrar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:background="@drawable/boton_redondo"
-                        android:textColor="@color/white"
-                        android:text="@string/Registrate"></Button>
+                        android:text="@string/Registrate"
+                        android:textColor="@color/white"></Button>
 
 
                 </LinearLayout>

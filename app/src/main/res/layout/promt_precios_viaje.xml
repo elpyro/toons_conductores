@@ -32,7 +32,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <EditText
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
@@ -45,7 +45,7 @@
                     android:gravity="left"
                     android:text="Total viaje" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editText_totalViaje"
                     android:inputType="textMultiLine"
                     android:layout_width="match_parent"
@@ -60,46 +60,46 @@
                     android:text="Precio" />
 
             </LinearLayout>
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/grey"
-                android:layout_marginTop="10dp"
-                android:layout_marginRight="30dp"
-                android:layout_marginLeft="30dp" />
+<!--            <View-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="1dp"-->
+<!--                android:background="@color/grey"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:layout_marginRight="30dp"-->
+<!--                android:layout_marginLeft="30dp" />-->
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:orientation="horizontal">
-                <EditText
-                    android:id="@+id/editText_impuesto_etiqueta"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
-                    android:background="@android:color/transparent"
-                    android:padding="0dp"
-                    android:layout_weight="1"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="30dp"
-                    android:gravity="left"
-                    android:text="Impuesto nacional" />
+<!--            <LinearLayout-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:orientation="horizontal">-->
+<!--                <EditText-->
+<!--                    android:id="@+id/editText_impuesto_etiqueta"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:inputType="textMultiLine"-->
+<!--                    android:background="@android:color/transparent"-->
+<!--                    android:padding="0dp"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:layout_gravity="center"-->
+<!--                    android:layout_marginStart="30dp"-->
+<!--                    android:gravity="left"-->
+<!--                    android:text="Impuesto nacional" />-->
 
 
-                <EditText
-                    android:id="@+id/editText_impuesto"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="textMultiLine"
-                    android:background="@android:color/transparent"
-                    android:layout_marginEnd="30dp"
-                    android:layout_weight="1.5"
-                    android:layout_gravity="center"
-                    android:gravity="right"
-                    android:text="Precio" />
+<!--                <EditText-->
+<!--                    android:id="@+id/editText_impuesto"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:inputType="textMultiLine"-->
+<!--                    android:background="@android:color/transparent"-->
+<!--                    android:layout_marginEnd="30dp"-->
+<!--                    android:layout_weight="1.5"-->
+<!--                    android:layout_gravity="center"-->
+<!--                    android:gravity="right"-->
+<!--                    android:text="Precio" />-->
 
-            </LinearLayout>
+<!--            </LinearLayout>-->
 
             <View
                 android:layout_width="match_parent"
@@ -109,7 +109,7 @@
                 android:layout_marginRight="30dp"
                 android:layout_marginLeft="30dp" />
 
-            <EditText
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
@@ -124,7 +124,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <EditText
+                <TextView
                     android:id="@+id/editText_porcentaje_comision_referido_etiqueta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -135,9 +135,9 @@
                     android:layout_gravity="center"
                     android:layout_marginStart="30dp"
                     android:gravity="left"
-                    android:text="%Comisión" />
+                    android:text="% Comisión" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editText_porcentaje_comision_referido"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -159,7 +159,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <EditText
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
@@ -171,7 +171,7 @@
                     android:gravity="left"
                     android:text="Tarifa fija" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editText_TarifaFijaReferidor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -194,7 +194,7 @@
                 android:layout_marginRight="30dp"
                 android:layout_marginLeft="30dp" />
 
-            <EditText
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
@@ -209,7 +209,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <EditText
+                <TextView
                     android:id="@+id/editText_porcentaje_comision_app_etiqueta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -220,9 +220,9 @@
                     android:layout_gravity="center"
                     android:layout_marginStart="30dp"
                     android:gravity="left"
-                    android:text="% Comisión App" />
+                    android:text="% Comisión" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editText_porcentaje_comision_app"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -242,7 +242,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <EditText
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
           android:inputType="textMultiLine"
@@ -252,9 +252,9 @@
                     android:layout_gravity="center"
                     android:layout_marginStart="30dp"
                     android:gravity="left"
-                    android:text="Tarifa Fija App" />
+                    android:text="Tarifa Fija" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editText_tarifa_fija_app"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -278,7 +278,7 @@
                 android:layout_marginRight="30dp"
                 android:layout_marginLeft="30dp" />
 
-            <EditText
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
@@ -293,7 +293,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
-                <EditText
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textMultiLine"
@@ -305,13 +305,14 @@
                     android:gravity="left"
                     android:text="Comisión Conductor" />
 
-                <EditText
+                <TextView
                     android:id="@+id/editText_ganancia_condutor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
           android:inputType="textMultiLine"
                     android:background="@android:color/transparent"
                     android:padding="0dp"
+                    android:textStyle="bold"
                     android:layout_marginEnd="30dp"
                     android:layout_weight="1.5"
                     android:layout_gravity="center"

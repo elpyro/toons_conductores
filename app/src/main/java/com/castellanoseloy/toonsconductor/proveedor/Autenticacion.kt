@@ -27,6 +27,11 @@ class Autenticacion {
         return existente
     }
 
+    fun cambiarClave(newPassword: String): Task<Void>? {
+        val usuario = firebaseAutenticacion.currentUser
+        return usuario?.updatePassword(newPassword)
+    }
+
 
     fun logout() {
         firebaseAutenticacion.signOut()

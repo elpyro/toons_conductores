@@ -33,6 +33,11 @@ class HistoryProvider {
         return db.whereEqualTo("idDriver", authProvider.obtenerId()).orderBy("timestamp", Query.Direction.DESCENDING)
     }
 
+    fun getHistoriesClient(idCliente:String): Query { // CONSULTA COMPUESTA - INDICE
+        return db.whereEqualTo("idClient", idCliente)
+    }
+
+
     fun getBooking(): Query {
         return db.whereEqualTo("idDriver", authProvider.obtenerId())
     }

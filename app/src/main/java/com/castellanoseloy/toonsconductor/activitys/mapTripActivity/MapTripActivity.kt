@@ -254,6 +254,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         val history = History(
             idDriver = autenticacion.obtenerId(),
             idClient = booking?.idClient,
+            pasajero=booking?.nombrePasajero,
+            pasajeroTelefono=booking?.telefonoPasajero,
             origin = booking?.origin,
             destination = booking?.destination,
             originLat = booking?.originLat,
@@ -263,7 +265,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             time = min,
             km = km,
             tarifas = booking?.tarifas,
-            timestamp = Date().time
+            timestamp = Date().time,
+            car = booking?.car
+
         )
         historyProvider.create(history)
     }

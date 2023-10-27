@@ -1,7 +1,7 @@
 package com.castellanoseloy.toonsconductor.activitys.mapActivity
 
 import android.Manifest
-import android.app.ProgressDialog
+import android.provider.Settings
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -54,10 +54,13 @@ import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import java.util.Date
 import android.content.res.Resources
+import android.net.Uri
 import android.os.PowerManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
+import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
+import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.google.android.gms.maps.model.MapStyleOptions
@@ -172,39 +175,55 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         mapaFragment.getMapAsync(this)
 
         ubicacionPorDefecto()
-
-
-            permisoLocalizacion.launch(arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ))
-
+        verificarPermisos()
 
         //si el conductor es nuevo enviar a pantalla de perfil
         if(DriverProvider.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
 
         tiempoActivo= Date().time
 
+
+
+        if(DriverProvider.datosConductor!=null){
+            listeners()
+        }else{
+            val driverProvider=DriverProvider()
+            val autenticacion= Autenticacion()
+            driverProvider.createToken(autenticacion.obtenerId())
+            driverProvider.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
+                Log.d("Firestore", "Validando client ")
+                if (document.exists()) {
+
+                    val driver = document.toObject(ConductorModelo::class.java)
+                    DriverProvider.datosConductor=driver
+
+                    listeners()
+                }else{
+                    Utilidades.mostrarToast("Problemas en conexion", this)
+                }
+            }
+        }
+
+
+
          listeners()
     }
 
 
     var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            when{
 
-                permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false)->{
-                    easyWayLocation!!.startLocation()
-                    connectDriver()
-                }
-                else->{
-                    Log.d("Pemisos","Permiso gps NO concedidos")
-                    mostrarDialogoPermisos()
-                }
-
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                when{
+                    permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false)->{
+                        easyWayLocation!!.startLocation()
+                        connectDriver()
+                    }
+                    else->{
+                        Log.d("Pemisos","Permiso gps NO concedidos")
+                        mostrarDialogoPermisos()
+                    }
             }
-        }
+            }
     }
 
 
@@ -270,9 +289,18 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun listeners() {
 
-        binding.btnConnect.setOnClickListener { connectDriver() }
+        binding.btnConnect.setOnClickListener { verificarPermisos() }
         binding.btnDisconnect.setOnClickListener { disconnectDriver() }
         binding.imageViewMenu.setOnClickListener{ showModalMenu() }
+    }
+
+    private fun verificarPermisos() {
+        permisoLocalizacion.launch(arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ))
+
     }
 
     fun detenerServico() {
@@ -301,9 +329,19 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     private fun mostrarDialogoPermisos() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Permisos Requeridos")
-        builder.setMessage("Esta aplicación requiere permisos de ubicación TODO EL TIEMPO para funcionar correctamente. \n Información de la aplicación -> Permisos -> Ubicación -> PERMITIR TODO EL TIEMPO")
+        builder.setMessage("Esta aplicación requiere permisos de ubicación TODO EL TIEMPO, ve a: \n\n↓  Información de la aplicación  \n↓  Permisos  \n↓  Ubicación \n-> PERMITIR TODO EL TIEMPO")
         builder.setPositiveButton("Aceptar") { _, _ ->
-            solicitarPermisos() // Llama a la función para solicitar permisos
+
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+                val intent = Intent()
+                intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }else{
+                solicitarPermisos() // Llama a la función para solicitar permisos
+            }
+
         }
         builder.setCancelable(false) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
         builder.show()
@@ -323,14 +361,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
              )
          }
      }
-
-
-
-//    private fun salvarLocalizacion(){
-//        if(ubicacionLatLong!=null){
-//            geoProveedor.guardarLocalizacion(idConductor!!,ubicacionLatLong!!, tiempoActivo!!)
-//        }
-//    }
 
 
 
@@ -354,13 +384,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     }
 
-//    val progressDialog: ProgressDialog by lazy {
-//        ProgressDialog(this).apply {
-//            setMessage("Conectando Conductor...")
-//            setCancelable(true)
-//            setProgressStyle(ProgressDialog.STYLE_SPINNER)
-//        }
-//    }
+
     private fun connectDriver() {
 
         val conductorValidado=verificarConductor()

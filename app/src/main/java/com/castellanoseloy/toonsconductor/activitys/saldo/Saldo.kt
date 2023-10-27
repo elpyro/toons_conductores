@@ -60,11 +60,11 @@ class Saldo : AppCompatActivity() {
                     Log.d("Nequi", "El token de acceso es: $accessToken")
                     crearSolicitudPost(accessToken)
                     //cancelarSolicitud(accessToken)
- //                   chequearStatus(accessToken)
-  //                  otrometodo()
+                 //   chequearStatus(accessToken)
+                    //otrometodo()
                 } else {
                     // Maneja el error de autenticación
-                    println("Error de autenticación")
+                    Log.e("Nequi", "Error de autenticacion")
                 }
             }
         }
@@ -200,11 +200,11 @@ class Saldo : AppCompatActivity() {
     private fun crearSolicitudPost(accessToken: String) {
         val nequiPaymentManager=NequiPaymentManager(accessToken)
         nequiPaymentManager.sendPaymentWithPush(
-            "3213462822",
+            "3112972555",
         Utilidades.generarIdUnico(),
         "100000",
         "ixi",
-        "prueba2",
+        "prueba26/10/23",
         "prueba3"
         ) { success, response ->
             if (success) {

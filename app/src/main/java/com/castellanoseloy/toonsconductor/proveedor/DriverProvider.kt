@@ -5,6 +5,7 @@ import android.util.Log
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
@@ -33,8 +34,25 @@ class DriverProvider {
     val db = Firebase.firestore.collection("Conductores")
     var storage = FirebaseStorage.getInstance().getReference().child("profile")
 
-    fun create(driver: ConductorModelo): Task<Void> {
-        return db.document(driver.id!!).set(driver)
+
+    fun crearOActualizar(driver:ConductorModelo):Task<Void>{
+        val documentReference = db.document(driver.id!!)
+        return documentReference.set(driver,  SetOptions.merge())
+    }
+
+    fun getConductorPorTelefono(telefono: String): Task<DocumentSnapshot> {
+        return db.whereEqualTo("telefono", telefono)
+            .get()
+            .continueWith { task ->
+                val querySnapshot = task.result
+                if (task.isSuccessful && !querySnapshot.isEmpty) {
+                    // Devuelve el primer documento que coincida con el número de teléfono
+                    return@continueWith querySnapshot.documents[0]
+                } else {
+                    // No se encontró ningún cliente con el número de teléfono
+                    return@continueWith null
+                }
+            }
     }
 
     fun createToken(idDriver: String) {
@@ -42,7 +60,9 @@ class DriverProvider {
             if (it.isSuccessful) {
                 val token = it.result // TOKEN DE NOTIFICACIONES
                 updateToken(idDriver, token)
-                Log.d("Firebase", "Token creado con exito")
+
+            }else{
+                Log.e("Firebase", "Token creado con exito")
             }
         }
     }
@@ -50,7 +70,13 @@ class DriverProvider {
     fun updateToken(idDriver: String, token: String): Task<Void> {
         val map: MutableMap<String, Any> = HashMap()
         map["token"] = token
-        return db.document(idDriver).update(map)
+        return db.document(idDriver).update(map).addOnCompleteListener{
+            if(it.isSuccessful){
+                Log.d("Firebase", "Token creado con exito")
+            }else{
+                Log.e("Firebase", "Error creando token")
+            }
+        }
     }
 
     fun uploadImage(id: String, nombreImagen: String, file: File): StorageTask<UploadTask.TaskSnapshot> {
@@ -154,6 +180,7 @@ class DriverProvider {
             }
         }
     }
+
 
 
 }

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
 import com.castellanoseloy.toonsconductor.activitys.configuracion.Configuracion
@@ -92,13 +93,28 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     }
 
     private fun goToMain() {
-        val i = Intent(activity, MainActivity::class.java)
-        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(i)
-        authProvider.logout()
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+        alertDialogBuilder.setTitle("Cerrar Sesion")
+        alertDialogBuilder.setMessage("Está seguro de cerrar la sesion?.")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
+
+            val i = Intent(activity, MainActivity::class.java)
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(i)
+            authProvider.logout()
+        }
+        // Botón Cancelar
+        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+
+
     }
 
     private fun getDriver() {
-        textViewUsername?.text = DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
+        textViewUsername?.text = DriverProvider.datosConductor?.nombre?: "" +" "+ DriverProvider.datosConductor?.apellido?:""
         }
 }

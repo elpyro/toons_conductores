@@ -4,11 +4,15 @@ import android.app.ProgressDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.activitys.codigoMensajeVerificacion.CodigoMensajeVerificacion
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
@@ -30,6 +34,7 @@ import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var progressDialog: ProgressDialog
     private val bookingAceptedsProvider = BookingAceptedsProvider()
     private lateinit var binding: ActivityMainBinding
     private var viewModel: MainActivityViewModel? = null
@@ -42,12 +47,9 @@ class MainActivity : AppCompatActivity() {
 
         binding= ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        //COLOCAR LA BARRA SUPERIOR TRANSAPENTE
-        window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-
+        progressDialog = ProgressDialog(this)
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
-       
+
         listeners()
     }
 
@@ -59,26 +61,44 @@ class MainActivity : AppCompatActivity() {
         binding.buttonIniciarSesion.setOnClickListener{
             iniciarSesion()
         }
+        binding.buttonMostrarContrasena.setOnClickListener {
+            mostrarContrasena()
+        }
+
     }
 
-    val progressDialog: ProgressDialog by lazy {
-        ProgressDialog(this).apply {
-            setMessage("Verificando Cuenta...")
-            setCancelable(false)
-            setProgressStyle(ProgressDialog.STYLE_SPINNER)
+    private fun mostrarContrasena() {
+        if (binding.editTextContrasena.transformationMethod == PasswordTransformationMethod.getInstance()) {
+            // Si la contraseña está oculta, muéstrala
+            binding.editTextContrasena.transformationMethod = HideReturnsTransformationMethod.getInstance()
+            binding.buttonMostrarContrasena.text = "Ocultar"
+        } else {
+            // Si la contraseña está visible, ocúltala
+            binding.editTextContrasena.transformationMethod = PasswordTransformationMethod.getInstance()
+            binding.buttonMostrarContrasena.text = "Mostrar"
         }
+    }
+
+    fun mostrarDialogProgreso(){
+        progressDialog.setTitle("Iniciando Sesion...")
+        progressDialog.setCancelable(false)
+        progressDialog.setMessage("Espere un momento...")
+        progressDialog.show()
     }
     private fun iniciarSesion() {
         val datosValidos=viewModel!!.validarDatos(binding)
 
         if (datosValidos){
-            autenticacion.login(binding.editTextCorreo.text.toString(),binding.editTextContrasena.text.toString())
+            mostrarDialogProgreso()
+
+            val correo=binding.editTextCorreo.text.toString()+"@ixi-conductor.com"
+            autenticacion.login(correo,binding.editTextContrasena.text.toString())
                 .addOnCompleteListener {
                     if (it.isSuccessful){
-//                        progressDialog.show()
                         obtenerDatosConductor()
                     }else{
                         ErroresFirebase.imprimirError(it.exception,this@MainActivity)
+                        if (progressDialog.isShowing)  progressDialog.dismiss()
                     }
                 }
         }
@@ -87,29 +107,36 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun registrar() {
-//        progressDialog.show()
-        val intent = Intent(this@MainActivity, RegistroUsuarioActivity::class.java)
+        val intent = Intent(this@MainActivity, CodigoMensajeVerificacion::class.java)
         startActivity(intent)
     }
 
     private fun obtenerDatosConductor(){
-        val idConductor=autenticacion.obtenerId()
-
         var driverProvideer=DriverProvider()
-        driverProvideer.createToken(idConductor)
-        driverProvideer.getDriver(idConductor!!).addOnSuccessListener { document ->
+        driverProvideer.createToken(autenticacion.obtenerId())
+        driverProvideer.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
+            Log.d("Firestore", "Validando conductor ")
             if (document.exists()) {
+
+                Utilidades.esperarUnSegundo()
+                Utilidades.esperarUnSegundo()
+
                 val driver = document.toObject(ConductorModelo::class.java)
                 DriverProvider.datosConductor = driver
+
                 Log.d("Firestore", "Obteniendo datos del conductor ${driver?.validacion}")
                 verificarViajesPendientes()
                 obtenerDatosCarro()
+
             }else{
-                Log.d("Firestore", "No se encontraron datos del conductor")
-                Utilidades.mostrarToast("No se encontraron datos del conductor",this)
-                progressDialog.dismiss()
-            }
+                    Log.d("Firestore", "No se encontraron datos del conductor")
+                    Utilidades.mostrarToast("No se encontraron datos del conductor",this)
+                    solicitarCredenciales()
+                }
+            if (progressDialog.isShowing)  progressDialog.dismiss()
         }
+
+
     }
 
     private fun obtenerDatosCarro(){
@@ -189,9 +216,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStart() {
-
-        if(autenticacion.sesionExistente()) obtenerDatosConductor()
         super.onStart()
+        if(autenticacion.sesionExistente()) {
+            obtenerDatosConductor()
+        }else{
+            solicitarCredenciales()
+        }
+    }
+
+    private fun solicitarCredenciales() {
+        binding.cardViewCredenciales.visibility= View.VISIBLE
+        binding.imageViewLogo.visibility= View.GONE
     }
 }
 

@@ -4,10 +4,12 @@ package com.castellanoseloy.toonsconductor.activitys.historiesDetails
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.WindowManager
 import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.databinding.ActivityHistoriesDetailsBinding
+import com.castellanoseloy.toonsconductor.promts.DatosRefeidorPromt
 import com.castellanoseloy.toonsconductor.promts.MostrarTarifas
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.utils.RelativeTime
@@ -23,7 +25,6 @@ class HistoriesDetailActivity : AppCompatActivity() {
     private var history: History? = null
     private lateinit var binding: ActivityHistoriesDetailsBinding
     private var historyProvider = HistoryProvider()
-    private var clientProvider = ClienteProveedor()
     private var extraId = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,29 +58,40 @@ class HistoriesDetailActivity : AppCompatActivity() {
                 binding.textViewDestination.text = history?.destination
                 binding.textViewDate.text =
                     RelativeTime.getTimeAgo(history?.timestamp!!, this@HistoriesDetailActivity)
-                binding.textViewPrice.text = history!!.tarifas?.totalViaje.toString().formatoMonenda()
+                binding.textViewPasajero.text=history?.pasajero?: "Desconocido"
+
+                binding.textViewPrice.text = history!!.tarifas?.totalComisionConductor.toString().formatoMonenda()
                 binding.textViewMyCalification.text = "${history?.calificationToDriver  ?: "5"}    ${history?.commentClient  ?: "El cliente no califico"}"
                 binding.textViewClientCalification.text = "${history?.calificationToClient ?: "5"}    ${history?.commentDriver ?: "No calificaste"}"
 
                 binding.textViewTimeAndDistance.text =
                     "${history?.time} Min - ${String.format("%.1f", history?.km)} Km"
-                getClientInfo(history?.idClient!!)
+
+                binding?.buttonVerCliente?.setOnClickListener{
+                    mostrarCliente(history?.idClient)
+                }
             }
 
         }
     }
 
-    private fun getClientInfo(id: String) {
-//        clientProvider.getClientById(id).addOnSuccessListener { document ->
-//            if (document.exists()) {
-//                val client = document.toObject(Client::class.java)
-//                binding.textViewName.text = "${client?.name} ${client?.lastname}"
-//                if (client?.image != null) {
-//                    if (client?.image != "") {
-//                        Glide.with(this).load(client?.image).into(binding.circleImageProfile)
-//                    }
-//                }
-//            }
-//        }
+    private fun mostrarCliente(idClient: String?) {
+        var clienteProveedor = ClienteProveedor()
+        clienteProveedor.getClientById(idClient!!).addOnSuccessListener { document ->
+            if (document.exists()) {
+                val cliente = document.toObject(Client::class.java)
+
+                var datosRefeidorPromt= DatosRefeidorPromt()
+                datosRefeidorPromt.clienteDetalle(this,cliente!!)
+
+
+                Log.d("Firestore", "Obteniendo datos del cliente ${cliente}")
+
+            } else {
+                Log.e("Firestore", "No se encontraron datos del cliente")
+            }
+        }
     }
+
+
 }

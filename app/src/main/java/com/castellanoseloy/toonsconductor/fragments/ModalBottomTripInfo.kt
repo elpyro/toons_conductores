@@ -23,6 +23,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.LinearLayout
 import com.bumptech.glide.Glide
+import com.castellanoseloy.toonsconductor.promts.DatosRefeidorPromt
 import com.castellanoseloy.toonsconductor.promts.MostrarTarifas
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 
@@ -46,7 +47,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     var textView_pasajeros: TextView? = null
     var textView_equipaje: TextView? = null
     var linearLayout_detalleCobro:LinearLayout? =null
-
+    var linearLayout_referidor:LinearLayout?=null
 
 
     var imageViewPhoneReferidor: ImageView? = null
@@ -77,6 +78,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textViewOrigin = view.findViewById(R.id.textViewOrigin)
         textViewDestination = view.findViewById(R.id.textViewDestination)
         linearLayout_detalleCobro= view.findViewById(R.id.linearLayout_detalleCobro)
+        linearLayout_referidor=view.findViewById(R.id.linearLayout_referidor)
         imageViewPhoneReferidor = view.findViewById(R.id.imageViewPhoneReferidor)
         imageViewPhone = view.findViewById(R.id.imageViewPhone)
 
@@ -130,6 +132,10 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                     if (client?.telefono!! != null) {
                         verificarPermisos(client?.telefono!!)
                     }
+                }
+                linearLayout_referidor?.setOnClickListener{
+                    val datosRefeidorPromt=DatosRefeidorPromt()
+                    client?.let { it1 -> datosRefeidorPromt.clienteDetalle(requireContext(), it1) }
                 }
 
             }

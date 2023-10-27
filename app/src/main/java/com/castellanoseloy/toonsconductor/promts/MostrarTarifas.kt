@@ -27,12 +27,12 @@ class MostrarTarifas {
         val textViewPorcentajeComisionReferido = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_referido)
         val editText_porcentaje_comision_referido_etiqueta = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_referido_etiqueta)
         val editText_TarifaFijaReferidor = dialogView.findViewById<TextView>(R.id.editText_TarifaFijaReferidor)
-        val editText_impuesto = dialogView.findViewById<TextView>(R.id.editText_impuesto)
+//        val editText_impuesto = dialogView.findViewById<TextView>(R.id.editText_impuesto)
         val editText_porcentaje_comision_app_etiqueta = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_app_etiqueta)
         val editText_porcentaje_comision_app = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_app)
         val editText_tarifa_fija_app = dialogView.findViewById<TextView>(R.id.editText_tarifa_fija_app)
         val editText_ganancia_condutor = dialogView.findViewById<TextView>(R.id.editText_ganancia_condutor)
-        val editText_impuesto_etiqueta = dialogView.findViewById<TextView>(R.id.editText_impuesto_etiqueta)
+//        val editText_impuesto_etiqueta = dialogView.findViewById<TextView>(R.id.editText_impuesto_etiqueta)
 
         textViewTotalViaje.setText(tarifas.totalViaje.toString().formatoMoneda())
 
@@ -50,9 +50,9 @@ class MostrarTarifas {
         textViewPorcentajeComisionReferido.setText(comisionReferidor.toString().formatoMoneda())
 
 
-        editText_impuesto_etiqueta.setText("Impuesto Nacional "+tarifas.impuestoNacional.toString() +"%")
-        val impuesto= (tarifas.totalViaje!! * tarifas.impuestoNacional!!)/100
-        editText_impuesto.setText(impuesto.toString().formatoMoneda())
+//        editText_impuesto_etiqueta.setText("Impuesto Nacional "+tarifas.impuestoNacional.toString() +"%")
+//        val impuesto= (tarifas.totalViaje!! * tarifas.impuestoNacional!!)/100
+//        editText_impuesto.setText(impuesto.toString().formatoMoneda())
 
 // Configurar el botón "Aceptar"
         dialogBuilder.setPositiveButton("Aceptar") { dialogInterface, i ->

@@ -40,16 +40,7 @@ object ErroresFirebase {
                 Utilidades.mostrarToast("Usuario no válido o deshabilitado", context)
                 Log.e("Firebase Error", "Error de usuario no válido o deshabilitado: ${exception.message}", exception)
             }
-            is FirebaseAuthUserCollisionException -> {
-                // El usuario ya está registrado con el correo proporcionado
-                Utilidades.mostrarToast("El correo ya está en uso", context)
-                Log.e("Firebase Error", "Error de colisión de usuario: ${exception.message}", exception)
-            }
-            is FirebaseAuthWeakPasswordException -> {
-                // La contraseña es demasiado débil
-                Utilidades.mostrarToast("Contraseña débil, debe contener al menos 6 caracteres", context)
-                Log.e("Firebase Error", "Error de contraseña débil: ${exception.message}", exception)
-            }
+
             is FirebaseNetworkException -> {
                 // No hay conexión a Internet o la conexión es lenta
                 Utilidades.mostrarToast("Problemas en la conexión", context)
