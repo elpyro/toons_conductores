@@ -1,22 +1,30 @@
 package com.castellanoseloy.toonsconductor.activitys.saldo
 
+import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
 
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.historial.HistoriesActivity
 import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.registro_usuario.MyActivityViewModel
+import com.castellanoseloy.toonsconductor.activitys.saldo.recargaNequi.RecargaNequi
+import com.castellanoseloy.toonsconductor.adapter.RecargasAdapter
 import com.castellanoseloy.toonsconductor.api.NequiOAuth2Manager
 import com.castellanoseloy.toonsconductor.api.NequiPaymentCancellationManager
 import com.castellanoseloy.toonsconductor.api.NequiPaymentManager
 import com.castellanoseloy.toonsconductor.apiimport.NequiPaymentStatusManager
 import com.castellanoseloy.toonsconductor.databinding.ActivityRegistroUsuarioBinding
 import com.castellanoseloy.toonsconductor.databinding.ActivitySaldoBinding
+import com.castellanoseloy.toonsconductor.modelos.RecargasModelo
 import com.castellanoseloy.toonsconductor.objetos.BodyUtils
+import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
 
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import okhttp3.*
@@ -31,9 +39,11 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Random
 
 class Saldo : AppCompatActivity() {
 
+    private lateinit var adapter: RecargasAdapter
     private lateinit var binding: ActivitySaldoBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,214 +51,283 @@ class Saldo : AppCompatActivity() {
         binding= ActivitySaldoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val linearLayoutManager = LinearLayoutManager(this)
+        binding.recyclerRecargas.layoutManager = linearLayoutManager
+
         mostrarSaldo()
+        cargarRecargas()
         listeners()
     }
 
+    private fun cargarRecargas() {
+        val recargasProvider=RecargasProvider()
+
+        recargasProvider.buscarPorIdDriver(DriverProvider.datosConductor?.id!!) { snapshot ->
+                if(snapshot.isNotEmpty()){
+                    adapter = RecargasAdapter(this, snapshot as ArrayList<RecargasModelo>)
+                    binding.recyclerRecargas.adapter = adapter
+                }
+        }
+    }
+
     private fun listeners() {
-        binding?.botonRecargar?.setOnClickListener{nequi()}
+        binding?.botonRecargar?.setOnClickListener{ abrirRecargas()}
     }
 
-    private fun nequi() {
-        var nequiOAuth2Manager=NequiOAuth2Manager()
-
-        runOnUiThread {
-            nequiOAuth2Manager.getAccessToken { accessToken ->
-                if (accessToken != null) {
-                    veficiarFechaVencimiento(accessToken)
-                    // Aquí puedes usar el token de acceso
-                    Log.d("Nequi", "El token de acceso es: $accessToken")
-                    crearSolicitudPost(accessToken)
-                    //cancelarSolicitud(accessToken)
-                 //   chequearStatus(accessToken)
-                    //otrometodo()
-                } else {
-                    // Maneja el error de autenticación
-                    Log.e("Nequi", "Error de autenticacion")
-                }
-            }
-        }
-
+    private fun abrirRecargas() {
+        val i = Intent(this, RecargaNequi::class.java)
+        startActivity(i)
     }
 
-    private fun veficiarFechaVencimiento(accessToken: String) {
-        val token =accessToken
+//    private fun verificacion() {
+//        var nequiOAuth2Manager=NequiOAuth2Manager()
+//
+//        runOnUiThread {
+//            nequiOAuth2Manager.getAccessToken { accessToken ->
+//                if (accessToken != null) {
+//                    val codigo=binding.editTextCodigo.text.toString().trim()
+//                   verificarEstadoDePago(accessToken,codigo)
+//                } else {
+//                    // Maneja el error de autenticación
+//                    Log.e("Nequi", "Error de autenticacion")
+//                }
+//            }
+//        }
+//    }
 
-        val parts = token.split(".")
-        if (parts.size == 3) {
-            val decodedPayload = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                String(Base64.getDecoder().decode(parts[1]), StandardCharsets.UTF_8)
-            } else {
-                TODO("VERSION.SDK_INT < O")
-            }
-            val payloadJson = JSONObject(decodedPayload)
-            val expirationTimeInSeconds = payloadJson.optLong("exp")
+//    private fun nequi() {
+//        val recarga=binding.editTextRecarga.text.toString().trim()
+//        if(recarga.isNullOrEmpty()) return
+//
+//        var nequiOAuth2Manager=NequiOAuth2Manager()
+//
+//        runOnUiThread {
+//            nequiOAuth2Manager.getAccessToken { accessToken ->
+//                if (accessToken != null) {
+//                    // Aquí puedes usar el token de acceso
+//                    Log.d("Nequi", "La recarga es  $recarga y El token de acceso es: $accessToken ")
+//                    enviarPagoConNotificacionPush(accessToken,recarga )
+//                } else {
+//                    // Maneja el error de autenticación
+//                    Log.e("Nequi", "Error de autenticacion")
+//                }
+//            }
+//        }
+//
+//    }
 
-            if (expirationTimeInSeconds != null) {
-                val expirationTimeMillis = expirationTimeInSeconds * 1000
-                val expirationDateTime = LocalDateTime.ofInstant(
-                    Instant.ofEpochMilli(expirationTimeMillis),
-                    ZoneId.systemDefault()
-                )
-
-                val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-                val formattedExpirationTime = formatter.format(expirationDateTime)
-                Log.d("Nequi", "Fecha de vencimiento del token: $formattedExpirationTime")
-
-            }
-        }
-    }
-
-    private fun chequearStatus(accessToken: String) {
-        val trnId = "M28" // Reemplaza con el trnId de la solicitud de pago que deseas consultar
-        val paymentStatusManager = NequiPaymentStatusManager(accessToken)
-        paymentStatusManager.checkPaymentStatus(trnId) { success, response ->
-            if (success) {
-                // Procesar la respuesta exitosa
-                Log.d("Nequi", "Respuesta del estado de pago: $response")
-            } else {
-                // Manejar una respuesta no exitosa
-                Log.e("Nequi", "Error al consultar el estado de pago")
-            }
-        }
-    }
-
-        private fun cancelarSolicitud(accessToken: String) {
-
-
-            val paymentCancellationManager = NequiPaymentCancellationManager(accessToken)
-            paymentCancellationManager.cancelPaymentNotification(
-                "1",
-                "3012146840",
-                "350-3012146840-9232-8944090690"
-            ) { success, response ->
-                if (success) {
-                    // Procesar la respuesta exitosa
-                    println("Cancelación exitosa: $response")
-                } else {
-                    // Manejar la respuesta no exitosa
-                    println("Error en la cancelación: $response")
-                }
-            }
-        }
-
-
-
-
-    private fun prueba(accessToken: String) {
-
-            val client = OkHttpClient()
-
-            // Construir el cuerpo de la solicitud en formato JSON
-            val requestBody = JSONObject()
-            val requestMessage = JSONObject()
-            val requestHeader = JSONObject()
-            val requestBodyData = JSONObject()
-
-            requestHeader.put("Channel", "PNP04-C001")
-            requestHeader.put("RequestDate", "2017-06-21T20:26:12.654Z")
-            requestHeader.put("MessageID", "1215123684")
-            requestHeader.put("ClientID", "12345")
-
-            requestBodyData.put("phoneNumber", "3112972555")
-            requestBodyData.put("code", "NIT_1")
-            requestBodyData.put("value", "1000")
-            requestBodyData.put("reference1", "reference1")
-            requestBodyData.put("reference2", "reference2")
-            requestBodyData.put("reference3", "reference3")
-
-            requestMessage.put("RequestHeader", requestHeader)
-            requestMessage.put("RequestBody", JSONObject().put("any", JSONObject().put("unregisteredPaymentRQ", requestBodyData)))
-
-            requestBody.put("RequestMessage", requestMessage)
-
-            // Crear la solicitud POST
-            val request = Request.Builder()
-                .url("https://api.sandbox.nequi.com/payments/v2/-services-paymentservice-unregisteredpayment")
-                .header("Content-Type", "application/json")
-                .header("Accept", "application/json")
-                .header("Authorization", "Bearer $accessToken") // Reemplaza con tu token
-                .header("x-api-key", "vG7JvMu6laaBWviQIsrJaaKaeWNRHaX44dFtDfBr")
-                .post(RequestBody.create("application/json".toMediaTypeOrNull(), requestBody.toString()))
-                .build()
-
-            // Realizar la solicitud de forma asíncrona
-            client.newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    // Manejar el fallo de la solicitud
-                    e.printStackTrace()
-                }
-
-                override fun onResponse(call: Call, response: Response) {
-                    if (response.isSuccessful) {
-                        // Procesar la respuesta exitosa
-                        val responseBody = response.body?.string()
-                        runOnUiThread {
-                            Log.d("Nequi", "Respuesta del servidor: $response")
-                            // Actualizar la interfaz de usuario con los datos de la respuesta
-                            // responseBody contiene la respuesta JSON
-                        }
-                    } else {
-                        // Manejar una respuesta no exitosa (código de estado HTTP no 200)
-                        Log.e("Nequi", "error en nequi: $response")
-                    }
-                }
-            })
-        }
-
-
-    private fun crearSolicitudPost(accessToken: String) {
-        val nequiPaymentManager=NequiPaymentManager(accessToken)
-        nequiPaymentManager.sendPaymentWithPush(
-            "3112972555",
-        Utilidades.generarIdUnico(),
-        "100000",
-        "ixi",
-        "prueba26/10/23",
-        "prueba3"
-        ) { success, response ->
-            if (success) {
-                Log.d("Nequi", "Respuesta del servidor: $response")
-            } else {
-                Log.e("Nequi", "error en nequi: $response")
-            }
-        }
-    }
 
     private fun mostrarSaldo() {
         if(DriverProvider.datosConductor?.saldo!=null) binding.saldoActual.text=DriverProvider.datosConductor?.saldo.toString().formatoMonenda()
     }
 
-    fun otrometodo(){
-
-//        val factory = ApiClientFactory()
-//        factory.apiKey("vG7JvMu6laaBWviQIsrJaaKaeWNRHaX44dFtDfBr")
-//
-//// Se instancia un nuevo cliente
-//        val apiClient = factory.build(NequiPaymentsGatewayClient::class.java)
-//
-//// Se instancia la clase para autenticarse
-//        val auth = NequiAuth.getInstance().fromEnvVars()
-//
-//        val phoneNumber = 123L
-//        val value = 100
-//        val code = "12345"
-//        val reference1 = "reference1"
-//        val reference2 = "reference2"
-//        val reference3 = "reference3"
-//
-//// Consumo del servicio, retorna un JsonObject con la respuesta del servicio
-//        val response = apiClient.servicesPaymentserviceUnregisteredpaymentPost(
-//            BodyUtils.getBodyUnregisteredPayment(
-//                phoneNumber,
-//                value,
-//                code,
-//                reference1,
-//                reference2,
-//                reference3
-//            ),
-//            auth.getToken()
-//        )
-//        Log.d("Nequi","respuesta nueva: $response")
+    fun generarMessageID(): String {
+        val random = Random()
+        return (1000000000 + random.nextInt(900000000)).toString()
     }
+
+//    fun enviarPagoConNotificacionPush(accessToken:String, recarga:String) {
+//        val url = "https://api.sandbox.nequi.com/payments/v2/-services-paymentservice-unregisteredpayment"
+//        val apiKey = "vG7JvMu6laaBWviQIsrJaaKaeWNRHaX44dFtDfBr"
+//
+//        val messageID = generarMessageID() // Genera un MessageID aleatorio
+//        runOnUiThread {
+//            binding?.editTextCodigo?.setText(messageID)
+//        }
+//
+//        Log.d("Nequi", "Id de la transaccion $messageID")
+//        val jsonBody = """
+//        {
+//          "RequestMessage": {
+//            "RequestHeader": {
+//              "Channel": "PNP04-C001",
+//              "RequestDate": "2017-06-21T20:26:12.654Z",
+//              "MessageID": "$messageID",
+//              "ClientID": "12345",
+//              "Destination": {
+//                "ServiceName": "PaymentsService",
+//                "ServiceOperation": "unregisteredPayment",
+//                "ServiceRegion": "C001",
+//                "ServiceVersion": "1.2.0"
+//              }
+//            },
+//            "RequestBody": {
+//              "any": {
+//                "unregisteredPaymentRQ": {
+//                  "phoneNumber": "3720002148",
+//                  "code": "NIT_1",
+//                  "value": "$recarga",
+//                  "reference1": "reference1",
+//                  "reference2": "reference2",
+//                  "reference3": "reference3"
+//                }
+//              }
+//            }
+//          }
+//        }
+//    """.trimIndent()
+//
+//        val mediaType = "application/json".toMediaTypeOrNull()
+//        val requestBody = RequestBody.create(mediaType, jsonBody)
+//
+//        val request = Request.Builder()
+//            .url(url)
+//            .addHeader("Authorization", accessToken)
+//            .addHeader("x-api-key", apiKey)
+//            .post(requestBody)
+//            .build()
+//
+//        val client = OkHttpClient()
+//        val response = client.newCall(request).execute()
+//
+//        if (response.isSuccessful) {
+//            val responseBody = response.body?.string()
+//            val jsonResponse = JSONObject(responseBody)
+//
+//            val responseMessage = jsonResponse.optJSONObject("ResponseMessage")
+//            val responseHeader = responseMessage?.optJSONObject("ResponseHeader")
+//            val statusCode = responseHeader?.optJSONObject("Status")?.optString("StatusCode")
+//
+//            if (statusCode == "0") {
+//                // Éxito
+//                Log.d("Nequi", "Respuesta exitosa: $responseBody")
+//                // Muestra un Toast para indicar el éxito
+//                runOnUiThread {
+//                    Toast.makeText(applicationContext, "Operación exitosa", Toast.LENGTH_SHORT).show()
+//                }
+//            } else {
+//                // Error
+//                Log.e("Nequi", "Error en la operación: $statusCode - ${responseHeader?.optString("StatusDesc")}")
+//                // Muestra un Toast con el mensaje de error
+//                runOnUiThread {
+//                    Toast.makeText(applicationContext, "Error en la operación: $statusCode", Toast.LENGTH_SHORT).show()
+//                }
+//            }
+//        } else {
+//            Log.e("Nequi", "Error al enviar el pago con notificación Push: ${response.code} - ${response.message}")
+//            // Muestra un Toast de error en la conexión
+//            runOnUiThread {
+//                Toast.makeText(applicationContext, "Error de conexión", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
+
+
+    fun verificarEstadoDePago(accessToken: String, codigo:String) {
+        val url = "https://api.sandbox.nequi.com/payments/v2/-services-paymentservice-unregisteredpayment"
+        val apiKey = "vG7JvMu6laaBWviQIsrJaaKaeWNRHaX44dFtDfBr"
+
+        val jsonBody = """
+    {
+      "RequestMessage": {
+        "RequestHeader": {
+          "Channel": "PNP04-C001",
+          "RequestDate": "2017-06-21T20:26:12.654Z",
+          "MessageID": "$codigo",
+          "ClientID": "12345",
+          "Destination": {
+            "ServiceName": "PaymentsService",
+            "ServiceOperation": "getStatusPayment",
+            "ServiceRegion": "C001",
+            "ServiceVersion": "1.0.0"
+          }
+        },
+        "RequestBody": {
+          "any": {
+            "getStatusPaymentRQ": {
+              "codeQR": "350-913291938-2471-C001"
+            }
+          }
+        }
+      }
+    }
+    """.trimIndent()
+
+        val mediaType = "application/json".toMediaTypeOrNull()
+        val requestBody = RequestBody.create(mediaType, jsonBody)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", accessToken)
+            .addHeader("x-api-key", apiKey)
+            .post(requestBody)
+            .build()
+
+        val client = OkHttpClient()
+        val response = client.newCall(request).execute()
+
+        if (response.isSuccessful) {
+            val responseBody = response.body?.string()
+            // Procesa la respuesta JSON aquí
+            val statusCode = obtenerStatusCode(responseBody!!)
+            mostrarToastSegunStatusCode(statusCode)
+        } else {
+            // Maneja el error de conexión
+            mostrarToastDeErrorDeConexion()
+        }
+    }
+
+    fun obtenerStatusCode(responseBody: String): String {
+        val jsonResponse = JSONObject(responseBody)
+        val responseMessage = jsonResponse.optJSONObject("ResponseMessage")
+        val responseHeader = responseMessage?.optJSONObject("ResponseHeader")
+        return responseHeader?.optJSONObject("Status")?.optString("StatusCode", "-1") ?: "-1"
+    }
+
+    fun mostrarToastSegunStatusCode(statusCode: String) {
+        Log.d("Nequi", "el codigo del estado es $statusCode")
+        when (statusCode) {
+            "0" -> {
+                // Éxito
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Pago exitoso", Toast.LENGTH_SHORT).show()
+                }
+            }
+            "33" -> {
+                // Pendiente
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Pago pendiente", Toast.LENGTH_SHORT).show()
+                }
+            }
+            "34" -> {
+                // Cancelado o rechazado
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Pago cancelado o rechazado", Toast.LENGTH_SHORT).show()
+                }
+            }
+            "35" -> {
+                // Realizado
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Pago realizado", Toast.LENGTH_SHORT).show()
+                }
+            }
+            "69" -> {
+                // Caducada
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Pago caducado", Toast.LENGTH_SHORT).show()
+                }
+            }
+            "71" -> {
+                // Fallida
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Pago fallido", Toast.LENGTH_SHORT).show()
+                }
+            }
+            else -> {
+                // Otro estado (manejar según sea necesario)
+                runOnUiThread {
+                    Toast.makeText(applicationContext, "Estado desconocido: $statusCode", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    fun mostrarToastDeErrorDeConexion() {
+        runOnUiThread {
+            Toast.makeText(applicationContext, "Error de conexión", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
+
 }

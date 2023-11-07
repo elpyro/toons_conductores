@@ -3,7 +3,6 @@ package com.castellanoseloy.toonsconductor.activitys.utils
 import android.location.Location
 import android.util.Log
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
-import com.castellanoseloy.toonsconductor.utils.Utilidades.convertLocationToLatLng
 import com.google.android.gms.maps.model.LatLng
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import kotlin.math.atan2

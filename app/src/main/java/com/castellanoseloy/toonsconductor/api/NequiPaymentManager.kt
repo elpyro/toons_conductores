@@ -4,6 +4,7 @@ import android.util.Log
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONObject
 import java.io.IOException
@@ -94,4 +95,6 @@ class NequiPaymentManager(private val accessToken: String) {
         val currentDate = Date()
         return dateFormat.format(currentDate)
     }
+
+
 }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activitys.saldo.recargaNequi.InformacionNequi">
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center"
+
+        android:gravity="center"
+        android:textSize="18sp"
+        android:theme="@style/Theme.ToonsConductor"
+        android:textStyle="bold"
+        android:text="Genial... \n Hemos enviado una notificacion de pago a Nequi" />
+
+
+    <ImageView
+        android:layout_gravity="center"
+        android:layout_width="300dp"
+        android:layout_height="400dp"
+        android:layout_marginTop="20dp"
+        app:srcCompat="@drawable/nequi_informacion" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:theme="@style/Theme.ToonsConductor"
+        android:text="Entra a Nequi y aceptá el pago \n(Expira en 10 minutos)" />
+
+    <Button
+        android:id="@+id/boton_aceptar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginTop="20dp"
+        android:text="Aceptar"
+        android:background="@drawable/boton_redondo"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp" />
+</LinearLayout>

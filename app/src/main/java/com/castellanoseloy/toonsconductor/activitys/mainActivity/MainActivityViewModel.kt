@@ -12,7 +12,7 @@ class MainActivityViewModel : ViewModel() {
         val correo=binding.editTextCorreo.text.toString()
         val contrasena=binding.editTextContrasena.text.toString()
         if(correo.isEmpty()){
-            binding.editTextCorreo.setError("Ingrese el correo")
+            binding.editTextCorreo.setError("Ingrese el telefono asociado")
             datosValidos=false
         }
         if(contrasena.isEmpty()){

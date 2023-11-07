@@ -22,10 +22,10 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.castellanoseloy.toonsconductor.R
 import android.os.Handler
+import com.castellanoseloy.toonscliente.objetos.Utilidades.convertLocationToLatLng
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.DistanciaAreopuerto
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
-import com.castellanoseloy.toonsconductor.utils.Utilidades.convertLocationToLatLng
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class LocationService : Service() {

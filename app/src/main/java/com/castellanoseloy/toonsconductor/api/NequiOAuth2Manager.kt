@@ -12,6 +12,7 @@ class NequiOAuth2Manager {
     private val client: OkHttpClient
     var clientId= "1fjejjqsiabk93sdaf1255ef0q"
     var clientSecret="15scd07u4tk051pfspnddj9pl4uh14rtaka5glt7prq3pff2bd0r"
+    val apiKey = "vG7JvMu6laaBWviQIsrJaaKaeWNRHaX44dFtDfBr"
 
     init {
         val loggingInterceptor = HttpLoggingInterceptor()

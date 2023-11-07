@@ -66,8 +66,8 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                         val nombre= driver?.nombre?: "" + driver?.apellido?: ""
                         binding.textViewActualizaContrenaInf.text=nombre+", actualiza tu contraseña"
                     }
-                    progressDialog.dismiss()
                 }
+                progressDialog.dismiss()
             }
     }
 
@@ -123,18 +123,20 @@ class RegistroUsuarioActivity : AppCompatActivity() {
     private fun registrarIncioSesion(correoRegistro:String, clave:String) {
         autenticacion.registro(correoRegistro!!, clave).addOnCompleteListener { it ->
             if (it.isSuccessful) {
-                actualizarCrearCliente(autenticacion.obtenerId(),clave,"Por registrar")
+                val saldoObsequio=100000.0
+                actualizarCrearCliente(autenticacion.obtenerId(),clave,"Por registrar", saldoObsequio)
             } else {
                 registrarError(it.exception!!)
             }
         }
     }
 
-    private fun actualizarCrearCliente(Id: String,  clave: String, validacion:String) {
+    private fun actualizarCrearCliente(Id: String,  clave: String, validacion:String,saldo:Double) {
         val driver = ConductorModelo(
             id = Id,
             clave=clave,
             telefono = telefono,
+            saldo=saldo,
             validacion = validacion
         )
         driverProvider.crearOActualizar(driver).addOnCompleteListener {
@@ -161,7 +163,7 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                     autenticacion.cambiarClave(claveNueva)
                         ?.addOnSuccessListener {
                             Log.d("Firebase", "Clave cambiada ")
-                            actualizarCrearCliente(driver?.id!!, claveNueva, driver?.validacion!!)
+                            actualizarCrearCliente(driver?.id!!, claveNueva, driver?.validacion!!, driver?.saldo!!)
                         }
                         ?.addOnFailureListener { e ->
                             registrarError(e)

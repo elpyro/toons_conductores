@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.location.Location
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Environment
@@ -28,6 +29,7 @@ import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.LatLng
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -184,7 +186,7 @@ object Utilidades {
         formatoMoneda.maximumFractionDigits = 2
         val valorDouble = this.toDoubleOrNull()
             ?: return this // Retorna el string original si no se puede convertir a double
-        return formatoMoneda.format(valorDouble)+"$"
+        return formatoMoneda.format(valorDouble)
     }
 
     fun mostrarToast( message: String, context: Context) {
@@ -354,6 +356,36 @@ object Utilidades {
 
 
 
+    fun convertLocationToLatLng(location: Location): LatLng {
+        val latitude = location.latitude
+        val longitude = location.longitude
+        return LatLng(latitude, longitude)
+    }
 
+    fun String.formatoMoneda(): String {
+        val formatoMoneda = DecimalFormat("###,###") // Dos decimales
+        formatoMoneda.decimalFormatSymbols = DecimalFormatSymbols(Locale("es", "CO"))
+        val valorDouble = this.toDoubleOrNull() ?: return this // Retorna el string original si no se puede convertir a double
+
+        if (valorDouble == 0.0) {
+            return "0"
+        }
+
+        val formattedValue = formatoMoneda.format(valorDouble)
+
+        // Verifica si el resultado tiene ",00" o ".00" al final de la cadena y si es así, lo reemplaza por "0"
+        val resultWithoutDecimals = formattedValue.replace(Regex("[,.]00$"), "")
+
+        // Verifica si el resultado tiene ".0" al final de la cadena y si es así, lo reemplaza por ""
+        return resultWithoutDecimals.replace(".0$", "")+"$"
+    }
+
+    fun obtenerFechaActualEnFormatoISO8601(): String {
+        val formato = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+        formato.timeZone = TimeZone.getTimeZone("UTC") // Establece la zona horaria a UTC
+        val fechaActual = Date()
+
+        return formato.format(fechaActual)
+    }
 
 }

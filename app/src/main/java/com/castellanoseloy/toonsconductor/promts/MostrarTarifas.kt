@@ -5,10 +5,11 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.TextView
+import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMoneda
 
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.modelos.TarifasModelo
-import com.castellanoseloy.toonsconductor.utils.Utilidades.formatoMoneda
+
 
 class MostrarTarifas {
 
@@ -50,9 +51,6 @@ class MostrarTarifas {
         textViewPorcentajeComisionReferido.setText(comisionReferidor.toString().formatoMoneda())
 
 
-//        editText_impuesto_etiqueta.setText("Impuesto Nacional "+tarifas.impuestoNacional.toString() +"%")
-//        val impuesto= (tarifas.totalViaje!! * tarifas.impuestoNacional!!)/100
-//        editText_impuesto.setText(impuesto.toString().formatoMoneda())
 
 // Configurar el botón "Aceptar"
         dialogBuilder.setPositiveButton("Aceptar") { dialogInterface, i ->
