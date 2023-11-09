@@ -1,6 +1,7 @@
 package com.castellanoseloy.toonsconductor.api
 
 import android.util.Log
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONException
@@ -9,10 +10,13 @@ import java.io.IOException
 
 class NequiOAuth2Manager {
 
+
     private val client: OkHttpClient
-    var clientId= "1fjejjqsiabk93sdaf1255ef0q"
-    var clientSecret="15scd07u4tk051pfspnddj9pl4uh14rtaka5glt7prq3pff2bd0r"
-    val apiKey = "vG7JvMu6laaBWviQIsrJaaKaeWNRHaX44dFtDfBr"
+    var clientId= "78bus1e7b2cpmfsqhfeq2uhrpc"
+    var clientSecret="gg7mee2c18rjj0ssrktj4bn8f5v6oh0bviba4pkdqatohgguqqn"
+    val apiKey = "gAGX1LVXco2CZiWNLB2Pd1ptHQ0BVJT27remsjCw"
+    val referencia1="ixi conductor"
+    val nit="Nit_1"
 
     init {
         val loggingInterceptor = HttpLoggingInterceptor()

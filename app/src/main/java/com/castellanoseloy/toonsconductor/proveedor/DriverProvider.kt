@@ -181,6 +181,23 @@ class DriverProvider {
         }
     }
 
+    fun aumentarSaldo(recarga:Double): Task<Void> {
+        // Calcular la nueva cantidad de saldo después de descontar la comisión
+
+        var nuevoSaldo = datosConductor?.saldo?.plus(recarga!!)
+
+        val map: MutableMap<String, Any> = HashMap()
+        map["saldo"] = nuevoSaldo!!
+
+        return db.document(datosConductor?.id!!).update(map).addOnCompleteListener{
+            if(it.isSuccessful){
+                datosConductor?.saldo=nuevoSaldo
+                Log.d("Saldo","Se ha recargado saldo a la cuenta")
+            }else{
+                Log.e("Saldo","No se ha recargar realizar el saldo")
+            }
+        }
+    }
 
 
 }

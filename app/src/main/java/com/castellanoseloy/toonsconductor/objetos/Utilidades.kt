@@ -388,4 +388,9 @@ object Utilidades {
         return formato.format(fechaActual)
     }
 
+    fun generarMessageID(): String {
+        val random = Random()
+        return (1000000000 + random.nextInt(900000000)).toString()
+    }
+
 }

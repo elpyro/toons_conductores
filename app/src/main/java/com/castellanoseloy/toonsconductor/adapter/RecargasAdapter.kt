@@ -2,15 +2,20 @@ package com.castellanoseloy.toonsconductor.adapter
 
 import android.app.Activity
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.R
+import com.castellanoseloy.toonsconductor.activitys.codigoMensajeVerificacion.CodigoMensajeVerificacion
 import com.castellanoseloy.toonsconductor.activitys.historiesDetails.HistoriesDetailActivity
+import com.castellanoseloy.toonsconductor.api.NequiVerificacionPago
 import com.castellanoseloy.toonsconductor.modelos.RecargasModelo
+import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
 import com.castellanoseloy.toonsconductor.utils.RelativeTime
 
 
@@ -28,6 +33,7 @@ class RecargasAdapter(val context: Activity, val recargas: ArrayList<RecargasMod
         val recarga =  recargasOrdenadas[position] // UN SOLO HISTORIAL
         holder.textview_valor.text = recarga.valor?.formatoMonenda()
         holder.textViewEstado.text = recarga.estado
+
         if (recarga.fecha != null) {
             holder.textViewFecha.text = RelativeTime.getTimeAgo(recarga.fecha?.time!!, context)
         }
@@ -55,6 +61,5 @@ class RecargasAdapter(val context: Activity, val recargas: ArrayList<RecargasMod
         }
 
     }
-
 
 }
