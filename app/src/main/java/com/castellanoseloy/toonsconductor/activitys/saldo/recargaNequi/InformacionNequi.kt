@@ -12,6 +12,7 @@ import com.castellanoseloy.toonsconductor.api.NequiOAuth2Manager
 import com.castellanoseloy.toonsconductor.api.NequiVerificacionPago
 import com.castellanoseloy.toonsconductor.databinding.ActivityInformacionNequiBinding
 import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
+import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -24,8 +25,7 @@ class InformacionNequi : AppCompatActivity() {
     private var codigoVerificacion: String? = null
     private var telefono: String? = null
     private lateinit var binding: ActivityInformacionNequiBinding
-    private var  nequiOAuth2Manager = NequiOAuth2Manager()
-    private var nequiVerificacionPago= NequiVerificacionPago()
+    private var nequiVerificacionPago = NequiVerificacionPago()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,82 +35,30 @@ class InformacionNequi : AppCompatActivity() {
         val intent = intent
 
         // Recuperar los valores pasados como extras
-         telefono = intent.getStringExtra("telefono")
-         codigoVerificacion = intent.getStringExtra("codigoVerificacion")
-         recarga = intent.getStringExtra("recarga")
+        telefono = intent.getStringExtra("telefono")
+        codigoVerificacion = intent.getStringExtra("codigoVerificacion")
+        recarga = intent.getStringExtra("recarga")
 
-//         verificacion()
+         verificacion()
 
         binding.botonAceptar.setOnClickListener { cerrar() }
     }
 
     private fun verificacion() {
-
-                nequiVerificacionPago.verificarEstadoDePago(codigoVerificacion!!){ estado->
-                   if(estado.isNotEmpty()) mostrarToastSegunStatusCode(estado)
-                }
-
-
+        val recargasProvider=RecargasProvider()
+        recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!, true){
+            Log.d("Pruebas nequi","Las recargas se estan verificando")
+        }
     }
 
     private fun cerrar() {
-        val i = Intent(this, Saldo::class.java)
-        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(i)
+        finish()
     }
 
-    fun mostrarToastSegunStatusCode(statusCode: String) {
-        Log.d("Nequi", "el codigo del estado es $statusCode")
-        when (statusCode) {
+    override fun onBackPressed() {
+        super.onBackPressed()
+        finish()
+    }
 
-            "33" -> {
-                // Pendiente
-                runOnUiThread {
-                    Toast.makeText(applicationContext, "Pago pendiente", Toast.LENGTH_SHORT).show()
-                }
-            }
-            "34" -> {
-                // Cancelado o rechazado
-                runOnUiThread {
-                    Toast.makeText(applicationContext, "Pago cancelado", Toast.LENGTH_SHORT).show()
-                    anctualizarEstado("Cancelado")
-                }
-            }
-            "35" -> {
-                // Realizado
-                runOnUiThread {
-                    Toast.makeText(applicationContext, "Pago realizado", Toast.LENGTH_SHORT).show()
-                    anctualizarEstado("Realizado")
-                }
-            }
-            "69" -> {
-                // Caducada
-                runOnUiThread {
-                    Toast.makeText(applicationContext, "Pago caducado", Toast.LENGTH_SHORT).show()
-                    anctualizarEstado("Caducado")
-                }
-            }
-            "71" -> {
-                // Fallida
-                runOnUiThread {
-                    Toast.makeText(applicationContext, "Pago fallido", Toast.LENGTH_SHORT).show()
-                    anctualizarEstado("Fallido")
-                }
-            }
-            else -> {
-                // Otro estado (manejar según sea necesario)
-                runOnUiThread {
-                    Toast.makeText(applicationContext, "Estado desconocido: $statusCode", Toast.LENGTH_SHORT).show()
-                    anctualizarEstado("Desconocido")
-                }
-            }
-        }
-    }
-    fun anctualizarEstado(estado:String){
-        val recargasProvider=RecargasProvider()
-        recargasProvider.buscarPorCodigoVerificacion(codigoVerificacion!!){it->
-            recargasProvider.cambiarEstado(it.id!!,estado)
-        }
-    }
 
 }

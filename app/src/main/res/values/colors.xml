@@ -16,6 +16,7 @@
     <color name="rojoClaro2">#F85353</color>
     <color name="rojoClaro3">#FB1F1F</color>
     <color name="rojoClaro4">#AA0000</color>
+    <color name="verde">#559148</color>
 
     <color name="starSelectedColor">#FFC107</color> <!-- Color de estrellas seleccionadas (amarillo en este ejemplo) -->
     <color name="starUnselectedColor">#CCCCCC</color> <!-- Color de estrellas no seleccionadas (gris claro en este ejemplo) -->

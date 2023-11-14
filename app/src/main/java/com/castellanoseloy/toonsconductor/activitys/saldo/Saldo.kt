@@ -35,14 +35,19 @@ class Saldo : AppCompatActivity() {
         binding.recyclerRecargas.layoutManager = linearLayoutManager
 
 
-        cargarRecargas()
+
         listeners()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        cargarRecargas()
     }
 
     private fun cargarRecargas() {
         val recargasProvider=RecargasProvider()
 
-        recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!) { snapshot ->
+        recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!, false) { snapshot ->
                 if(snapshot.isNotEmpty()){
                     adapter = RecargasAdapter(this, snapshot as ArrayList<RecargasModelo>)
                     binding.recyclerRecargas.adapter = adapter

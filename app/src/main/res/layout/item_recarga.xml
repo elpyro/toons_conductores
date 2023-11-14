@@ -42,7 +42,7 @@
                     android:text="Valor"
                     android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:textSize="17sp"/>
+                    android:textSize="14sp"/>
 
                 <TextView
                     android:id="@+id/textViewFecha"

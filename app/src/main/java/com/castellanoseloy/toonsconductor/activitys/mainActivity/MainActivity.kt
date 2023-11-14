@@ -25,6 +25,7 @@ import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -127,6 +128,11 @@ class MainActivity : AppCompatActivity() {
                 Log.d("Firestore", "Obteniendo datos del conductor ${driver?.validacion}")
                 verificarViajesPendientes()
                 obtenerDatosCarro()
+
+                val recargasProvider= RecargasProvider()
+                recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!, true){
+                    Log.d("Pruebas nequi","Las recargas se estan verificando")
+                }
 
             }else{
                     Log.d("Firestore", "No se encontraron datos del conductor")

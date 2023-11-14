@@ -12,6 +12,7 @@ import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class RecargasProvider {
 
+    lateinit var valueEventListener: ValueEventListener
     private val db = FirebaseDatabase.getInstance().reference.child("Recargas")
     val recargasPorVerificar = mutableListOf<String>()
     fun create(recarga: RecargasModelo): Task<Void> {
@@ -37,37 +38,49 @@ class RecargasProvider {
 
 
 
-    fun buscarRecagasPorIdDriver(idDriver: String, callback: (List<RecargasModelo>) -> Unit) {
+    fun buscarRecagasPorIdDriver(idDriver: String, verificarPendientes: Boolean = true, callback: (List<RecargasModelo>) -> Unit) {
         // Crea una consulta que filtre por el campo "idDriver"
-        val consulta = db.orderByChild("idDriver").equalTo(idDriver)
+        val recargas = db.orderByChild("idDriver").equalTo(idDriver)
         Log.d("Pruebas Nequi", "buscando recargas del conductor: $idDriver")
 
-        consulta.addValueEventListener(object : ValueEventListener {
+        val valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val recargasList = mutableListOf<RecargasModelo>()
+                var hayRecargasPendientes=false
 
                 for (recargaSnapshot in snapshot.children) {
                     val recarga = recargaSnapshot.getValue(RecargasModelo::class.java)
                     recarga?.let { recargasList.add(it) }
 
                     if (recarga?.estado.equals("Pendiente") && recarga?.codigoVerificacion != null) {
+                        hayRecargasPendientes = true
                         // Verificar si esta recarga ya se procesó previamente
                         if (!recargasPorVerificar.contains(recarga.codigoVerificacion)) {
-                            Log.d("Pruebas Nequi", "Verificando recarga nequi ${recarga.codigoVerificacion}")
                             recargasPorVerificar.add(recarga.codigoVerificacion)
-                            verifcarRecargaNequi(recarga.codigoVerificacion!!, recarga.valor!!)
+
+                            // Verifica la recarga con nequi
+                            if (verificarPendientes) {
+                                Log.d("Pruebas Nequi", "El estado de la recarga pendiente ${recarga.codigoVerificacion} se esta verificando ")
+                                verifcarRecargaNequi(recarga.codigoVerificacion!!, recarga.valor!!)
+                            }
+
                         }
                     }
                 }
                 callback(recargasList)
+                if (!hayRecargasPendientes) {
+                    recargas.ref.removeEventListener(this)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 // Manejar errores si es necesario
-
                 callback(emptyList())
             }
-        })
+        }
+
+        // Agrega el ValueEventListener a la consulta
+        recargas.addValueEventListener(valueEventListener)
 
     }
 

@@ -37,31 +37,13 @@ object RelativeTime : Application() {
             "Hace " + diff / HOUR_MILLIS + " horas"
         } else if (diff < 48 * HOUR_MILLIS) {
             "Ayer"
+        } else if (diff < 3 * DAY_MILLIS) {
+            "Hace " + diff / DAY_MILLIS + " días"
         } else {
-            "Hace " + diff / DAY_MILLIS + " dias"
+            // Si la diferencia es mayor a 3 días, formatear en "dd/MM/yyyy"
+            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            return dateFormat.format(Date(time))
         }
     }
 
-    fun timeFormatAMPM(time: Long, ctx: Context?): String {
-        var time = time
-        val formatter = SimpleDateFormat("hh:mm a")
-        if (time < 1000000000000L) {
-            // if timestamp given in seconds, convert to millis
-            time *= 1000
-        }
-        val now = System.currentTimeMillis()
-        if (time > now || time <= 0) {
-            return formatter.format(Date(time))
-        }
-
-        // TODO: localize
-        val diff = now - time
-        return if (diff < 24 * HOUR_MILLIS) {
-            formatter.format(Date(time))
-        } else if (diff < 48 * HOUR_MILLIS) {
-            "Ayer"
-        } else {
-            "Hace " + diff / DAY_MILLIS + " dias"
-        }
-    }
 }

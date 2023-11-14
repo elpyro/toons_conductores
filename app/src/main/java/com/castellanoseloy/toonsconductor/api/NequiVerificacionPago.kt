@@ -13,7 +13,7 @@ import org.json.JSONObject
 class NequiVerificacionPago {
     val url = "https://api.sandbox.nequi.com/payments/v2/-services-paymentservice-getstatuspayment"
     var nequiOAuth2Manager=NequiOAuth2Manager()
-    val tiempoDescanso:Long=60000
+    val tiempoDescanso:Long=360000 //6 minutos
 
     fun verificarEstadoDePago(
         codigoMensajeVerificacion: String,
@@ -91,12 +91,32 @@ class NequiVerificacionPago {
                 val responseBodyString = responseBody.body?.string()
                 val jsonResponse = JSONObject(responseBodyString)
                 val responseMessage = jsonResponse.optJSONObject("ResponseMessage")
-                val responseBody = responseMessage?.optJSONObject("ResponseBody")
-                val anyObject = responseBody?.optJSONObject("any")
-                val getStatusPaymentRS = anyObject?.optJSONObject("getStatusPaymentRS")
-                Log.d("Pruebas Nequi", "RESPUESTA EXITOSA: $responseBodyString")
 
-                return getStatusPaymentRS?.optString("status")!!
+                // Verificar si ResponseMessage es nulo
+                if (responseMessage != null) {
+                    val responseBody = responseMessage.optJSONObject("ResponseBody")
+
+                    // Verificar si ResponseBody es nulo
+                    if (responseBody != null) {
+                        val anyObject = responseBody.optJSONObject("any")
+
+                        // Verificar si 'any' es nulo
+                        if (anyObject != null) {
+                            val getStatusPaymentRS = anyObject.optJSONObject("getStatusPaymentRS")
+
+                            // Verificar si 'getStatusPaymentRS' es nulo
+                            if (getStatusPaymentRS != null) {
+                                val status = getStatusPaymentRS.optString("status", "ValorPredeterminadoSiEsNull")
+
+                                // Regresar el valor del estado
+                                return status
+                            }
+                        }
+                    }
+                }
+
+                // Si no se puede obtener el estado, puedes regresar un valor predeterminado o lanzar una excepción según tu lógica de manejo de errores.
+                return "34"
             }
 
 }
