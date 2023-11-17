@@ -8,17 +8,13 @@ import android.text.method.HideReturnsTransformationMethod
 import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import android.view.View
-import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.codigoMensajeVerificacion.CodigoMensajeVerificacion
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
-import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
-import com.castellanoseloy.toonsconductor.activitys.registro_usuario.RegistroUsuarioActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityMainBinding
-import com.castellanoseloy.toonsconductor.modelos.Booking
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
@@ -26,7 +22,6 @@ import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
-import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -59,8 +54,11 @@ class MainActivity : AppCompatActivity() {
         binding.butoonRegistrarse.setOnClickListener{
             registrar()
         }
+        binding.buttonOlvideContrasena.setOnClickListener{
+            registrar()
+        }
         binding.buttonIniciarSesion.setOnClickListener{
-            iniciarSesion()
+            registrar()
         }
         binding.buttonMostrarContrasena.setOnClickListener {
             mostrarContrasena()
@@ -96,7 +94,7 @@ class MainActivity : AppCompatActivity() {
             autenticacion.login(correo,binding.editTextContrasena.text.toString())
                 .addOnCompleteListener {
                     if (it.isSuccessful){
-                        obtenerDatosConductor()
+                        inicializarDatosConductor()
                     }else{
                         ErroresFirebase.imprimirError(it.exception,this@MainActivity)
                         if (progressDialog.isShowing)  progressDialog.dismiss()
@@ -112,9 +110,14 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private fun obtenerDatosConductor(){
+     fun inicializarDatosConductor(){
         var driverProvideer=DriverProvider()
-        driverProvideer.createToken(autenticacion.obtenerId())
+        driverProvideer.createToken(autenticacion.obtenerId()).addOnCompleteListener { it->
+            if(!it.isSuccessful){
+                Utilidades.mostrarToast("Error de autenticacion",this)
+                solicitarCredenciales()
+            }
+             }
         driverProvideer.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
             Log.d("Firestore", "Validando conductor ")
             if (document.exists()) {
@@ -221,10 +224,12 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         if(autenticacion.sesionExistente()) {
-            obtenerDatosConductor()
+            binding.cardViewCredenciales.visibility= View.GONE
+            binding.imageViewLogo.visibility= View.VISIBLE
+            inicializarDatosConductor()
         }else{
             solicitarCredenciales()
         }

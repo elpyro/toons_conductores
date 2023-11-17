@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
 import com.bumptech.glide.Glide
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
 import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.models.History
@@ -38,7 +39,7 @@ class DatosRefeidorPromt {
 
 
         // Llamada a la función y manejo de los resultados
-        obtenerCalificacionYViajes(cliente.id!!) { promedio, cantidadRegistros ->
+        obtenerCalificacionYViajes(cliente?.id!!) { promedio, cantidadRegistros ->
 
             val df = DecimalFormat("#.00")
             textViewClientCalification.text= df.format(promedio)
@@ -58,7 +59,8 @@ class DatosRefeidorPromt {
             }
         }
 
-
+        imageViewPhoneReferidor.setOnClickListener { Utilidades.llamar(cliente?.telefono!!, context) }
+        imageViewWhatsappConductor.setOnClickListener { Utilidades.enviarWhatsapp(cliente?.telefono!!, context) }
 
         dialogBuilder.setNegativeButton("Aceptar") { dialogInterface, i ->
             // No hacer nada
@@ -70,7 +72,7 @@ class DatosRefeidorPromt {
 
     private fun obtenerCalificacionYViajes(idCliente: String, onComplete: (promedio: Double, cantidadRegistros: Int) -> Unit) {
         val histories = HistoryProvider()
-        histories.getHistoriesClient(idCliente).get().addOnSuccessListener { query ->
+        histories.getHistoriesClient(idCliente?:"").get().addOnSuccessListener { query ->
 
             if (query != null) {
                 if (query.documents.size > 0) {

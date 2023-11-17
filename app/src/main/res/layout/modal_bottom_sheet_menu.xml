@@ -13,17 +13,6 @@
         android:orientation="vertical"
         android:layout_gravity="top">
 
-        <TextView
-            android:id="@+id/textViewUsername"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="..."
-            android:textSize="18sp"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginBottom="15dp"/>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -90,7 +79,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/linearLayoutConfiguracion"
+                android:id="@+id/linearLayoutRecagas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
@@ -98,13 +87,42 @@
                 android:gravity="center">
 
                 <ImageView
-                    android:layout_width="60dp"
+                    android:id="@+id/imageView4"
+                    android:layout_width="match_parent"
                     android:layout_height="60dp"
+                    android:src="@drawable/ic_credi_card" />
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+
+                    android:foregroundGravity="center"
+                    android:gravity="center"
+                    android:text="Saldo" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/linearLayoutConfiguracion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:foregroundGravity="right"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/imageView3"
+                    android:layout_width="89dp"
+                    android:layout_height="60dp"
+                    android:layout_gravity="right"
                     android:src="@drawable/baseline_settings_24" />
 
                 <TextView
+                    android:id="@+id/textView2"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="right"
                     android:text="Configuración" />
 
             </LinearLayout>
@@ -119,28 +137,13 @@
         android:layout_marginTop="8dp"
         android:orientation="horizontal">
 
-        <LinearLayout
-            android:id="@+id/linearLayoutRecagas"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
 
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/ic_credi_card" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Saldo" />
 
-        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/linearLayoutReport"
+            android:visibility="gone"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -156,26 +159,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Reportes" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/linearLayoutLogout"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:src="@drawable/ic_power" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cerrar sesion" />
 
         </LinearLayout>
 

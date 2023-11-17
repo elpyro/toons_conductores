@@ -337,10 +337,9 @@ class ProfileActivity : AppCompatActivity() {
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
                         val driver = document.toObject(ConductorModelo::class.java)
-                        binding.textViewEmail.text = driver?.correo
+                        binding.textFieldPhone.text = driver?.telefono
                         binding.textFieldName.setText(driver?.nombre)
                         binding.textFieldLastname.setText(driver?.apellido)
-                        binding.textFieldPhone.setText(driver?.telefono)
 
                         if (driver?.validacion.equals("Valida tu usuario")) binding.imageEstado.setImageResource(
                             R.drawable.ic_valida_datos

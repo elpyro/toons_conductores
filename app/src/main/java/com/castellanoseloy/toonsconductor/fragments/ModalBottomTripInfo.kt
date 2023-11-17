@@ -23,6 +23,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.LinearLayout
 import com.bumptech.glide.Glide
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.promts.DatosRefeidorPromt
 import com.castellanoseloy.toonsconductor.promts.MostrarTarifas
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
@@ -50,7 +51,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     var linearLayout_referidor:LinearLayout?=null
 
 
-    var imageViewPhoneReferidor: ImageView? = null
+//    var imageViewPhoneReferidor: ImageView? = null
     var imageViewPhone: ImageView? = null
 
     var circleImageReferidor: CircleImageView? = null
@@ -79,7 +80,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textViewDestination = view.findViewById(R.id.textViewDestination)
         linearLayout_detalleCobro= view.findViewById(R.id.linearLayout_detalleCobro)
         linearLayout_referidor=view.findViewById(R.id.linearLayout_referidor)
-        imageViewPhoneReferidor = view.findViewById(R.id.imageViewPhoneReferidor)
+//        imageViewPhoneReferidor = view.findViewById(R.id.imageViewPhoneReferidor)
         imageViewPhone = view.findViewById(R.id.imageViewPhone)
 
         circleImageReferidor = view.findViewById(R.id.circleImageReferidor)
@@ -128,11 +129,11 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                     }
                 }
 
-                imageViewPhoneReferidor?.setOnClickListener {
-                    if (client?.telefono!! != null) {
-                        verificarPermisos(client?.telefono!!)
-                    }
-                }
+//                imageViewPhoneReferidor?.setOnClickListener {
+//                    if (client?.telefono!! != null) {
+//                        verificarPermisos(client?.telefono!!)
+//                    }
+//                }
                 linearLayout_referidor?.setOnClickListener{
                     val datosRefeidorPromt=DatosRefeidorPromt()
                     client?.let { it1 -> datosRefeidorPromt.clienteDetalle(requireContext(), it1) }
@@ -154,7 +155,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                 REQUEST_PHONE_CALL
             )
         }
-        call(telefono)
+        Utilidades.llamar(telefono, requireContext())
     }
 
 
@@ -178,16 +179,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     }
 
 
-        private fun call(phone: String) {
-            val i = Intent(Intent.ACTION_CALL)
-            i.data = Uri.parse("tel:$phone")
 
-            if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-                return
-            }
-
-            requireActivity().startActivity(i)
-        }
 
 }
 

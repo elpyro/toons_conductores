@@ -16,7 +16,7 @@ import com.optic.uberclonedriverkotlin.providers.HistoryProvider
 class CalificationClientActivity : AppCompatActivity() {
     private var history: History? = null
     private lateinit var binding: ActivityCalificationClientBinding
-    private var sonidos=Sonidos()
+    private var sonidos=Sonidos(this)
     private var historyProvider = HistoryProvider()
     private var calification = 5f
 
@@ -38,7 +38,7 @@ class CalificationClientActivity : AppCompatActivity() {
         binding.textViewDestination.text=extraDestination
         binding.textViewTimeAndDistance.text= "Min: ${String.format("%.1f", extraTime)}, Km: ${String.format("%.1f", extraKm)}"
 
-        sonidos.crearTono(this)
+        sonidos.crearTono()
 
         listeners()
 

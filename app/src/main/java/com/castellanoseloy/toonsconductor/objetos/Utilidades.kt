@@ -1,10 +1,13 @@
 package com.castellanoseloy.toonscliente.objetos
 
+import android.Manifest
 import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
@@ -25,6 +28,7 @@ import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.Toast
 import android.widget.VideoView
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
 import com.google.android.gms.maps.model.BitmapDescriptor
@@ -33,6 +37,7 @@ import com.google.android.gms.maps.model.LatLng
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.net.URLEncoder
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.Normalizer
@@ -191,6 +196,17 @@ object Utilidades {
 
     fun mostrarToast( message: String, context: Context) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    }
+
+    fun getFechaComoString(timestamp: Long): String {
+        val fecha = Date(timestamp)
+        val formato = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        return formato.format(fecha)
+    }
+
+    fun obtenerFechaSinHora(fechaString: String): String {
+        val longitudFechaSinHora = fechaString.length - 9 // Considera " HH:mm:ss"
+        return fechaString.substring(0, longitudFechaSinHora)
     }
 
     // 2. Crear un AlertDialog básico
@@ -391,6 +407,31 @@ object Utilidades {
     fun generarMessageID(): String {
         val random = Random()
         return (1000000000 + random.nextInt(900000000)).toString()
+    }
+
+    fun llamar(phone: String, context:Context) {
+
+        val i = Intent(Intent.ACTION_CALL)
+        i.data = Uri.parse("tel:$phone")
+
+        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        context.startActivity(i)
+    }
+
+    fun enviarWhatsapp(telefono: String,  context: Context) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        val url = "https://api.whatsapp.com/send?phone=+57$telefono&text=${URLEncoder.encode("Hola ", "UTF-8")}"
+        intent.data = Uri.parse(url)
+
+        // Verifica si hay aplicaciones disponibles para manejar la intención
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        } else {
+            // Manejar el caso en el que no hay aplicaciones disponibles
+            Toast.makeText(context, "No apps available to share.", Toast.LENGTH_SHORT).show()
+        }
     }
 
 }

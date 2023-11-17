@@ -41,28 +41,33 @@ class DriverProvider {
     }
 
     fun getConductorPorTelefono(telefono: String): Task<DocumentSnapshot> {
+        Log.d("Firebase","Se esta buscando conductor por telefono $telefono")
         return db.whereEqualTo("telefono", telefono)
             .get()
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error al buscar conductor por teléfono", e)
+            }
             .continueWith { task ->
                 val querySnapshot = task.result
                 if (task.isSuccessful && !querySnapshot.isEmpty) {
                     // Devuelve el primer documento que coincida con el número de teléfono
+                    Log.d("Firebase","Conductor consegui por telefono")
                     return@continueWith querySnapshot.documents[0]
                 } else {
-                    // No se encontró ningún cliente con el número de teléfono
+                    Log.e("Firebase", "Error al buscar conductor por teléfono")
                     return@continueWith null
                 }
             }
     }
 
-    fun createToken(idDriver: String) {
-        FirebaseMessaging.getInstance().token.addOnCompleteListener {
+    fun createToken(idDriver: String): Task<String> {
+        return FirebaseMessaging.getInstance().token.addOnCompleteListener {
             if (it.isSuccessful) {
                 val token = it.result // TOKEN DE NOTIFICACIONES
                 updateToken(idDriver, token)
-
             }else{
                 Log.e("Firebase", "Token creado con exito")
+
             }
         }
     }

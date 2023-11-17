@@ -52,14 +52,14 @@ object ErroresFirebase {
                     Utilidades.mostrarToast("Firestore no está disponible", context)
                     Log.e("Firebase Error", "Error de Firestore no disponible: ${exception.message}", exception)
                 } else {
-                    Utilidades.mostrarToast("Error en Firestore: ${exception.message}", context)
+                    Utilidades.mostrarToast("Error en conexion: ${exception.message}", context)
                     Log.e("Firebase Error", "Error de Firestore: ${exception.message}", exception)
                 }
             }
 
             else -> {
                 // Otros errores de autenticación
-                Utilidades.mostrarToast("Error: ${exception?.message}", context)
+                Utilidades.mostrarToast("Error de autenticacion}", context)
                 Log.e("Firebase Error", "Error de Firebase: ${exception?.message}", exception)
             }
         }

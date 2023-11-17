@@ -1,11 +1,18 @@
 package com.castellanoseloy.toonsconductor.activitys.configuracion
 
+
+import android.content.Intent
 import android.graphics.Color
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.castellanoseloy.toonsconductor.R
-import com.castellanoseloy.toonsconductor.databinding.ActivityAddCarBinding
+import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityConfiguracionBinding
+import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.utils.Preferencias
+import java.util.concurrent.TimeUnit
+
 
 class Configuracion : AppCompatActivity() {
     private lateinit var binding:ActivityConfiguracionBinding
@@ -20,6 +27,92 @@ class Configuracion : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setTitleTextColor(Color.WHITE)
 
+        listeners()
+    }
 
+    private fun listeners() {
+        // Cargar preferencias
+
+        val preferencias=Preferencias(this)
+        val preferenciasApp= preferencias.cargarPreferencias()
+
+        //establecer preferencias
+        binding.switchSonidos.isChecked = preferenciasApp.sonidos
+        binding.radioGroupNavegador.check(preferenciasApp.navegadorSeleccionado)
+        binding.editTextTelefono.setText(preferenciasApp.nequi)
+        val ahora = System.currentTimeMillis()
+        if (ahora - preferenciasApp.ultimaModificacionNequi >= TimeUnit.DAYS.toMillis(2)) {
+            binding.buttonCambiarNequi.visibility= View.VISIBLE
+        }
+
+
+        // Escuchar cambios en el Switch y guardar preferencias
+        binding.switchSonidos.setOnCheckedChangeListener { _, isChecked ->
+            // Guardar preferencia
+            preferencias.guardarPreferencia("sonidos",isChecked )
+        }
+
+        // Escuchar cambios en el RadioGroup y guardar preferencias
+        binding.radioGroupNavegador.setOnCheckedChangeListener { _, checkedId ->
+            // Guardar preferencia
+            preferencias.guardarPreferencia("navegador",checkedId )
+        }
+        binding.buttonCambiarNequi.setOnClickListener{
+            verificarTelefono()
+        }
+        binding.linearLayoutLogout?.setOnClickListener { goToMain() }
+
+
+    }
+
+    private fun goToMain() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Cerrar Sesion")
+        alertDialogBuilder.setMessage("Está seguro de cerrar la sesion?.")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
+            val authProvider = Autenticacion()
+
+            val i = Intent(this, MainActivity::class.java)
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(i)
+            authProvider.logout()
+        }
+        // Botón Cancelar
+        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+
+    }
+    private fun verificarTelefono() {
+        val telefono = binding.editTextTelefono.text.toString()
+        val longitud = telefono.length
+        if (longitud!=10){
+            binding.editTextTelefono.setError("El telefono debe tener 10 digitos")
+            return
+        }
+        mostrarConfirmacion(telefono)
+    }
+
+    private fun mostrarConfirmacion(telefono: String) {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Cambio de Nequi")
+        alertDialogBuilder.setMessage("Esta seguro de cambiar su Nequi a $telefono \nSolo podra cambiarlo cada 2 días")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Cambiar") { dialog, which ->
+            val preferencias=Preferencias(this)
+            preferencias.guardarPreferencia("nequi",telefono.trim())
+        }
+
+        // Botón Cancelar
+        alertDialogBuilder.setNegativeButton("Cancelar") { dialog, which ->
+
+        }
+
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 }

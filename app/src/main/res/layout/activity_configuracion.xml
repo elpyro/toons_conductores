@@ -33,36 +33,72 @@
         android:text="Navegador Predeterminado" />
 
     <RadioGroup
+        android:id="@+id/radioGroupNavegador"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_margin="10dp">
 
         <RadioButton
-            android:id="@+id/radioNinguno"
+            android:id="@+id/NavegadorNinguno"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Ninguno" />
         <RadioButton
-            android:id="@+id/radioMaps"
+            android:id="@+id/NavegadorMaps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Maps" />
         <RadioButton
-            android:id="@+id/radioWaze"
+            android:id="@+id/NavegadorWaze"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Waze" />
     </RadioGroup>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_gravity="center"
+            android:textColor="@color/black"
+            android:text="Número de Nequi" />
+
+        <EditText
+            android:id="@+id/editTextTelefono"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="30dp"
+            android:layout_marginRight="30dp"
+            android:inputType="phone"
+            android:hint="10 Digitos" />
+
+        <Button
+            android:visibility="gone"
+            android:layout_margin="8dp"
+            android:id="@+id/button_cambiarNequi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:background="@drawable/boton_redondo"
+            android:textColor="@color/white"
+            android:text="Cambiar" />
+    </LinearLayout>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/grey"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:layout_marginRight="20dp"
         android:layout_marginLeft="20dp" />
     <TextView
@@ -77,16 +113,63 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginRight="20dp"
+        android:layout_gravity="center"
         android:layout_marginLeft="20dp"
+        android:minHeight="48dp"
         android:text="Sonidos" />
-    <Switch
-        android:id="@+id/switchSobrePoner"
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginLeft="20dp"
-        android:text="Sobre Poner Aplicación" />
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal">
 
+    <LinearLayout
+        android:id="@+id/linearLayoutLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+
+        android:layout_marginStart="20dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_power" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cerrar sesion"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/linearLayoutAyuda"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginStart="20dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_ayuda" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ayuda"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    </LinearLayout>
 
 </LinearLayout>

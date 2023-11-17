@@ -36,6 +36,7 @@ import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.castellanoseloy.toonsconductor.utils.NotificarEstados
+import com.castellanoseloy.toonsconductor.utils.Preferencias
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -473,29 +474,38 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     }
 
     private fun preguntarNavegador() {
-        val alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Navegador")
-        alertDialogBuilder.setMessage("Elije navegador")
 
-        var wazeIntalado= viewModel?.isWazeInstalled(this)
-        var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
+        val preferencias=Preferencias(this)
+        val preferenciasApp=preferencias.cargarPreferencias()
 
-        if(wazeIntalado!!) {
-
-            alertDialogBuilder.setPositiveButton("Waze") { dialog, which ->
-                viewModel!!.irAWaze(this,destinoOtrosMapas!!)
-            }
-        }
-        if(!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility=View.GONE
-        // Botón Aceptar
-
-        if(googleMapsInstado){
-            alertDialogBuilder.setNegativeButton("Google Maps") { dialog, which ->
-                viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!)
-            }
-        }
-        val alertDialog: AlertDialog = alertDialogBuilder.create()
-        alertDialog.show()
+//        if(preferenciasApp.navegadorSeleccionado == R.id.NavegadorNinguno) {
+//
+//            val alertDialogBuilder = AlertDialog.Builder(this)
+//            alertDialogBuilder.setTitle("Navegador")
+//            alertDialogBuilder.setMessage("Elije navegador")
+//
+//            var wazeIntalado = viewModel?.isWazeInstalled(this)
+//            var googleMapsInstado = viewModel?.isGoogleMapsInstalled(this)
+//
+//            if (wazeIntalado!!) {
+//
+//                alertDialogBuilder.setPositiveButton("Waze") { dialog, which ->
+//                    viewModel!!.irAWaze(this, destinoOtrosMapas!!)
+//                }
+//            }
+//            if (!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility = View.GONE
+//            // Botón Aceptar
+//
+//            if (googleMapsInstado) {
+//                alertDialogBuilder.setNegativeButton("Google Maps") { dialog, which ->
+//                    viewModel!!.irAGoogleMaps(this, destinoOtrosMapas!!)
+//                }
+//            }
+//            val alertDialog: AlertDialog = alertDialogBuilder.create()
+//            alertDialog.show()
+//        }
+        if(preferenciasApp.navegadorSeleccionado == R.id.NavegadorMaps)  viewModel!!.irAGoogleMaps(this, destinoOtrosMapas!!)
+        if(preferenciasApp.navegadorSeleccionado == R.id.NavegadorWaze)  viewModel!!.irAGoogleMaps(this, destinoOtrosMapas!!)
     }
 
     private fun heLLegado() {
@@ -527,6 +537,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Viaje en proceso").addOnCompleteListener {
             if (it.isSuccessful) {
+
+                preguntarNavegador()
 
                 binding?.LinearCompartirRuta?.visibility=View.VISIBLE
                 destinoOtrosMapas=destinationLatLng

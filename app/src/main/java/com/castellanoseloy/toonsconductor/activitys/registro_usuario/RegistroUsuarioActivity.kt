@@ -9,12 +9,13 @@ import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityRegistroUsuarioBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
-import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
+import com.castellanoseloy.toonsconductor.utils.Preferencias
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class RegistroUsuarioActivity : AppCompatActivity() {
@@ -56,9 +57,11 @@ class RegistroUsuarioActivity : AppCompatActivity() {
 
     private fun buscarPorTelefono(telefono: String) {
         mostrarDialogProgreso()
+        Log.d("Firebase","Telenofo recibido $telefono")
         driverProvider.getConductorPorTelefono(telefono)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+
                     val document = task.result
                     if (document != null && document.exists()) {
                         // Cliente encontrado, document contiene los datos del cliente
@@ -123,26 +126,37 @@ class RegistroUsuarioActivity : AppCompatActivity() {
     private fun registrarIncioSesion(correoRegistro:String, clave:String) {
         autenticacion.registro(correoRegistro!!, clave).addOnCompleteListener { it ->
             if (it.isSuccessful) {
-                val saldoObsequio=100000.0
-                actualizarCrearCliente(autenticacion.obtenerId(),clave,"Por registrar", saldoObsequio)
+
+                val saldoObsequio=5000.0
+
+                val driver = ConductorModelo(
+                    id = autenticacion.obtenerId(),
+                    clave=clave,
+                    telefono = telefono,
+                    saldo=saldoObsequio,
+                    correo = correoRegistro,
+                    validacion = "Por registrar"
+                )
+                actualizarCrearCliente(driver)
+
+                val preferencias=Preferencias(this)
+                preferencias.guardarPreferencia("nequi", telefono!!)
+
             } else {
                 registrarError(it.exception!!)
             }
         }
     }
 
-    private fun actualizarCrearCliente(Id: String,  clave: String, validacion:String,saldo:Double) {
-        val driver = ConductorModelo(
-            id = Id,
-            clave=clave,
-            telefono = telefono,
-            saldo=saldo,
-            validacion = validacion
-        )
-        driverProvider.crearOActualizar(driver).addOnCompleteListener {
+    private fun actualizarCrearCliente(driver: ConductorModelo?) {
+
+        driverProvider.crearOActualizar(driver!!).addOnCompleteListener {
             if (it.isSuccessful) {
                 Utilidades.esperarUnSegundo()
-                abriMapa()
+                Utilidades.esperarUnSegundo()
+
+                finish()
+               // (this@RegistroUsuarioActivity as? MainActivity)?.inicializarDatosConductor()
             } else {
                 registrarError(it.exception!!)
             }
@@ -163,7 +177,10 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                     autenticacion.cambiarClave(claveNueva)
                         ?.addOnSuccessListener {
                             Log.d("Firebase", "Clave cambiada ")
-                            actualizarCrearCliente(driver?.id!!, claveNueva, driver?.validacion!!, driver?.saldo!!)
+
+                            driver?.clave=claveNueva
+
+                            actualizarCrearCliente(driver)
                         }
                         ?.addOnFailureListener { e ->
                             registrarError(e)
@@ -173,9 +190,6 @@ class RegistroUsuarioActivity : AppCompatActivity() {
                 }
             }
     }
-
-
-
 
     fun registrarError(e:Exception){
         progressDialog.dismiss()

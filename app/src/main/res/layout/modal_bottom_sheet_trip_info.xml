@@ -148,17 +148,17 @@
 
                 </LinearLayout>
 
-                <ImageView
-                    android:id="@+id/imageViewMensajeReferidor"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@drawable/ic_whatsapp" />
+<!--                <ImageView-->
+<!--                    android:id="@+id/imageViewMensajeReferidor"-->
+<!--                    android:layout_width="35dp"-->
+<!--                    android:layout_height="35dp"-->
+<!--                    android:src="@drawable/ic_whatsapp" />-->
 
-                <ImageView
-                    android:id="@+id/imageViewPhoneReferidor"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:src="@drawable/baseline_local_phone_black_24" />
+<!--                <ImageView-->
+<!--                    android:id="@+id/imageViewPhoneReferidor"-->
+<!--                    android:layout_width="35dp"-->
+<!--                    android:layout_height="35dp"-->
+<!--                    android:src="@drawable/baseline_local_phone_black_24" />-->
 
 
 
@@ -382,7 +382,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tú Cliente"
+                    android:text="Tú Pasajero"
                     android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="@color/black"/>

@@ -38,7 +38,6 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         const val TAG = "ModalBottomSheetBooking"
     }
 
-
     private lateinit var textViewTimeAndDistanceEntreCliente: TextView
     private lateinit var textViewSolicitudViaje:TextView
     private lateinit var textViewOrigin: TextView
@@ -54,8 +53,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     private val bookingProvider = BookingProvider()
     private val bookingAceptedsProvider = BookingAceptedsProvider()
     private val geoProvider = GeoProveedor()
-    private val authProvider = Autenticacion()
-    private val sonidos=Sonidos()
+    private lateinit var sonidos: Sonidos
     private lateinit var booking: Booking
 
 
@@ -65,6 +63,8 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.modal_bottom_sheet_booking, container, false)
+
+        sonidos = Sonidos(requireContext())
 
         textViewSolicitudViaje=view.findViewById(R.id.TextView_tiempo)
         textViewOrigin = view.findViewById(R.id.textViewOrigin)
@@ -96,7 +96,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         val tiempoEntreCliente=(activity as MapaActivity).timeString?.toString()
         textViewTimeAndDistanceEntreCliente.text = "$tiempoEntreCliente Min - $distanciaEntreCliente Km"
 
-        sonidos.crearTonoInformativo(requireContext())
+        sonidos.crearTonoInformativo()
 
         Log.d("Firestore", "Modal creado")
 

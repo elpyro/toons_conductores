@@ -9,6 +9,7 @@ import com.castellanoseloy.toonsconductor.databinding.ActivityHistoriesBinding
 
 import com.optic.uberclonedriverkotlin.models.History
 import com.optic.uberclonedriverkotlin.providers.HistoryProvider
+import java.text.DecimalFormat
 
 class HistoriesActivity : AppCompatActivity() {
 
@@ -44,17 +45,24 @@ class HistoriesActivity : AppCompatActivity() {
                 if (query.documents.size > 0) {
                     val documents = query.documents
 
+                    var totalStrar=0.00
                     for (d in documents) {
                         var history = d.toObject(History::class.java)
                         history?.id = d.id
                         histories.add(history!!)
+                        totalStrar += history?.calificationToDriver ?: 5.00
                     }
+
+                    val cantidadRegistros = documents.size
+                    val promedio = if (cantidadRegistros > 0) totalStrar / cantidadRegistros else 0.0
+                    val df = DecimalFormat("#.00")
+                    binding.textViewClientCalification.text= df.format(promedio)
+                    binding.textViewViajes.text=cantidadRegistros.toString()
 
                     adapter = HistoriesAdapter(this@HistoriesActivity, histories)
                     binding.recyclerViewHistories.adapter = adapter
                 }
             }
-
         }
     }
 }

@@ -43,7 +43,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.modal_bottom_sheet_menu, container, false)
 
-        textViewUsername = view.findViewById(R.id.textViewUsername)
         linearLayoutLogout = view.findViewById(R.id.linearLayoutLogout)
         linearLayoutProfile = view.findViewById(R.id.linearLayoutProfile)
         linearLayoutHistory = view.findViewById(R.id.linearLayoutHistory)
@@ -51,15 +50,13 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         linearLayoutConfinguracion = view.findViewById(R.id.linearLayoutConfiguracion)
         linearLayoutRecagas= view.findViewById(R.id.linearLayoutRecagas)
 
-        getDriver()
-
         listeners()
 
         return view
     }
 
     private fun listeners() {
-        linearLayoutLogout?.setOnClickListener { goToMain() }
+
         linearLayoutProfile?.setOnClickListener { goToProfile() }
         linearLayoutHistory?.setOnClickListener { goToHistories() }
         linearLayoutCar?.setOnClickListener{goToCarList()}
@@ -92,29 +89,6 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         startActivity(i)
     }
 
-    private fun goToMain() {
-        val alertDialogBuilder = AlertDialog.Builder(requireContext())
-        alertDialogBuilder.setTitle("Cerrar Sesion")
-        alertDialogBuilder.setMessage("Está seguro de cerrar la sesion?.")
-
-        // Botón Aceptar
-        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
-
-            val i = Intent(activity, MainActivity::class.java)
-            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(i)
-            authProvider.logout()
-        }
-        // Botón Cancelar
-        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
-        }
-        val alertDialog: AlertDialog = alertDialogBuilder.create()
-        alertDialog.show()
 
 
-    }
-
-    private fun getDriver() {
-        textViewUsername?.text = DriverProvider.datosConductor?.nombre?: "" +" "+ DriverProvider.datosConductor?.apellido?:""
-        }
 }

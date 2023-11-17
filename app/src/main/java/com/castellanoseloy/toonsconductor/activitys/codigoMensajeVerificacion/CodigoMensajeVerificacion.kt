@@ -12,6 +12,7 @@ import com.castellanoseloy.toonsconductor.databinding.ActivityCodigoMensajeVerif
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.utils.Preferencias
 import com.google.firebase.FirebaseException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.PhoneAuthCredential
@@ -22,13 +23,15 @@ import java.util.concurrent.TimeUnit
 
 class CodigoMensajeVerificacion : AppCompatActivity() {
 
+    private var driver: ConductorModelo? = null
     private lateinit var progressDialog: ProgressDialog
     private lateinit var credential: PhoneAuthCredential
     private lateinit var telefono: String
     private lateinit var idVerificacion: String
     private lateinit var binding: ActivityCodigoMensajeVerificacionBinding
     private val auth = FirebaseAuth.getInstance()
-
+    private val driverProvider = DriverProvider()
+    private val autenticacion = Autenticacion()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCodigoMensajeVerificacionBinding.inflate(layoutInflater)
@@ -44,29 +47,31 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
                 progressDialog.dismiss()
                 Log.d("verificacionMensajes", "¡Verificacion automatica exitosa!!!!!!!!!! XD")
 
-                val intent = Intent(this@CodigoMensajeVerificacion, RegistroUsuarioActivity::class.java)
-                intent.putExtra("telefono",telefono)
-                startActivity(intent)
+                buscarPorTelefono()
             }
 
             override fun onVerificationFailed(p0: FirebaseException) {
                 progressDialog.dismiss()
                 Log.d("verificacionMensajes", "verificacion fallo:  ${p0.message}")
-                Utilidades.mostrarToast("No se pudo enviar el codigo: ${p0.message}", this@CodigoMensajeVerificacion)
+                Utilidades.mostrarToast(
+                    "No se pudo enviar el codigo: ${p0.message}",
+                    this@CodigoMensajeVerificacion
+                )
             }
 
             override fun onCodeSent(
                 verificationId: String,
                 token: PhoneAuthProvider.ForceResendingToken
             ) {
-                idVerificacion=verificationId
+                idVerificacion = verificationId
 
                 progressDialog.dismiss()
                 Log.d("verificacionMensajes", "¡El codigo se envio a $verificationId")
 
-                binding.linearLayoutIngresaNumero.visibility=View.GONE
-                binding.linearLayoutIngresaCodigo.visibility=View.VISIBLE
-                binding.textviewCodigoEnviadoInfo.text="Hemos enviado un mensaje con un  codigo de verificación a tu número de télefono $telefono"
+                binding.linearLayoutIngresaNumero.visibility = View.GONE
+                binding.linearLayoutIngresaCodigo.visibility = View.VISIBLE
+                binding.textviewCodigoEnviadoInfo.text =
+                    "Hemos enviado un mensaje con un  codigo de verificación a tu número de télefono $telefono"
             }
         }
 
@@ -90,31 +95,98 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
         auth.signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Log.d("verificacionMensajes", "Usuario aceptado")
-                    val intent = Intent(this@CodigoMensajeVerificacion, RegistroUsuarioActivity::class.java)
-                    intent.putExtra("telefono",telefono)
-                    startActivity(intent)
+                    buscarPorTelefono()
                 } else {
-                    Utilidades.mostrarToast("Codigo rechazado: ${task.exception?.message}", this@CodigoMensajeVerificacion)
+                    progressDialog.dismiss()
+                    Utilidades.mostrarToast(
+                        "Codigo rechazado: ${task.exception?.message}",
+                        this@CodigoMensajeVerificacion
+                    )
                     Log.d("verificacionMensajes", "Usuario rechazado ${task.exception?.message}")
                 }
             }
     }
 
+    private fun abrirRegistroUsuarioActivity() {
+        finish()
+        Log.d("verificacionMensajes", "Usuario aceptado")
+        val intent = Intent(this@CodigoMensajeVerificacion, RegistroUsuarioActivity::class.java)
+        intent.putExtra("telefono", telefono)
+        startActivity(intent)
+    }
 
-    fun mostrarDialogProgreso(){
+    private fun buscarPorTelefono() {
+
+        Log.d("Firebase", "Telefono recibido $telefono")
+        driverProvider.getConductorPorTelefono(telefono)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+
+                    val document = task.result
+                    if (document != null && document.exists()) {
+                        finish()
+                    } else {
+                        CrearNuevoConductor()
+                    }
+                }
+
+            }
+    }
+
+    private fun CrearNuevoConductor() {
+
+        val saldoObsequio = 5000.0
+
+        val driver = ConductorModelo(
+            id = autenticacion.obtenerId(),
+            telefono = telefono,
+            saldo = saldoObsequio,
+            validacion = "Por registrar"
+        )
+
+        val preferencias = Preferencias(this)
+        preferencias.guardarPreferencia("nequi", telefono!!)
+
+        actualizarCrearCliente(driver)
+
+
+    }
+
+    private fun actualizarCrearCliente(driver: ConductorModelo?) {
+
+        driverProvider.crearOActualizar(driver!!).addOnCompleteListener {
+            if (it.isSuccessful) {
+                Utilidades.esperarUnSegundo()
+                Utilidades.esperarUnSegundo()
+
+                finish()
+                // (this@RegistroUsuarioActivity as? MainActivity)?.inicializarDatosConductor()
+            } else {
+                registrarError(it.exception!!)
+            }
+        }
+    }
+
+    fun registrarError(e: Exception) {
+        progressDialog.dismiss()
+        Log.e("Firebase Error", "ERROR EN FIREBASE $e")
+        ErroresFirebase.imprimirError(e, this@CodigoMensajeVerificacion)
+    }
+
+
+    fun mostrarDialogProgreso(titulo:String){
         progressDialog = ProgressDialog(this)
-        progressDialog.setTitle("Solicitando codigo...")
+        progressDialog.setTitle(titulo)
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Espere un momento...")
         progressDialog.show()
     }
 
     private fun listeners() {
-        binding.buttonVerificarTelefono.setOnClickListener{
+        binding.buttonVerificarTelefono.setOnClickListener {
             enviarCodigo()
         }
-        binding.buttonVerificarCodigo.setOnClickListener{
+        binding.buttonVerificarCodigo.setOnClickListener {
             verificarCodigo()
         }
     }
@@ -122,24 +194,24 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
     private fun enviarCodigo() {
         telefono = binding.editTextTelefono.text.toString()
         val longitud = telefono.length
-        if (longitud!=10){
+        if (longitud != 10) {
             binding.editTextTelefono.setError("El telefono debe tener 10 digitos")
             return
         }
-        mostrarDialogProgreso()
+        mostrarDialogProgreso("Solicitando codigo")
         startPhoneNumberVerification("+57$telefono", phoneAuthCallbacks)
     }
 
     private fun verificarCodigo() {
-        val codigo=binding.editTextCodigo.text.toString().trim()
+        val codigo = binding.editTextCodigo.text.toString().trim()
         val longitud = codigo.length
-        if (longitud!=6){
+        if (longitud != 6) {
             binding.editTextCodigo.setError("El codigo debe tener 6 digitos")
             return
         }
+        mostrarDialogProgreso("Verificando codigo")
         Log.d("verificacionMensajes", "Verificando credencial $codigo para el $idVerificacion")
         credential = PhoneAuthProvider.getCredential(idVerificacion, codigo)
-
 
         signInWithPhoneAuthCredential(credential)
     }

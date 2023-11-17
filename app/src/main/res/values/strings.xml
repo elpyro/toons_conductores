@@ -76,7 +76,7 @@
     <string name="Documento">Documento del Vehiculo</string>
 
     <array name="tipoVehiculos">
-        <item>Vehiculo</item>
+        <item>Automovil</item>
         <item>Moto</item>
         <item>Camioneta</item>
         <item>Bus</item>
