@@ -18,16 +18,13 @@ import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.Sonidos
-import com.castellanoseloy.toonsconductor.modelos.Booking
-import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
-import com.castellanoseloy.toonsconductor.services.LocationService
 import com.castellanoseloy.toonsconductor.utils.NotificarEstados
-import com.castellanoseloy.toonsconductor.utils.RelativeTime.stopService
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
@@ -54,7 +51,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
     private val bookingAceptedsProvider = BookingAceptedsProvider()
     private val geoProvider = GeoProveedor()
     private lateinit var sonidos: Sonidos
-    private lateinit var booking: Booking
+    private lateinit var booking: BookingModel
 
 
     override fun onCreateView(
@@ -79,7 +76,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         btnCancel = view.findViewById(R.id.btnCancel)
 
         val data = arguments?.getString("booking")
-        booking = Booking.fromJson(data!!)!!
+        booking = BookingModel.fromJson(data!!)!!
         Log.d("ARGUMENTS", "Booking: ${booking?.toJson()}")
 
         (activity as? MapaActivity)?.modalMostrado=true
@@ -167,8 +164,9 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                             (activity as? MapaActivity)?.detenerServico()
                             (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
                             geoProvider.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
-                            booking!!.status = "accept" // Crear el booking aceptado
 
+                            booking.id=Utilidades.generarIdUnico()
+                            booking!!.status = "accept" // Crear el booking aceptado
                             booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
 
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {

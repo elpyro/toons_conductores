@@ -6,9 +6,10 @@ import android.content.Intent
 import android.util.Log
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
-import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
+import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 
 
@@ -29,12 +30,16 @@ class ShowTravel: BroadcastReceiver() {
                 val document = task.result
 
                 if (document.exists()) {
-                    val booking = document.getValue(Booking::class.java)
+                    val booking = document.getValue(BookingModel::class.java)
                     bookingProvider.updateStatus(idBooking, "accept").addOnCompleteListener {
 
                         if (it.isSuccessful) {
                             val serviceManager = ServiceLocalizationManager.getInstance()
                             serviceManager.stopLocationService(context)//detener servicio de localizacion en segundo plano
+
+                            booking?.id=Utilidades.generarIdUnico()
+                            booking!!.status = "accept" // Crear el booking aceptado
+                            booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
 
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
                                 Utilidades.mostrarToast("Viaje Aceptado", context)

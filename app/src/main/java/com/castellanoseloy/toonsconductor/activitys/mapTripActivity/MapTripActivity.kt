@@ -9,13 +9,10 @@ import android.location.Location
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
@@ -23,20 +20,20 @@ import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.calificationClientActivity.CalificationClientActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.CarMoveAnim
+import com.castellanoseloy.toonsconductor.activitys.utils.Sonidos
+import com.castellanoseloy.toonsconductor.activitys.viajeCancelado.ViajeCancelado
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapTripBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomTripInfo
-import com.castellanoseloy.toonsconductor.modelos.Booking
-import com.castellanoseloy.toonsconductor.modelos.FCMBody
-import com.castellanoseloy.toonsconductor.modelos.FCMResponse
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
+import com.castellanoseloy.toonsconductor.modelos.TransaccionesModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
-import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
+import com.castellanoseloy.toonsconductor.promts.CancelacionMotivo
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
-import com.castellanoseloy.toonsconductor.proveedor.NotificationProvider
+import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.castellanoseloy.toonsconductor.utils.NotificarEstados
-import com.castellanoseloy.toonsconductor.utils.Preferencias
 import com.example.easywaylocation.EasyWayLocation
 import com.example.easywaylocation.Listener
 import com.example.easywaylocation.draw_path.DirectionUtil
@@ -55,19 +52,22 @@ import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.Query
 import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.models.History
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import com.optic.uberclonedriverkotlin.providers.HistoryProvider
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.util.Date
 
 
 class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, DirectionUtil.DirectionCallBack {
 
+    private var avisoLLegando: Boolean=false
+    private lateinit var bookingQuery: Query
+    private lateinit var bookingListener: ValueEventListener
+
+    private var idTransaccion: String? = null
     private var client: Client? = null
     private var start: LatLng?=null
     private var markerDestination: Marker? =null
@@ -83,12 +83,14 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var iconoMarca: BitmapDescriptor? = null
 
     private var geoProveedor= GeoProveedor()
-    private var autenticacion= Autenticacion ()
+    private lateinit var sonidos: Sonidos
     private var bookingAceptedsProvider =BookingAceptedsProvider()
     private val historyProvider = HistoryProvider()
     private val modalTrip=ModalBottomTripInfo()
     private val clientProvider = ClienteProveedor()
     private val notificarEstados=NotificarEstados()
+
+    val aeropuertoBogotaLatLng = LatLng(4.701594, -74.146948)
 
 
     private var isCameraMoved = false // Variable para indicar si moveCamera se ha ejecutado
@@ -100,7 +102,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var destinoOtrosMapas: LatLng? = null
     private var destinationLatLng: LatLng? = null
 
-    private var booking:Booking? =null
+    private var booking:BookingModel? =null
 
     //dibujar ruta
     private var wayPoints: ArrayList<LatLng> = ArrayList()
@@ -114,34 +116,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private var previusLocation = Location("")
     private var isStartedTrip = false
 
-    // TEMPORIZADOR
-    private var counter = 0
-    private var min = 0
-    private var handler = Handler(Looper.myLooper()!!)
-    private var runnable = Runnable {
-        kotlin.run {
-            counter++
 
-            if (min == 0) {
-                binding.textViewTimer.text = "$counter Seg"
-            }
-            else {
-                binding.textViewTimer.text = "$min Min $counter Seg"
-            }
-
-            if (counter == 60) {
-                min = min + (counter / 60)
-                counter = 0
-                binding.textViewTimer.text = "$min Min $counter Seg"
-            }
-
-            startTimer()
-        }
-    }
-
-    private fun startTimer() {
-        handler.postDelayed(runnable, 1000) // INICIALIZAR EL CONTADOR
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -149,6 +124,8 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
         binding= ActivityMapTripBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        sonidos = Sonidos(this)
 
         detenerServico()
 
@@ -162,6 +139,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         progressDialog.show()
 
         ubicacionPorDefecto()
+        getBooking()
 
         permisoLocalizacion.launch(arrayOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -174,26 +152,20 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     private fun getBooking(){
 
-        var bookingQuery = bookingAceptedsProvider.getBookingAccepteds()
+        bookingQuery = bookingAceptedsProvider.getBookingAccepteds()
 
-        bookingQuery!!.addListenerForSingleValueEvent(object : ValueEventListener {
+        bookingListener = bookingQuery!!.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 for (childSnapshot in snapshot.children) {
-                    booking = childSnapshot.getValue(Booking::class.java)
 
-                    mostrarBotonesOcultos()
+                    booking = childSnapshot.getValue(BookingModel::class.java)
 
-
-                    originLatLng = LatLng(booking!!.originLat!!, booking!!.originLng!!)
-                    destinoOtrosMapas=originLatLng
-                    destinationLatLng = LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
-                   // medirDistacia()
-                    dibujarRuta(originLatLng!!)
-                    addOriginMarker(originLatLng!!)
-                    getClientInfo()
-
-                    progressDialog.dismiss()
+                    if (booking!!.status.equals("Cancelado")) {
+                        viajeCancelado()
+                    }else {
+                        detallesViaje()
+                    }
                 }
             }
 
@@ -205,11 +177,57 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         })
     }
 
-    private fun mostrarBotonesOcultos() {
+    // Método para detener el escuchador cuando ya no sea necesario
+    private fun detenerEscuchador() {
+        // Verifica si la referencia del escuchador no es nula antes de intentar quitar el escuchador
+        bookingListener?.let {
+            bookingQuery?.removeEventListener(it)
+        }
+    }
+
+    private fun viajeCancelado() {
+            detenerEscuchador()
+
+            val i = Intent(this, ViajeCancelado::class.java)
+
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(i)
+    }
+
+    private fun detallesViaje() {
+
+        mostrarBotonesOcultos(booking?.status)
+
+        originLatLng = LatLng(booking!!.originLat!!, booking!!.originLng!!)
+
+        destinationLatLng = LatLng(booking!!.destinationLat!!, booking!!.destinationLng!!)
+
+        idTransaccion=booking!!.id
+
+        if(booking!!.status.equals("Viaje en proceso")){
+            destinoOtrosMapas=destinationLatLng
+            dibujarRuta(destinationLatLng!!)
+            addOriginMarker(destinationLatLng!!)
+            mostrarBotonesViajeIniciado()
+            binding?.buttonCancelar?.visibility=View.GONE
+        } else{
+            destinoOtrosMapas=originLatLng
+            dibujarRuta(originLatLng!!)
+            addOriginMarker(originLatLng!!)
+            binding?.buttonCancelar?.visibility=View.VISIBLE
+        }
+
+        getClientInfo()
+
+        progressDialog.dismiss()
+    }
+
+
+    private fun mostrarBotonesOcultos(status: String?) {
         binding?.imageViewInfo?.visibility=View.VISIBLE
-        binding?.btnStartTrip?.visibility=View.VISIBLE
 
 
+        mostrarSegunStatus(status)
 
         var wazeIntalado= viewModel?.isWazeInstalled(this)
         var googleMapsInstado= viewModel?.isGoogleMapsInstalled(this)
@@ -222,6 +240,18 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
     }
 
+    private fun mostrarSegunStatus(status: String?) {
+
+        if(status.equals("accept")) viewModel?.mostrarBotonIrAPuntoEncuentro(binding,this,destinoOtrosMapas)
+        if(status.equals("Al punto de encuentro"))  viewModel?.mostrarBotonHeLlegado(binding,this,destinoOtrosMapas)
+        if(status.equals("Ha llegado al punto de encuentro"))  viewModel?.mostrarBottonIniciarViaje(binding,this,destinoOtrosMapas)
+        if(status.equals("Viaje en proceso")) {
+            viewModel?.showButtonFinish(binding,this,destinoOtrosMapas)
+
+        }
+
+    }
+
 
     private fun listeners() {
 
@@ -230,6 +260,15 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         binding.btnInciarViaje.setOnClickListener { inicarViaje()}
         binding.btnFinishTrip.setOnClickListener { updateToFinish() }
         binding.imageViewInfo.setOnClickListener{ showModalInfo() }
+        binding.buttonCancelar.setOnClickListener { cancelarViaje() }
+
+    }
+
+    private fun cancelarViaje() {
+        val history=createHistory()
+
+        var motivo= CancelacionMotivo()
+        motivo.mensaje(this, history!!)
 
     }
 
@@ -251,9 +290,10 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
 
     }
 
-    private fun createHistory() {
-        val history = History(
-            idDriver = autenticacion.obtenerId(),
+    private fun createHistory(): History {
+        return History(
+            id = idTransaccion,
+            idDriver = DriverProvider.datosConductor?.id,
             idClient = booking?.idClient,
             pasajero=booking?.nombrePasajero,
             pasajeroTelefono=booking?.telefonoPasajero,
@@ -263,14 +303,11 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             originLng = booking?.originLng,
             destinationLat = booking?.destinationLat,
             destinationLng = booking?.destinationLng,
-            time = min,
-            km = km,
             tarifas = booking?.tarifas,
             timestamp = Date().time,
             car = booking?.car
 
         )
-        historyProvider.create(history)
     }
 
 
@@ -301,36 +338,19 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             geoProveedor.guardarLocalizacionTrabajando(DriverProvider.datosConductor?.id!!,ubicacionLatLong!!)
         }
     }
+
+
     private fun ubicacionPorDefecto() {
         val respuestaLocalizacion= LocationRequest.create().apply {
             interval=0
             fastestInterval= 0
-            priority= LocationRequest.PRIORITY_HIGH_ACCURACY
+            priority=LocationRequest.PRIORITY_HIGH_ACCURACY
             smallestDisplacement=1f
         }
         easyWayLocation = EasyWayLocation(this, respuestaLocalizacion, false, false, this)
-
     }
 
-    private fun mostrarBotonHeLlegado() {
-        binding.btnHellegado.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
-        binding.btnStartTrip.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
-    }
 
-    private fun mostrarBottonIniciarViaje() {
-        binding.btnInciarViaje.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
-        binding.btnHellegado.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
-    }
-    private fun showButtonFinish() {
-        binding.btnFinishTrip.visibility = View.VISIBLE // MOSTRANDO EL BOTON DE DESCONECTARSE
-        binding.btnInciarViaje.visibility = View.GONE // OCULATNDO EL BOTON DE CONECTARSE
-        binding.imageViewWaze.setOnClickListener{ viewModel!!.irAWaze(this,destinoOtrosMapas!!) }
-        binding.imageViewGoogleMaps.setOnClickListener{ viewModel!!.irAGoogleMaps(this,destinoOtrosMapas!!) }
-    }
 
 
     fun agregarMarca(){
@@ -359,7 +379,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
     private fun addDestinationMarker() {
         if (destinationLatLng != null) {
             markerDestination = googleMaps?.addMarker(MarkerOptions().position(destinationLatLng!!).title("Recoger aqui")
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.icons_pin)))
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_location_white)))
         }
     }
 
@@ -388,6 +408,12 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         } catch (e: Resources.NotFoundException) {
             Log.d("MAPAS", "Error: ${e.toString()}")
         }
+
+        googleMaps?.moveCamera(
+            CameraUpdateFactory.newCameraPosition(
+                CameraPosition.builder().target(aeropuertoBogotaLatLng!!).zoom(14f).build()
+            )
+        )
 
         googleMaps?.isMyLocationEnabled=true
         googleMaps?.uiSettings?.isZoomControlsEnabled=true
@@ -428,43 +454,51 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                 )
                 isCameraMoved = true // Marca moveCamera como ya ejecutado
 
+                dibujarRuta(destinoOtrosMapas!!)
                 crearIcono()
                 agregarMarca()
-                getBooking()
 
             }
 
             if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
                 CarMoveAnim.carAnim(marcaConductor!!, start!!, ubicacionLatLong!!)
             }
-       // medirDistacia()
+        medirDistacia()
         salvarLocalizacion()
     }
 
-//    private fun medirDistacia() {
-//
-//        if (booking != null && originLatLng != null) {
-//            var distance = getDistanceBetween(ubicacionLatLong!!, originLatLng!!)
-//            if (distance <= 300) {
-//                isCloseToOrigin = true
-//            }
-//
-//            Log.d("LOCATION", "Distance: ${distance}")
-//        }
-//    }
+    private fun medirDistacia() {
+
+        if (ubicacionLatLong != null && destinoOtrosMapas != null) {
+            var distance = Utilidades.obtenerDistacia(ubicacionLatLong!!, destinoOtrosMapas!!)
+            if (distance < 300) {
+                if(booking!!.status.equals("Viaje en proceso")){
+                   if(!avisoLLegando){
+                       sonidos.crearTonoLLegandoAlDestino()
+                       avisoLLegando = true
+                   }
+                } else{
+                    if(distance<30) heLLegado()
+                }
+
+            }
+
+            Log.d("Distancia", "Distance: ${distance}")
+        }
+    }
 
     private fun actualizarAlEncuentro() {
 
             bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Al punto de encuentro").addOnCompleteListener {
                 if (it.isSuccessful) {
                     binding.LinearCompartirRuta.visibility= View.VISIBLE
-                    preguntarNavegador()
+                    viewModel?.preguntarNavegador(this,destinoOtrosMapas)
                     if (destinationLatLng != null) {
                         isStartedTrip = true
 
                         notificarEstados.sendNotification("El conductor va en camino al punto de encuentro",client!!,this)
                     }
-                    mostrarBotonHeLlegado()
+                    viewModel?.mostrarBotonHeLlegado(binding,this,destinoOtrosMapas)
                 }else{
                     Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
                     Log.d("Booking", "ERROR: ${booking}")
@@ -473,40 +507,7 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
             }
     }
 
-    private fun preguntarNavegador() {
 
-        val preferencias=Preferencias(this)
-        val preferenciasApp=preferencias.cargarPreferencias()
-
-//        if(preferenciasApp.navegadorSeleccionado == R.id.NavegadorNinguno) {
-//
-//            val alertDialogBuilder = AlertDialog.Builder(this)
-//            alertDialogBuilder.setTitle("Navegador")
-//            alertDialogBuilder.setMessage("Elije navegador")
-//
-//            var wazeIntalado = viewModel?.isWazeInstalled(this)
-//            var googleMapsInstado = viewModel?.isGoogleMapsInstalled(this)
-//
-//            if (wazeIntalado!!) {
-//
-//                alertDialogBuilder.setPositiveButton("Waze") { dialog, which ->
-//                    viewModel!!.irAWaze(this, destinoOtrosMapas!!)
-//                }
-//            }
-//            if (!googleMapsInstado!!) binding.imageViewGoogleMaps.visibility = View.GONE
-//            // Botón Aceptar
-//
-//            if (googleMapsInstado) {
-//                alertDialogBuilder.setNegativeButton("Google Maps") { dialog, which ->
-//                    viewModel!!.irAGoogleMaps(this, destinoOtrosMapas!!)
-//                }
-//            }
-//            val alertDialog: AlertDialog = alertDialogBuilder.create()
-//            alertDialog.show()
-//        }
-        if(preferenciasApp.navegadorSeleccionado == R.id.NavegadorMaps)  viewModel!!.irAGoogleMaps(this, destinoOtrosMapas!!)
-        if(preferenciasApp.navegadorSeleccionado == R.id.NavegadorWaze)  viewModel!!.irAGoogleMaps(this, destinoOtrosMapas!!)
-    }
 
     private fun heLLegado() {
 
@@ -518,13 +519,16 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     isStartedTrip = true
                     googleMaps?.clear()
                     agregarMarca()
-//                    dibujarRuta(destinationLatLng!!)
+
                     markerOrigin?.remove()
-//                    addDestinationMarker()
+
+                    destinoOtrosMapas=destinationLatLng //establecer la alerta de proximidad
+
+                    sonidos.crearTonoPuntoEncuentro()
 
                     notificarEstados.sendNotification("El conductor ha llegado a tu encuentro",client!!,this)
                 }
-                mostrarBottonIniciarViaje()
+                viewModel?.mostrarBottonIniciarViaje(binding,this,destinoOtrosMapas)
             }else{
                 Toast.makeText(this, "Error de conexion", Toast.LENGTH_LONG).show()
                 Log.d("Booking", "ERROR: ${booking}")
@@ -538,12 +542,10 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Viaje en proceso").addOnCompleteListener {
             if (it.isSuccessful) {
 
-                preguntarNavegador()
+                mostrarBotonesViajeIniciado()
 
-                binding?.LinearCompartirRuta?.visibility=View.VISIBLE
-                destinoOtrosMapas=destinationLatLng
-                binding.tiempoRecorrido.visibility=View.VISIBLE
-                startTimer()
+                cobrarComisiones()
+                viewModel?.preguntarNavegador(this,destinoOtrosMapas)
 
                 if (destinationLatLng != null) {
                     isStartedTrip = true
@@ -552,8 +554,9 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
                     dibujarRuta(destinationLatLng!!)
                     markerOrigin?.remove()
                     addDestinationMarker()
-                    startTimer()
-                    showButtonFinish()
+
+                    sonidos.crearTonoBuenViaje()
+                    viewModel?.showButtonFinish(binding,this,destinoOtrosMapas)
                 }
                 binding?.btnHellegado?.visibility=View.GONE
             }else{
@@ -564,22 +567,71 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         }
     }
 
+    private fun mostrarBotonesViajeIniciado() {
+        binding?.LinearCompartirRuta?.visibility=View.VISIBLE
+        destinoOtrosMapas=destinationLatLng  //cambiamos el destino disponible en otros navegadores
+//        binding.tiempoRecorrido.visibility=View.VISIBLE
+//        startTimer()
+    }
+
+    private fun cobrarComisiones() {
+
+            val comision=booking?.tarifas?.comisionApp
+            val porcentaje= Utilidades.calcularPorcentaje(
+                booking?.tarifas?.totalViaje!!,
+                booking?.tarifas?.porcenajeComisionApp!!
+            )
+            val descuento= comision!! +porcentaje
+
+            val driverProvider=DriverProvider()
+            driverProvider.descontarComisionesApp(descuento).addOnCompleteListener {
+                if(it.isSuccessful){
+                  crearRegistroTransaccion(descuento)
+                }
+            }
+
+    }
+
+    private fun crearRegistroTransaccion(descuento: Double) {
+
+        val datosRecarga = TransaccionesModelo(
+            id = idTransaccion,
+            idDriver =  DriverProvider.datosConductor!!.id,
+            banco = "ixi-cobros",
+            cuenta =  idTransaccion?.substring(idTransaccion?.length!! - 6),
+            codigoVerificacion = "",
+            valor = "-$descuento",
+            estado = "Realizado",
+            fecha = Date()
+        )
+        val transaccionesProvider=TransaccionesProvider()
+        transaccionesProvider.create(datosRecarga)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d("Transacciones", "Registro de firebase creado")
+                } else {
+                    Log.e("Transacciones", "Error en firebase")
+                    crearRegistroTransaccion(descuento)
+                }
+            }
+
+
+    }
+
 
     private fun updateToFinish() {
 
-        handler.removeCallbacks(runnable) // DETENER CONTADOR
+
         isStartedTrip = false
         easyWayLocation?.endUpdates()
         geoProveedor.eliminarLocalizacionTrabajo(DriverProvider.datosConductor?.id!!)
-        if (min == 0) {
-            min = 1
-        }
-      //  getPrices(km, min.toDouble())
+
         bookingAceptedsProvider.updateStatus(booking?.idDriver!!, "Finalizado").addOnCompleteListener {
 
             if (it.isSuccessful) {
                 goToCalificationClient()
-                createHistory()
+                val history=createHistory()
+                historyProvider.create(history)
             }
 
         }
@@ -590,8 +642,6 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         i.putExtra("price", booking!!.tarifas?.totalViaje)
         i.putExtra("origin", booking!!.origin)
         i.putExtra("destination", booking!!.destination)
-        i.putExtra("time", time/60)
-        i.putExtra("km", km)
 
         i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(i)
@@ -627,56 +677,34 @@ class MapTripActivity : AppCompatActivity(), OnMapReadyCallback, Listener, Direc
         polyLineDetailsMap: HashMap<String, PolyLineDataBean>,
         polyLineDetailsArray: ArrayList<PolyLineDataBean>
     ) {
-        //medir distancia y tiempo
-        distance = polyLineDetailsArray[1].distance.toDouble() // METROS
-        time = polyLineDetailsArray[1].time.toDouble() // SEGUNDOS
-        distance = if (distance < 1000.0) 1000.0 else distance // SI ES MENOS DE 1000 METROS EN 1 KM
-        time = if (time < 60.0) 60.0 else time
-
-        distance = distance / 1000 // KM
-        time = time / 60 // MIN
-
-        //dibujar ruta
         directionUtil.drawPath(WAY_POINT_TAG)
     }
 
     private fun dibujarRuta(position:LatLng){
 
-        wayPoints.clear()
+        if(ubicacionLatLong!=null && position!=null) {
+            wayPoints.clear()
 
-        wayPoints.add(ubicacionLatLong!!)
-        wayPoints.add(position!!)
+            wayPoints.add(ubicacionLatLong!!)
+            wayPoints.add(position!!)
 
-        directionUtil = DirectionUtil.Builder()
-            .setDirectionKey(resources.getString(R.string.google_maps_key))
-            .setOrigin(ubicacionLatLong!!)
-            .setWayPoints(wayPoints)
-            .setGoogleMap(googleMaps!!)
-            .setPolyLinePrimaryColor(R.color.black)
-            .setPolyLineWidth(25)
-            .setPathAnimation(true)
-            .setCallback(this)
-            .setDestination(position!!)
-            .build()
+            directionUtil = DirectionUtil.Builder()
+                .setDirectionKey(resources.getString(R.string.google_maps_key))
+                .setOrigin(ubicacionLatLong!!)
+                .setWayPoints(wayPoints)
+                .setGoogleMap(googleMaps!!)
+                .setPolyLinePrimaryColor(R.color.black)
+                .setPolyLineWidth(25)
+                .setPathAnimation(true)
+                .setCallback(this)
+                .setDestination(position!!)
+                .build()
 
-        directionUtil.initPath()
+            directionUtil.initPath()
+        }
     }
 
-    //obtener la distacina entre dos puntos
-    private fun getDistanceBetween(originLatLng: LatLng, destinationLatLng: LatLng): Float {
-        var distance = 0.0f
-        val originLocation = Location("")
-        val destinationLocation = Location("")
 
-        originLocation.latitude = originLatLng.latitude
-        originLocation.longitude = originLatLng.longitude
-
-        destinationLocation.latitude = destinationLatLng.latitude
-        destinationLocation.longitude = destinationLatLng.longitude
-
-        distance = originLocation.distanceTo(destinationLocation)
-        return distance
-    }
 
 
     private fun getClientInfo() {

@@ -200,7 +200,7 @@ object Utilidades {
 
     fun getFechaComoString(timestamp: Long): String {
         val fecha = Date(timestamp)
-        val formato = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+        val formato = SimpleDateFormat("dd/MM/yyyy")
         return formato.format(fecha)
     }
 
@@ -432,6 +432,22 @@ object Utilidades {
             // Manejar el caso en el que no hay aplicaciones disponibles
             Toast.makeText(context, "No apps available to share.", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    //obtener la distacina entre dos puntos
+     fun obtenerDistacia(originLatLng: LatLng, destinationLatLng: LatLng): Float {
+        var distance = 0.0f
+        val originLocation = Location("")
+        val destinationLocation = Location("")
+
+        originLocation.latitude = originLatLng.latitude
+        originLocation.longitude = originLatLng.longitude
+
+        destinationLocation.latitude = destinationLatLng.latitude
+        destinationLocation.longitude = destinationLatLng.longitude
+
+        distance = originLocation.distanceTo(destinationLocation)
+        return distance
     }
 
 }

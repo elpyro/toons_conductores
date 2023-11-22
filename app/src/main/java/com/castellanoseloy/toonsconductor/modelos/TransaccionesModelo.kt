@@ -4,7 +4,7 @@ import com.beust.klaxon.Klaxon
 import java.util.Date
 
 private val klaxon = Klaxon()
-class RecargasModelo(
+class TransaccionesModelo(
 
     val id: String? = null,
     val idDriver: String? = null,
@@ -19,7 +19,7 @@ class RecargasModelo(
         public fun toJson() = klaxon.toJsonString(this)
 
         companion object {
-            public fun fromJson(json: String) = klaxon.parse<Booking>(json)
+            public fun fromJson(json: String) = klaxon.parse<BookingModel>(json)
         }
 
 }

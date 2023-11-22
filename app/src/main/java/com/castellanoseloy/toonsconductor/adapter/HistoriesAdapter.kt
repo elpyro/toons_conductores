@@ -32,6 +32,7 @@ class HistoriesAdapter(val context: Activity, val histories: ArrayList<History>)
     private fun calcularGananciaPorDia() {
         for (history in histories) {
             val fecha = history.timestamp?.let { getFechaComoString(it) }
+            Log.d("Historial","la fecha s del registro es: $fecha")
             if (fecha != null) {
                 val ganancia = history.tarifas?.totalComisionConductor ?: 0.0
 
@@ -70,7 +71,7 @@ class HistoriesAdapter(val context: Activity, val histories: ArrayList<History>)
             Log.d("historial","la fecha del registro es $fecha")
             holder.textViewGanaciaDia.text =
                 gananciaPorDia[fecha]?.toString()?.formatoMonenda() ?: "0$"
-            holder.texview_gananciaDiaFecha.text="Ganancías del "+obtenerFechaSinHora(fecha)
+            holder.texview_gananciaDiaFecha.text= "Ganancías del $fecha"
             // Hacer visible solo en el primer registro del día
             holder.linearGananciaDia.visibility = if (esPrimerRegistroDelDia(position)) View.VISIBLE else View.GONE
         }

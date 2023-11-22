@@ -18,6 +18,6 @@ data class TarifasModelo (
     public fun toJson() = klaxon.toJsonString(this)
 
     companion object {
-        public fun fromJson(json: String) = klaxon.parse<Booking>(json)
+        public fun fromJson(json: String) = klaxon.parse<BookingModel>(json)
     }
 }

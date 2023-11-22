@@ -15,10 +15,16 @@ class HistoryProvider {
     val db = Firebase.firestore.collection("Histories")
     val authProvider = Autenticacion()
 
-    fun create(history: History): Task<DocumentReference> {
-        return db.add(history).addOnFailureListener {
-            Log.d("FIRESTORE", "ERROR: ${it.message}")
-        }
+    fun create(history: History): Task<Void> {
+        val documentReference = db.document(history.id!!)
+
+        return documentReference.set(history)
+            .addOnSuccessListener {
+                Log.d("FIRESTORE", "Documento creado con ID personalizado: $history.id!!")
+            }
+            .addOnFailureListener { exception ->
+                Log.d("FIRESTORE", "ERROR: ${exception.message}")
+            }
     }
 
     fun getHistoryById(id: String): Task<DocumentSnapshot> {

@@ -2,7 +2,7 @@ package com.castellanoseloy.toonsconductor.proveedor
 
 import android.util.Log
 import com.castellanoseloy.toonsconductor.api.NequiVerificacionPago
-import com.castellanoseloy.toonsconductor.modelos.RecargasModelo
+import com.castellanoseloy.toonsconductor.modelos.TransaccionesModelo
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -10,12 +10,11 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
-class RecargasProvider {
+class TransaccionesProvider {
 
-    lateinit var valueEventListener: ValueEventListener
-    private val db = FirebaseDatabase.getInstance().reference.child("Recargas")
+    private val db = FirebaseDatabase.getInstance().reference.child("Transacciones")
     val recargasPorVerificar = mutableListOf<String>()
-    fun create(recarga: RecargasModelo): Task<Void> {
+    fun create(recarga: TransaccionesModelo): Task<Void> {
         return db.child(recarga.id!!).setValue(recarga).addOnFailureListener {
             Log.d("REALTIME_DB", "ERROR: ${it.message}")
         }
@@ -38,18 +37,18 @@ class RecargasProvider {
 
 
 
-    fun buscarRecagasPorIdDriver(idDriver: String, verificarPendientes: Boolean = true, callback: (List<RecargasModelo>) -> Unit) {
+    fun buscarTransaccionesPorIdDriver(idDriver: String, verificarPendientes: Boolean = true, callback: (List<TransaccionesModelo>) -> Unit) {
         // Crea una consulta que filtre por el campo "idDriver"
         val recargas = db.orderByChild("idDriver").equalTo(idDriver)
         Log.d("Pruebas Nequi", "buscando recargas del conductor: $idDriver")
 
         val valueEventListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val recargasList = mutableListOf<RecargasModelo>()
+                val recargasList = mutableListOf<TransaccionesModelo>()
                 var hayRecargasPendientes=false
 
                 for (recargaSnapshot in snapshot.children) {
-                    val recarga = recargaSnapshot.getValue(RecargasModelo::class.java)
+                    val recarga = recargaSnapshot.getValue(TransaccionesModelo::class.java)
                     recarga?.let { recargasList.add(it) }
 
                     if (recarga?.estado.equals("Pendiente") && recarga?.codigoVerificacion != null) {
@@ -123,9 +122,9 @@ class RecargasProvider {
     }
 
     fun anctualizarEstado(estado:String,codigoVerificacion:String){
-        val recargasProvider=RecargasProvider()
-        recargasProvider.buscarPorCodigoVerificacion(codigoVerificacion!!){recarga->
-            recargasProvider.cambiarEstado(recarga.id!!,estado)
+        val transaccionesProvider=TransaccionesProvider()
+        transaccionesProvider.buscarPorCodigoVerificacion(codigoVerificacion!!){ recarga->
+            transaccionesProvider.cambiarEstado(recarga.id!!,estado)
                 .addOnCompleteListener{
                     if(it.isSuccessful){
                         if(!recarga.estado.equals("Realizado") && estado == "Realizado"){
@@ -138,7 +137,7 @@ class RecargasProvider {
         }
     }
 
-    fun buscarPorCodigoVerificacion(codigo: String, callback: (RecargasModelo) -> Unit) {
+    fun buscarPorCodigoVerificacion(codigo: String, callback: (TransaccionesModelo) -> Unit) {
 
         val consulta = db.orderByChild("codigoVerificacion").equalTo(codigo).limitToFirst(1)
         Log.d("Pruebas Nequi","codigo a buscar: $codigo")
@@ -146,7 +145,7 @@ class RecargasProvider {
         consulta.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (childSnapshot in snapshot.children) {
-                    var recarga = childSnapshot.getValue(RecargasModelo::class.java)
+                    var recarga = childSnapshot.getValue(TransaccionesModelo::class.java)
                     callback(recarga!!)
                 }
             }

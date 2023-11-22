@@ -12,8 +12,8 @@ import com.castellanoseloy.toonscliente.objetos.Utilidades.escribirFormatoMoneda
 import com.castellanoseloy.toonsconductor.api.NequiApiService
 import com.castellanoseloy.toonsconductor.api.NequiOAuth2Manager
 import com.castellanoseloy.toonsconductor.databinding.ActivityRecargaNequiBinding
-import com.castellanoseloy.toonsconductor.modelos.RecargasModelo
-import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
+import com.castellanoseloy.toonsconductor.modelos.TransaccionesModelo
+import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
@@ -39,7 +39,7 @@ class RecargaNequi : AppCompatActivity() {
     private lateinit var recarga: String
     private lateinit var progressDialog: ProgressDialog
     private lateinit var binding: ActivityRecargaNequiBinding
-    val recargasProvider = RecargasProvider()
+    val transaccionesProvider = TransaccionesProvider()
     var nequiOAuth2Manager = NequiOAuth2Manager()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,7 +98,7 @@ class RecargaNequi : AppCompatActivity() {
 
     private fun crearRegistroFirebase(codigoVerificacion: String) {
         idTransaccion = Utilidades.generarIdUnico()
-        val datosRecarga = RecargasModelo(
+        val datosRecarga = TransaccionesModelo(
             id = idTransaccion,
             idDriver = DriverProvider.datosConductor!!.id,
             banco = "Nequi",
@@ -109,7 +109,7 @@ class RecargaNequi : AppCompatActivity() {
             fecha = Date()
         )
 
-        recargasProvider.create(datosRecarga)
+        transaccionesProvider.create(datosRecarga)
             .addOnCompleteListener {
                 if (it.isSuccessful) {
                     Log.d("Pruebas Nequi", "Registro de firebase creado")

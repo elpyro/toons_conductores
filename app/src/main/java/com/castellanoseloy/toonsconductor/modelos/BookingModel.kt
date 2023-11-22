@@ -4,8 +4,8 @@ import com.beust.klaxon.Klaxon
 
 private val klaxon = Klaxon()
 
-data class Booking (
-    val id: String? = null,
+data class BookingModel (
+    var id: String? = null,
     val idClient: String? = null,
     val idDriver: String? = null,
     val nombrePasajero: String? = null,
@@ -29,6 +29,6 @@ data class Booking (
     public fun toJson() = klaxon.toJsonString(this)
 
     companion object {
-        public fun fromJson(json: String) = klaxon.parse<Booking>(json)
+        public fun fromJson(json: String) = klaxon.parse<BookingModel>(json)
     }
 }

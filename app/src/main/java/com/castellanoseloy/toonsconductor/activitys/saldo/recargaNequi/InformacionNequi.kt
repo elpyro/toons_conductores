@@ -1,24 +1,12 @@
 package com.castellanoseloy.toonsconductor.activitys.saldo.recargaNequi
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
-import com.castellanoseloy.toonscliente.objetos.Utilidades
-import com.castellanoseloy.toonscliente.objetos.Utilidades.generarMessageID
-import com.castellanoseloy.toonsconductor.activitys.saldo.Saldo
-import com.castellanoseloy.toonsconductor.api.NequiOAuth2Manager
 import com.castellanoseloy.toonsconductor.api.NequiVerificacionPago
 import com.castellanoseloy.toonsconductor.databinding.ActivityInformacionNequiBinding
-import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
+import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
-import org.json.JSONObject
 
 class InformacionNequi : AppCompatActivity() {
     private var recarga: String? = null
@@ -45,8 +33,8 @@ class InformacionNequi : AppCompatActivity() {
     }
 
     private fun verificacion() {
-        val recargasProvider=RecargasProvider()
-        recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!, true){
+        val transaccionesProvider=TransaccionesProvider()
+        transaccionesProvider.buscarTransaccionesPorIdDriver(DriverProvider.datosConductor?.id!!, true){
             Log.d("Pruebas nequi","Las recargas se estan verificando")
         }
     }

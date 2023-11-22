@@ -25,7 +25,7 @@ import com.castellanoseloy.toonsconductor.activitys.utils.DistanciaAreopuerto
 import com.castellanoseloy.toonsconductor.databinding.ActivityMapBinding
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetBooking
 import com.castellanoseloy.toonsconductor.fragments.ModalBottomSheetMenu
-import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import kotlin.math.*
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
@@ -80,7 +80,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     var modalMostrado: Boolean=false
     private var bookingQuery: Query? =null
     private var bookingListener: ValueEventListener? =null
-    private var booking: Booking? =null
+    private var booking: BookingModel? =null
 
     private var idConductor: String? = null
     private var start: LatLng? =null
@@ -254,7 +254,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         startActivity(i)
     }
 
-    private fun showModalBooking(booking: Booking) {
+    private fun showModalBooking(booking: BookingModel) {
 
         Log.d("Firestore", "Modal mostrado= $modalMostrado para  ${booking}  ")
 
@@ -599,7 +599,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
                 // Aquí puedes procesar los datos actualizados
                 for (childSnapshot in snapshot.children) {
-                     booking = childSnapshot.getValue(Booking::class.java)
+                     booking = childSnapshot.getValue(BookingModel::class.java)
                     if (booking?.status == "create") {
                         Log.d("REALTIME DATABASE", "Booking cargado: $booking")
                         showModalBooking(booking!!)

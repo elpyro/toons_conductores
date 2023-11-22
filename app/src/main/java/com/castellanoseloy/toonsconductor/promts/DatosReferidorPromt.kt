@@ -15,7 +15,7 @@ import com.optic.uberclonedriverkotlin.providers.HistoryProvider
 import de.hdodenhof.circleimageview.CircleImageView
 import java.text.DecimalFormat
 
-class DatosRefeidorPromt {
+class DatosReferidorPromt {
 
     fun clienteDetalle(
         context: Context,

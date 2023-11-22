@@ -1,7 +1,6 @@
 package com.castellanoseloy.toonsconductor.fragments
 
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,21 +11,19 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.R
-import com.castellanoseloy.toonsconductor.modelos.Booking
-import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
-import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.optic.uberclonedriverkotlin.models.Client
 import de.hdodenhof.circleimageview.CircleImageView
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades
-import com.castellanoseloy.toonsconductor.promts.DatosRefeidorPromt
+import com.castellanoseloy.toonsconductor.promts.DatosReferidorPromt
 import com.castellanoseloy.toonsconductor.promts.MostrarTarifas
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
+import com.google.android.gms.maps.model.LatLng
 
 
 class ModalBottomTripInfo: BottomSheetDialogFragment() {
@@ -36,7 +33,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     }
 
     private var client: Client? = null
-    private lateinit var booking: Booking
+    private lateinit var booking: BookingModel
 
     var textViewClientName: TextView? = null
     var textViewOrigin: TextView? = null
@@ -88,13 +85,25 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
 
 
         val data = arguments?.getString("booking")
-        booking = Booking.fromJson(data!!)!!
+        booking = BookingModel.fromJson(data!!)!!
 
         val comision = booking?.tarifas?.totalComisionReferido?.toDouble() ?: 0.0
         val precio = booking?.tarifas?.totalViaje?.toDouble() ?: 0.0
 
         textViewOrigin?.text = booking.origin
-        textViewDestination?.text = booking.destination
+        // Crear objetos LatLng para origen y destino
+        val originLatLng = LatLng(booking.originLat!!, booking.originLng!!)
+        val destinationLatLng = LatLng(booking.destinationLat!!, booking.destinationLng!!)
+
+        var distacia= Utilidades.obtenerDistacia(originLatLng, destinationLatLng)
+        distacia /= 1000
+
+        if(!booking.status.equals("Viaje en proceso")){
+            textViewDestination?.text = "Km: ${String.format("%.1f", distacia)}"+" Inicia le viaje para más información"
+        }else{
+            textViewDestination?.text ="Km: ${String.format("%.1f", distacia)} "+booking.destination
+        }
+
 
         textView_equipaje?.text = booking.equipaje
         textView_pasajeros?.text = booking.pasajeros
@@ -135,7 +144,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
 //                    }
 //                }
                 linearLayout_referidor?.setOnClickListener{
-                    val datosRefeidorPromt=DatosRefeidorPromt()
+                    val datosRefeidorPromt=DatosReferidorPromt()
                     client?.let { it1 -> datosRefeidorPromt.clienteDetalle(requireContext(), it1) }
                 }
 

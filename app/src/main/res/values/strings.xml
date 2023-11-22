@@ -74,6 +74,7 @@
     <string name="frontal">Frontal</string>
     <string name="trasera">Trasera</string>
     <string name="Documento">Documento del Vehiculo</string>
+    <string name="Informacion">Información</string>
 
     <array name="tipoVehiculos">
         <item>Automovil</item>
@@ -81,4 +82,14 @@
         <item>Camioneta</item>
         <item>Bus</item>
     </array>
+
+    <array name="cancelaciones">
+        <item>Deseo especificar</item>
+        <item>El pasajero no llegó</item>
+        <item>El pasajero no quiso tomar el servicio</item>
+        <item>Dirección o precio errados</item>
+        <item>Mucho equipaje</item>
+        <item>Dificultades para llegar al punto de encuentro</item>
+    </array>
+
 </resources>

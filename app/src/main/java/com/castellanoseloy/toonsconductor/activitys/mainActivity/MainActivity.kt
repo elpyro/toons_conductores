@@ -21,7 +21,7 @@ import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
-import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
+import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -132,8 +132,8 @@ class MainActivity : AppCompatActivity() {
                 verificarViajesPendientes()
                 obtenerDatosCarro()
 
-                val recargasProvider= RecargasProvider()
-                recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!, true){
+                val transaccionesProvider= TransaccionesProvider()
+                transaccionesProvider.buscarTransaccionesPorIdDriver(DriverProvider.datosConductor?.id!!, true){
                     Log.d("Pruebas nequi","Las recargas se estan verificando")
                 }
 
@@ -200,10 +200,10 @@ class MainActivity : AppCompatActivity() {
             }
 
             // Botón Cancelar
-            alertDialogBuilder.setNegativeButton("Finalizarlo") { dialog, which ->
-                bookingAceptedsProvider.deleteBookingsForDriver(autenticacion.obtenerId())
-                abrirMapaInicio()
-            }
+//            alertDialogBuilder.setNegativeButton("Finalizarlo") { dialog, which ->
+//                bookingAceptedsProvider.deleteBookingsForDriver(autenticacion.obtenerId())
+//                abrirMapaInicio()
+//            }
 
             val alertDialog: AlertDialog = alertDialogBuilder.create()
             alertDialog.show()

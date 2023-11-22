@@ -7,12 +7,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMoneda
 
-import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.activitys.saldo.recargaNequi.RecargaNequi
 import com.castellanoseloy.toonsconductor.adapter.RecargasAdapter
 import com.castellanoseloy.toonsconductor.databinding.ActivitySaldoBinding
-import com.castellanoseloy.toonsconductor.modelos.RecargasModelo
-import com.castellanoseloy.toonsconductor.proveedor.RecargasProvider
+import com.castellanoseloy.toonsconductor.modelos.TransaccionesModelo
+import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
 
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import kotlinx.coroutines.Dispatchers
@@ -45,11 +44,11 @@ class Saldo : AppCompatActivity() {
     }
 
     private fun cargarRecargas() {
-        val recargasProvider=RecargasProvider()
+        val transaccionesProvider=TransaccionesProvider()
 
-        recargasProvider.buscarRecagasPorIdDriver(DriverProvider.datosConductor?.id!!, false) { snapshot ->
+        transaccionesProvider.buscarTransaccionesPorIdDriver(DriverProvider.datosConductor?.id!!, false) { snapshot ->
                 if(snapshot.isNotEmpty()){
-                    adapter = RecargasAdapter(this, snapshot as ArrayList<RecargasModelo>)
+                    adapter = RecargasAdapter(this, snapshot as ArrayList<TransaccionesModelo>)
                     binding.recyclerRecargas.adapter = adapter
                     mostrarSaldo()
                 }

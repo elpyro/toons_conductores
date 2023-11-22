@@ -1,32 +1,21 @@
 package com.castellanoseloy.toonsconductor.proveedor
 
 import android.util.Log
-import com.castellanoseloy.toonscliente.objetos.Utilidades.calcularPorcentaje
-import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.Query
 
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class BookingAceptedsProvider {
 
     private val db = FirebaseDatabase.getInstance().reference.child("BookingsAccepteds")
-    private val authProvider = Autenticacion()
 
-    fun create(booking: Booking): Task<Void> {
-        return db.child(authProvider.obtenerId()).setValue(booking).addOnFailureListener {
+
+    fun create(booking: BookingModel): Task<Void> {
+        return db.child(DriverProvider.datosConductor?.id!!).setValue(booking).addOnFailureListener {
             Log.d("REALTIME_DB", "ERROR: ${it.message}")
-        }
-            .addOnSuccessListener{
-                val comision=booking.tarifas?.comisionApp
-                val porcentaje= calcularPorcentaje(booking.tarifas?.totalViaje!!, booking?.tarifas?.porcenajeComisionApp!!)
-                val descuento= comision!! +porcentaje
-                val driverProvider=DriverProvider()
-                driverProvider.descontarComisionesApp(descuento)
         }
     }
 

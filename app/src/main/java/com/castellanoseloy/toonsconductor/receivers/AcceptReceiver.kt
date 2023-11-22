@@ -4,8 +4,9 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
-import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
@@ -37,15 +38,18 @@ class AcceptReceiver: BroadcastReceiver() {
 
                 for (childSnapshot in snapshot.children) {
 
-                    val booking = childSnapshot.getValue(Booking::class.java)
+                    val booking = childSnapshot.getValue(BookingModel::class.java)
                     Log.d("REALTIME DATABASE", "BOOKING: $booking")
 
                 if (booking != null) {
                     bookingProvider.updateStatus(idBooking, "accept").addOnCompleteListener {
                         if (it.isSuccessful) {
                             Log.d("REALTIME DATABASE", "VIAJE CREADO: " + booking)
+
+                            booking.id=Utilidades.generarIdUnico()
                             booking!!.status = "accept" // Crear el booking aceptado
                             booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
+
                             bookingAceptedsProvider.create(booking).addOnCompleteListener {
 
                                 val serviceManager = ServiceLocalizationManager.getInstance()

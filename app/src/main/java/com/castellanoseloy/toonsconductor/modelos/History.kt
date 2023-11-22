@@ -1,7 +1,7 @@
 package com.optic.uberclonedriverkotlin.models
 
 import com.beust.klaxon.*
-import com.castellanoseloy.toonsconductor.modelos.Booking
+import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.modelos.TarifasModelo
 
@@ -15,8 +15,8 @@ data class History (
     val destination: String? = null,
     val pasajero:String?=null,
     val pasajeroTelefono:String?=null,
-    val commentClient: String? = null,
-    val commentDriver: String? = null,
+    var commentClient: String? = null,
+    var commentDriver: String? = null,
     val calificationToClient: Double? = null,
     val calificationToDriver: Double? = null,
     val time: Int? = null,
@@ -32,6 +32,6 @@ data class History (
     public fun toJson() = klaxon.toJsonString(this)
 
     companion object {
-        public fun fromJson(json: String) = klaxon.parse<Booking>(json)
+        public fun fromJson(json: String) = klaxon.parse<BookingModel>(json)
     }
 }

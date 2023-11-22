@@ -5,18 +5,15 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.WindowManager
-import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.databinding.ActivityHistoriesDetailsBinding
-import com.castellanoseloy.toonsconductor.promts.DatosRefeidorPromt
+import com.castellanoseloy.toonsconductor.promts.DatosReferidorPromt
 import com.castellanoseloy.toonsconductor.promts.MostrarTarifas
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.utils.RelativeTime
 import com.optic.uberclonedriverkotlin.models.Client
 
 import com.optic.uberclonedriverkotlin.models.History
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 import com.optic.uberclonedriverkotlin.providers.HistoryProvider
 
@@ -81,7 +78,7 @@ class HistoriesDetailActivity : AppCompatActivity() {
             if (document.exists()) {
                 val cliente = document.toObject(Client::class.java)
 
-                var datosRefeidorPromt= DatosRefeidorPromt()
+                var datosRefeidorPromt= DatosReferidorPromt()
                 datosRefeidorPromt.clienteDetalle(this,cliente!!)
 
 
