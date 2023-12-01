@@ -3,7 +3,6 @@ package com.optic.uberclonedriverkotlin.providers
 import android.util.Log
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.google.android.gms.tasks.Task
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
@@ -31,6 +30,7 @@ class HistoryProvider {
         return db.document(id).get()
     }
 
+
     fun getLastHistory(): Query { // CONSULTA COMPUESTA - INDICE
         return db.whereEqualTo("idDriver", authProvider.obtenerId()).orderBy("timestamp", Query.Direction.DESCENDING).limit(1)
     }
@@ -53,7 +53,6 @@ class HistoryProvider {
             "calificationToClient" to calification,
             "commentDriver" to comment
         )
-
         return db.document(id).update(data as Map<String, Any>).addOnFailureListener { exception ->
             Log.d("FIRESTORE", "ERROR: ${exception.message}")
         }

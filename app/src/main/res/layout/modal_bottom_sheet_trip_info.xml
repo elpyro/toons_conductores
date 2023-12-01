@@ -32,7 +32,7 @@
 
 
                 <LinearLayout
-                    android:id="@+id/linearLayout_detalleCobro"
+
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="10dp"
@@ -70,6 +70,14 @@
                         android:layout_gravity="center"
 
                         android:src="@drawable/baseline_attach_money_24" />
+                    <Button
+                        android:id="@+id/linearLayout_detalleCobro"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ver +"
+                        android:layout_weight="0.1"
+                        android:textColor="@color/white"
+                        android:background="@drawable/boton_redondo"></Button>
                 </LinearLayout>
             </LinearLayout>
 
@@ -83,7 +91,7 @@
                 android:layout_marginBottom="15dp"/>
 
             <LinearLayout
-                android:id="@+id/linearLayout_referidor"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -148,6 +156,13 @@
 
                 </LinearLayout>
 
+                <Button
+                    android:id="@+id/linearLayout_referidor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ver +"
+                    android:textColor="@color/white"
+                    android:background="@drawable/boton_redondo"></Button>
 <!--                <ImageView-->
 <!--                    android:id="@+id/imageViewMensajeReferidor"-->
 <!--                    android:layout_width="35dp"-->

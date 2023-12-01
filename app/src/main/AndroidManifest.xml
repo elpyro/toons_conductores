@@ -32,6 +32,10 @@
         android:windowSoftInputMode="adjustResize"
         tools:targetApi="31">
         <activity
+            android:name=".activitys.solicitudCambioNumero.SolicitudCambioNumero"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+        <activity
             android:name=".activitys.viajeCancelado.ViajeCancelado"
             android:exported="false" />
         <activity
@@ -148,6 +152,20 @@
                 <action android:name="com.castellanoseloy.toonsconductor" />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".services.LocationWorkingService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.castellanoseloy.toonsconductor" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".services.DatosPersitidos"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

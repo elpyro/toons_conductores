@@ -6,7 +6,7 @@ import android.util.Log
 import com.castellanoseloy.toonsconductor.api.NequiVerificacionPago
 import com.castellanoseloy.toonsconductor.databinding.ActivityInformacionNequiBinding
 import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 
 class InformacionNequi : AppCompatActivity() {
     private var recarga: String? = null
@@ -34,7 +34,7 @@ class InformacionNequi : AppCompatActivity() {
 
     private fun verificacion() {
         val transaccionesProvider=TransaccionesProvider()
-        transaccionesProvider.buscarTransaccionesPorIdDriver(DriverProvider.datosConductor?.id!!, true){
+        transaccionesProvider.buscarTransaccionesPorIdDriver(DatosPersitidos.datosConductor?.id!!, true){
             Log.d("Pruebas nequi","Las recargas se estan verificando")
         }
     }

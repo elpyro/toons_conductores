@@ -46,7 +46,9 @@ class DatosReferidorPromt {
             textViewViajes.text= cantidadRegistros.toString()
         }
 
-        textViewConductor.text=cliente.nombre?:""+cliente.apellido?:""
+        val nombre= cliente.nombre?:""
+        val apellido=cliente.apellido?:""
+        textViewConductor.text=nombre+apellido
         TextView_telefono.text=cliente.telefono ?: ""
 
 

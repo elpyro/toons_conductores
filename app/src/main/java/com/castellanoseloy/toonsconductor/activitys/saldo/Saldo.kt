@@ -1,6 +1,7 @@
 package com.castellanoseloy.toonsconductor.activitys.saldo
 
 import android.content.Intent
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,8 +13,8 @@ import com.castellanoseloy.toonsconductor.adapter.RecargasAdapter
 import com.castellanoseloy.toonsconductor.databinding.ActivitySaldoBinding
 import com.castellanoseloy.toonsconductor.modelos.TransaccionesModelo
 import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -29,6 +30,11 @@ class Saldo : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding= ActivitySaldoBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.title = "Tú saldo"
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        binding.toolbar.setTitleTextColor(Color.WHITE)
 
         val linearLayoutManager = LinearLayoutManager(this)
         binding.recyclerRecargas.layoutManager = linearLayoutManager
@@ -46,7 +52,7 @@ class Saldo : AppCompatActivity() {
     private fun cargarRecargas() {
         val transaccionesProvider=TransaccionesProvider()
 
-        transaccionesProvider.buscarTransaccionesPorIdDriver(DriverProvider.datosConductor?.id!!, false) { snapshot ->
+        transaccionesProvider.buscarTransaccionesPorIdDriver(DatosPersitidos.datosConductor?.id!!, false) { snapshot ->
                 if(snapshot.isNotEmpty()){
                     adapter = RecargasAdapter(this, snapshot as ArrayList<TransaccionesModelo>)
                     binding.recyclerRecargas.adapter = adapter
@@ -78,9 +84,9 @@ class Saldo : AppCompatActivity() {
 
             // Actualizar el saldo en la interfaz de usuario (asegúrate de que sea en el hilo principal)
             withContext(Dispatchers.Main) {
-                if (DriverProvider.datosConductor?.saldo != null) {
+                if (DatosPersitidos.datosConductor?.saldo != null) {
                     binding.saldoActual.text =
-                        DriverProvider.datosConductor?.saldo.toString().formatoMoneda()
+                        DatosPersitidos.datosConductor?.saldo.toString().formatoMoneda()
                 }
             }
         }

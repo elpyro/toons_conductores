@@ -7,17 +7,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
 import com.castellanoseloy.toonsconductor.activitys.configuracion.Configuracion
 import com.castellanoseloy.toonsconductor.activitys.historial.HistoriesActivity
-import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.profileActivity.ProfileActivity
 import com.castellanoseloy.toonsconductor.activitys.saldo.Saldo
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
 class ModalBottomSheetMenu: BottomSheetDialogFragment() {

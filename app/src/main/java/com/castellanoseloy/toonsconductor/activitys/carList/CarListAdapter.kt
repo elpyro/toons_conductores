@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.diffCallback.ProductoDiffCallback
 import com.castellanoseloy.toonsconductor.modelos.CarModel
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class CarListAdapter  (
@@ -65,7 +66,7 @@ class CarListAdapter  (
             car.color?.let { carImagen.setColorFilter(it) }
             estado.text=car.estado
 
-            if(DriverProvider.datosConductor?.vehiculo.equals(car.id)){
+            if(DatosPersitidos.datosConductor?.vehiculo.equals(car.id)){
                 cambiar.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ic_carro_48))
             }else{
                 cambiar.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ic_cambiar))

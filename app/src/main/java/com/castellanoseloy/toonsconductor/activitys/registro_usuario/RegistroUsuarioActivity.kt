@@ -9,7 +9,6 @@ import android.text.method.PasswordTransformationMethod
 import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
-import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityRegistroUsuarioBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
@@ -127,7 +126,7 @@ class RegistroUsuarioActivity : AppCompatActivity() {
         autenticacion.registro(correoRegistro!!, clave).addOnCompleteListener { it ->
             if (it.isSuccessful) {
 
-                val saldoObsequio=5000.0
+                val saldoObsequio=10000.0
 
                 val driver = ConductorModelo(
                     id = autenticacion.obtenerId(),

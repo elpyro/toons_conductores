@@ -242,7 +242,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Calificación al referidor"
+                    android:text="Calificación referidor"
                     android:textStyle="bold"
                     android:textColor="@color/black"
                     android:textSize="17sp"/>
@@ -257,7 +257,7 @@
             </LinearLayout>
 
             <Button
-                android:layout_margin="8dp"
+                android:layout_margin="4dp"
                 android:id="@+id/button_ver_cliente"
                 android:layout_width="100dp"
                 android:layout_height="wrap_content"
@@ -269,44 +269,45 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginLeft="30dp"
-            android:layout_marginRight="30dp"
-            android:layout_marginTop="15dp">
 
-            <ImageView
-                android:layout_width="25dp"
-                android:layout_height="25dp"
-                android:src="@drawable/baseline_access_time_24" />
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:gravity="center_vertical"-->
+<!--            android:layout_marginLeft="30dp"-->
+<!--            android:layout_marginRight="30dp"-->
+<!--            android:layout_marginTop="15dp">-->
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginLeft="15dp">
+<!--            <ImageView-->
+<!--                android:layout_width="25dp"-->
+<!--                android:layout_height="25dp"-->
+<!--                android:src="@drawable/baseline_access_time_24" />-->
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tiempo y distancia"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:textSize="17sp"/>
+<!--            <LinearLayout-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="vertical"-->
+<!--                android:layout_marginLeft="15dp">-->
 
-                <TextView
-                    android:id="@+id/textViewTimeAndDistance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0"
-                    android:textSize="15sp"/>
+<!--                <TextView-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="Tiempo y distancia"-->
+<!--                    android:textStyle="bold"-->
+<!--                    android:textColor="@color/black"-->
+<!--                    android:textSize="17sp"/>-->
 
-            </LinearLayout>
+<!--                <TextView-->
+<!--                    android:id="@+id/textViewTimeAndDistance"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:text="0"-->
+<!--                    android:textSize="15sp"/>-->
 
-        </LinearLayout>
+<!--            </LinearLayout>-->
+
+<!--        </LinearLayout>-->
 
         <LinearLayout
             android:layout_width="match_parent"

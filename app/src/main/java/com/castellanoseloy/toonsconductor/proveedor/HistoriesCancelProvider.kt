@@ -2,38 +2,41 @@ package com.castellanoseloy.toonsconductor.proveedor
 
 import android.util.Log
 import com.google.android.gms.tasks.Task
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.Query
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.optic.uberclonedriverkotlin.models.History
 
 class HistoriesCancelProvider {
 
-    private val db = FirebaseDatabase.getInstance().reference.child("HistoriesCancels")
-
+    val db = Firebase.firestore.collection("HistoriesCancels")
 
     fun create(history: History): Task<Void> {
-        return db.child(history?.id!!).setValue(history).addOnFailureListener {
-            Log.d("REALTIME_DB", "ERROR: ${it.message}")
-        }
+        val documentReference = db.document(history.id!!)
+
+        return documentReference.set(history)
+            .addOnSuccessListener {
+                Log.d("FIRESTORE", "Documento creado con ID personalizado: $history.id!!")
+            }
+            .addOnFailureListener { exception ->
+                Log.d("FIRESTORE", "ERROR: ${exception.message}")
+            }
     }
 
-    fun getBookingCancel(id:String): Query {
-        return db.orderByChild("id").equalTo(id).limitToFirst(1)
+    fun getHistoryCancelById(id: String): Task<DocumentSnapshot> {
+        return db.document(id).get()
+            .addOnFailureListener { exception ->
+                // Manejar el error aquí
+                Log.e("Viaje cancelado", "Error al obtener el documento con ID $id", exception)
+            }
     }
 
-    fun updateStatus(idDriver: String, status: String): Task<Void> {
-        return db.child(idDriver).child("status").setValue(status).addOnFailureListener { exception ->
-            Log.d("REALTIME_DB", "ERROR: ${exception.message}")
-        }
-    }
-
-    fun deleteBookingsForDriver(idDriver: String): Task<Void> {
-        // Obtén la referencia a la ubicación de los datos que deseas eliminar
-        val driverRef = db.child(idDriver)
-
-        // Realiza la eliminación de los datos en la ubicación especificada
-        return driverRef.removeValue().addOnFailureListener { exception ->
-            Log.d("REALTIME_DB", "ERROR: ${exception.message}")
+    fun updateComentarioCancelado(id: String,  comment: String): Task<Void> {
+        val data = hashMapOf(
+            "commentDriver" to comment
+        )
+        return db.document(id).update(data as Map<String, Any>).addOnFailureListener { exception ->
+            Log.d("FIRESTORE", "ERROR: ${exception.message}")
         }
     }
 

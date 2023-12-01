@@ -2,9 +2,7 @@ package com.castellanoseloy.toonsconductor.activitys.utils
 
 import android.location.Location
 import android.util.Log
-import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
 import com.google.android.gms.maps.model.LatLng
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.sin

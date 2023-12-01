@@ -4,13 +4,16 @@ package com.castellanoseloy.toonsconductor.activitys.configuracion
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityConfiguracionBinding
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.utils.Preferencias
+import com.optic.uberclonekotlin.providers.ConfigProvider
 import java.util.concurrent.TimeUnit
 
 
@@ -62,7 +65,8 @@ class Configuracion : AppCompatActivity() {
         }
         binding.linearLayoutLogout?.setOnClickListener { goToMain() }
 
-
+        binding.linearLayoutAyuda.setOnClickListener { enviasWhatsapp() }
+        binding.buttonGrupowhatsApp.setOnClickListener { grupoWhatsApp() }
     }
 
     private fun goToMain() {
@@ -94,6 +98,38 @@ class Configuracion : AppCompatActivity() {
             return
         }
         mostrarConfirmacion(telefono)
+    }
+
+    private fun enviasWhatsapp() {
+        val configuracion= ConfigProvider()
+        configuracion.informacionWhatsApp()
+            .addOnSuccessListener { documentSnapshot ->
+                // Verifica si el documento existe y contiene el campo "ayudaNumero"
+                if (documentSnapshot.exists() && documentSnapshot.contains("ayudaNumero")) {
+                    val numeroWhatsApp = documentSnapshot.getString("ayudaNumero")
+                    numeroWhatsApp?.let { Utilidades.enviarWhatsapp(numeroWhatsApp, this) }
+                } else {
+                    // El documento no existe o no contiene el campo "grupoWhatsApp"
+                    Log.d("FIREBASE", "El documento no existe o no contiene 'ayudaNumero'")
+                }
+            }
+
+    }
+
+    private fun grupoWhatsApp() {
+        val configuracion=ConfigProvider()
+        configuracion.informacionWhatsApp()
+            .addOnSuccessListener { documentSnapshot ->
+                // Verifica si el documento existe y contiene el campo "grupoUrl"
+                if (documentSnapshot.exists() && documentSnapshot.contains("grupoUrl")) {
+                    // Obtén el valor del campo "grupoUrl"
+                    val grupoWhatsApp = documentSnapshot.getString("grupoUrl")
+                    grupoWhatsApp?.let { Utilidades.abrirEnlaceWhatsApp(it, this) }
+                } else {
+                    // El documento no existe o no contiene el campo "grupoWhatsApp"
+                    Log.d("FIREBASE", "El documento no existe o no contiene 'grupoUrl'")
+                }
+            }
     }
 
     private fun mostrarConfirmacion(telefono: String) {

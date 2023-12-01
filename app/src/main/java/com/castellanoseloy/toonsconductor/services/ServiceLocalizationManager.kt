@@ -27,7 +27,17 @@ class ServiceLocalizationManager private constructor() {
     fun stopLocationService(context: Context) {
         val serviceIntent = Intent(context, LocationService::class.java)
         context.stopService(serviceIntent)
+        Log.d("Localizacion", "El servicio de localizacion  fue detenido")
+    }
 
+    fun startLocationWorkingService(context: Context) {
+        val serviceIntent = Intent(context, LocationWorkingService::class.java)
+        context.startService(serviceIntent)
+    }
+
+    fun stopLocationWorkingService(context: Context) {
+        val serviceIntent = Intent(context, LocationWorkingService::class.java)
+        context.stopService(serviceIntent)
         Log.d("Localizacion", "El servicio de localizacion  fue detenido")
     }
 

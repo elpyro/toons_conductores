@@ -19,9 +19,7 @@ import java.util.Date
 
 class CarProvider {
 
-    companion object {
-        var datosCarroEnUso: CarModel? =null
-    }
+
     val bd =Firebase.firestore.collection("Cars")
     private lateinit var storageFotoFrontal: StorageReference
     private lateinit var storageLateral: StorageReference

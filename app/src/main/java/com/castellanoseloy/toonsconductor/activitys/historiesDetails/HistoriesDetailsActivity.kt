@@ -61,8 +61,8 @@ class HistoriesDetailActivity : AppCompatActivity() {
                 binding.textViewMyCalification.text = "${history?.calificationToDriver  ?: "5"}    ${history?.commentClient  ?: "El cliente no califico"}"
                 binding.textViewClientCalification.text = "${history?.calificationToClient ?: "5"}    ${history?.commentDriver ?: "No calificaste"}"
 
-                binding.textViewTimeAndDistance.text =
-                    "${history?.time} Min - ${String.format("%.1f", history?.km)} Km"
+//                binding.textViewTimeAndDistance.text =
+//                    "${history?.time} Min - ${String.format("%.1f", history?.km)} Km"
 
                 binding?.buttonVerCliente?.setOnClickListener{
                     mostrarCliente(history?.idClient)

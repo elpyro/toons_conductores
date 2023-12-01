@@ -2,11 +2,10 @@ package com.castellanoseloy.toonsconductor.proveedor
 
 import android.util.Log
 import com.castellanoseloy.toonsconductor.modelos.BookingModel
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.Query
-
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class BookingAceptedsProvider {
 
@@ -14,13 +13,13 @@ class BookingAceptedsProvider {
 
 
     fun create(booking: BookingModel): Task<Void> {
-        return db.child(DriverProvider.datosConductor?.id!!).setValue(booking).addOnFailureListener {
+        return db.child(DatosPersitidos.datosConductor?.id!!).setValue(booking).addOnFailureListener {
             Log.d("REALTIME_DB", "ERROR: ${it.message}")
         }
     }
 
     fun getBookingAccepteds(): Query {
-        return db.orderByChild("idDriver").equalTo(DriverProvider.datosConductor?.id).limitToFirst(1)
+        return db.orderByChild("idDriver").equalTo(DatosPersitidos.datosConductor?.id).limitToFirst(1)
     }
 
     fun updateStatus(idDriver: String, status: String): Task<Void> {

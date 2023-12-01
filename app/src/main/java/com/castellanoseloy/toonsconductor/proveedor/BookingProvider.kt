@@ -1,10 +1,10 @@
 package com.castellanoseloy.toonsconductor.proveedor
 
 import android.util.Log
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.google.android.gms.tasks.Task
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class BookingProvider {
 
@@ -12,7 +12,7 @@ class BookingProvider {
 
     fun getBooking(): com.google.firebase.database.Query {
         // Para obtener reservas del conductor actual (por idDriver)
-        return db.orderByChild("idDriver").equalTo(DriverProvider.datosConductor?.id)
+        return db.orderByChild("idDriver").equalTo(DatosPersitidos.datosConductor?.id)
     }
 
     fun updateStatus(bookingId: String, status: String): Task<Void> {

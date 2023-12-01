@@ -30,13 +30,11 @@ class CalificationClientActivity : AppCompatActivity() {
         val extraPrice = intent.getDoubleExtra("price", 0.0)
         val extraOrigin = intent.getStringExtra("origin")
         val extraDestination = intent.getStringExtra("destination")
-        val extraTime = intent.getDoubleExtra("time", 0.0)
-        val extraKm = intent.getDoubleExtra("km", 0.0)
+
 
         binding.textViewPrice.text = extraPrice.toString().formatoMonenda()
         binding.textViewOrigin.text=extraOrigin
         binding.textViewDestination.text=extraDestination
-        binding.textViewTimeAndDistance.text= "Min: ${String.format("%.1f", extraTime)}, Km: ${String.format("%.1f", extraKm)}"
 
         sonidos.crearTono()
 

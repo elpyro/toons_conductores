@@ -7,14 +7,18 @@ import android.app.Activity
 import android.app.ProgressDialog
 import android.graphics.Color
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.databinding.ActivityProfileBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.github.dhaval2404.imagepicker.ImagePicker
 
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
@@ -23,18 +27,20 @@ import java.io.File
 
 class ProfileActivity : AppCompatActivity() {
 
+    private var driver: ConductorModelo? = null
     private lateinit var binding: ActivityProfileBinding
     val driverProvider = DriverProvider()
 
     private var fotoPerfil: File? = null
     private var documento: File? = null
-    private var documentoTrasero: File? =null
-    private var licenciaFrontal: File? =null
-    private var licenciaTrasera: File? =null
+    private var documentoTrasero: File? = null
+    private var licenciaFrontal: File? = null
+    private var licenciaTrasera: File? = null
+    private var fotoValidacion: File? = null
 
     private var imagenSeleccionada: String? = null
 
-    private var viewModel: ProfileActivityViewModel ? = null
+    private var viewModel: ProfileActivityViewModel? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,11 +48,11 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
-        supportActionBar?.title = DriverProvider.datosConductor?.validacion
+        supportActionBar?.title = "Mí perfil"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setTitleTextColor(Color.WHITE)
 
-        viewModel= ProfileActivityViewModel()
+        viewModel = ProfileActivityViewModel()
         getDriver()
 
         observador()
@@ -54,112 +60,207 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun observador() {
+        viewModel?.mensaje?.observe(this) { mensaje ->
+            Utilidades.mostrarToast(mensaje, this)
+        }
         viewModel?.elementosActualizar?.observe(this, Observer { it ->
-                if( it==0){
-                    progressDialog!!.dismiss()
-                    Utilidades.mostrarToast("Datos Actualizados",this)
-                    finish()
-                }
+            if (it == 0) {
+                progressDialog!!.dismiss()
+                Utilidades.mostrarToast("Datos Actualizados", this)
+                finish()
+            }
         })
     }
 
     private fun listeners() {
 
-        binding.btnUpdate.setOnClickListener { updateInfo() }
+        binding.btnUpdate.setOnClickListener { verificacionDatos() }
         binding.circleImageProfile.setOnClickListener { selectImage() }
-        binding.imageViewDocumento.setOnClickListener{ selectDocument()}
-        binding.imageViewDocumentoTrasero.setOnClickListener{selectDocumentoTrasero()}
-        binding.imageViewLicenciaFrontal.setOnClickListener{selectLicenceFrontal()}
-        binding.imageViewLicenciaTrasera.setOnClickListener{selectLicenceTrasera()}
+        binding.imageViewDocumento.setOnClickListener { selectDocument() }
+        binding.imageViewDocumentoTrasero.setOnClickListener { selectDocumentoTrasero() }
+        binding.imageViewLicenciaFrontal.setOnClickListener { selectLicenceFrontal() }
+        binding.imageViewLicenciaTrasera.setOnClickListener { selectLicenceTrasera() }
+        binding.circleImageValidacion.setOnClickListener { selectFotoValidacion() }
     }
 
-    private val startImageForResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+    private fun verificacionDatos() {
 
-        val resultCode = result.resultCode
-        val data = result.data
 
-        if (resultCode == Activity.RESULT_OK) {
-            val fileUri = data?.data
+        var editarDatos = false
+        if (driver?.numeroDocumento != null) editarDatos = true
+        val datosValidos = viewModel?.validarDatos(
+            binding,
+            fotoPerfil,
+            documento,
+            documentoTrasero,
+            licenciaFrontal,
+            licenciaTrasera,
+            fotoValidacion,
+            editarDatos
+        )
 
-            if(imagenSeleccionada.equals("fotoPerfil")){
-                fotoPerfil = File(fileUri?.path)
-                binding.circleImageProfile?.setImageURI(fileUri)
+        if (datosValidos == true) {
+            driver?.let {
+                viewModel?.verificarDocumento(
+                    it,
+                    binding.textFieldDocumento.text.toString(),
+                    binding.spinner.selectedItem.toString()
+                ) { existe ->
+                    if (existe) {
+                        // El número de documento ya existe en otro registro
+
+                        if(binding.circleImageValidacion.isVisible){
+                            updateInfo()
+                        }else{
+                            binding.circleImageValidacion.visibility = View.VISIBLE
+                            alertCuentaExistente()
+                        }
+
+                    } else {
+                        alertaConfirmacionDatos()
+                    }
+                }
             }
-            if(imagenSeleccionada.equals("documentoIdentidad")){
-                documento = File(fileUri?.path)
-                binding.imageViewDocumento?.setImageURI(fileUri)
-            }
-            if(imagenSeleccionada.equals("documentoIdentidadTrasero")) {
-                documentoTrasero = File(fileUri?.path)
-                binding.imageViewDocumentoTrasero?.setImageURI(fileUri)
-            }
-            if(imagenSeleccionada.equals("licenciaFrontal")){
-                licenciaFrontal = File(fileUri?.path)
-                binding.imageViewLicenciaFrontal?.setImageURI(fileUri)
-            }
-            if(imagenSeleccionada.equals("licenciaTrasera")) {
-                licenciaTrasera = File(fileUri?.path)
-                binding.imageViewLicenciaTrasera?.setImageURI(fileUri)
-            }
+
 
         }
-        else if (resultCode == ImagePicker.RESULT_ERROR) {
-            Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_LONG).show()
-        }
-        else {
-            Toast.makeText(this, "Tarea cancelada", Toast.LENGTH_LONG).show()
-        }
+
 
     }
+
+    private fun alertCuentaExistente() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Validar Datos")
+        alertDialogBuilder.setMessage("Detectamos que ya tienes una cuenta asociada con estas credenciales. \nPara realizar un cambio de cuenta al nuevo número ${driver?.telefono}, por favor sigue estos pasos:\n\n1. Tómate una foto de tu documento de identidad.\n2. Actualiza tus datos para validar la solicitud de cambio de cuenta.")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Aceptar") { dialog, which ->
+
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private fun alertaConfirmacionDatos() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Validar Datos")
+        alertDialogBuilder.setMessage("¿Desea enviar a verificar sus datos?, una vez enviado sus datos no podran ser cambiados hasta ser verificados")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
+            updateInfo()
+        }
+        // Botón Cancelar
+        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
+    private val startImageForResult =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+
+            val resultCode = result.resultCode
+            val data = result.data
+
+            if (resultCode == Activity.RESULT_OK) {
+                val fileUri = data?.data
+
+                if (imagenSeleccionada.equals("fotoPerfil")) {
+                    fotoPerfil = File(fileUri?.path)
+                    binding.circleImageProfile?.setImageURI(fileUri)
+                }
+                if (imagenSeleccionada.equals("documentoIdentidad")) {
+                    documento = File(fileUri?.path)
+                    binding.imageViewDocumento?.setImageURI(fileUri)
+                }
+                if (imagenSeleccionada.equals("documentoIdentidadTrasero")) {
+                    documentoTrasero = File(fileUri?.path)
+                    binding.imageViewDocumentoTrasero?.setImageURI(fileUri)
+                }
+                if (imagenSeleccionada.equals("licenciaFrontal")) {
+                    licenciaFrontal = File(fileUri?.path)
+                    binding.imageViewLicenciaFrontal?.setImageURI(fileUri)
+                }
+                if (imagenSeleccionada.equals("licenciaTrasera")) {
+                    licenciaTrasera = File(fileUri?.path)
+                    binding.imageViewLicenciaTrasera?.setImageURI(fileUri)
+                }
+                if (imagenSeleccionada.equals("fotoValidacion")) {
+                    fotoValidacion = File(fileUri?.path)
+                    binding.circleImageValidacion?.setImageURI(fileUri)
+                }
+
+            } else if (resultCode == ImagePicker.RESULT_ERROR) {
+                Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this, "Imagen cancelada", Toast.LENGTH_LONG).show()
+            }
+
+        }
+
     private fun selectImage() {
-        imagenSeleccionada= "fotoPerfil"
+        imagenSeleccionada = "fotoPerfil"
         ImagePicker.with(this)
             .crop()
+            .cameraOnly()
             .compress(1024)
-            .maxResultSize(1080,1080)
+            .maxResultSize(1080, 1080)
             .createIntent { intent ->
                 startImageForResult.launch(intent)
             }
     }
 
     private fun selectDocument() {
-        imagenSeleccionada= "documentoIdentidad"
+        imagenSeleccionada = "documentoIdentidad"
         ImagePicker.with(this)
-            .crop()
+            .crop(14.0F, 9.0F)
             .compress(1024)
-            .maxResultSize(1080,1080)
+            .maxResultSize(1080, 1080)
             .createIntent { intent ->
                 startImageForResult.launch(intent)
             }
     }
+
     private fun selectDocumentoTrasero() {
-        imagenSeleccionada= "documentoIdentidadTrasero"
+        imagenSeleccionada = "documentoIdentidadTrasero"
         ImagePicker.with(this)
-            .crop()
+            .crop(14.0F, 9.0F)
             .compress(1024)
-            .maxResultSize(1080,1080)
+            .maxResultSize(1080, 1080)
             .createIntent { intent ->
                 startImageForResult.launch(intent)
             }
     }
 
     private fun selectLicenceFrontal() {
-        imagenSeleccionada= "licenciaFrontal"
+        imagenSeleccionada = "licenciaFrontal"
         ImagePicker.with(this)
-            .crop()
+            .crop(14.0F, 9.0F)
             .compress(1024)
-            .maxResultSize(1080,1080)
+            .maxResultSize(1080, 1080)
             .createIntent { intent ->
                 startImageForResult.launch(intent)
             }
     }
 
     private fun selectLicenceTrasera() {
-        imagenSeleccionada= "licenciaTrasera"
+        imagenSeleccionada = "licenciaTrasera"
+        ImagePicker.with(this)
+            .crop(14.0F, 9.0F)
+            .compress(1024)
+            .maxResultSize(1080, 1080)
+            .createIntent { intent ->
+                startImageForResult.launch(intent)
+            }
+    }
+    private fun selectFotoValidacion() {
+        imagenSeleccionada = "fotoValidacion"
         ImagePicker.with(this)
             .crop()
+            .cameraOnly()
             .compress(1024)
-            .maxResultSize(1080,1080)
+            .maxResultSize(1080, 1080)
             .createIntent { intent ->
                 startImageForResult.launch(intent)
             }
@@ -178,29 +279,30 @@ class ProfileActivity : AppCompatActivity() {
 
         progressDialog!!.show()
 
-        binding.btnUpdate.isEnabled=false
+        binding.btnUpdate.isEnabled = false
 
         //cuantos elementos va se van a guardar
-        if(fotoPerfil!=null) viewModel?.incrementarElementos()
-        if(documento!=null)viewModel?.incrementarElementos()
-        if(documentoTrasero!=null)viewModel?.incrementarElementos()
-        if(licenciaFrontal!=null)viewModel?.incrementarElementos()
-        if(licenciaTrasera!=null)viewModel?.incrementarElementos()
-
-
+        if (fotoPerfil != null) viewModel?.incrementarElementos()
+        if (documento != null) viewModel?.incrementarElementos()
+        if (documentoTrasero != null) viewModel?.incrementarElementos()
+        if (licenciaFrontal != null) viewModel?.incrementarElementos()
+        if (licenciaTrasera != null) viewModel?.incrementarElementos()
+        if (fotoValidacion != null) viewModel?.incrementarElementos()
 
         val name = binding.textFieldName.text.toString()
         val lastname = binding.textFieldLastname.text.toString()
-        val phone = binding.textFieldPhone.text.toString()
+        val numeroDocumento = binding.textFieldDocumento.text.toString()
+        val tipoDocumento = binding.spinner.selectedItem.toString()
 
         val driver = ConductorModelo(
-            id = DriverProvider.datosConductor?.id,
+            id = DatosPersitidos.datosConductor?.id,
             nombre = name,
             apellido = lastname,
-            telefono = phone,
-            imagenPerfil = DriverProvider.datosConductor?.imagenPerfil,
-            imagenDocumento = DriverProvider.datosConductor?.imagenDocumento,
-            imagenDocumentoTrasero = DriverProvider.datosConductor?.imagenDocumentoTrasero,
+            tipoDocumento = tipoDocumento,
+            numeroDocumento = numeroDocumento,
+            imagenPerfil = DatosPersitidos.datosConductor?.imagenPerfil,
+            imagenDocumento = DatosPersitidos.datosConductor?.imagenDocumento,
+            imagenDocumentoTrasero = DatosPersitidos.datosConductor?.imagenDocumentoTrasero,
             validacion = "Verificando Datos"
         )
 
@@ -209,15 +311,17 @@ class ProfileActivity : AppCompatActivity() {
             if (!it.isSuccessful) {
                 Toast.makeText(
                     this@ProfileActivity,
-                    "No se pudo actualizar la informacion",
+                    "No se pudo actualizar la información",
                     Toast.LENGTH_LONG
                 ).show()
+            }else{
+                DatosPersitidos.datosConductor=driver
             }
         }
 
         if (fotoPerfil != null) {
             driverProvider.uploadImage(
-                DriverProvider.datosConductor?.id!!,
+                DatosPersitidos.datosConductor?.id!!,
                 "fotoPerfil",
                 fotoPerfil!!
             ).addOnSuccessListener { taskSnapshot ->
@@ -242,7 +346,7 @@ class ProfileActivity : AppCompatActivity() {
 
         if (documento != null) {
             driverProvider.uploadImage(
-                DriverProvider.datosConductor?.id!!,
+                DatosPersitidos.datosConductor?.id!!,
                 "documento",
                 documento!!
             ).addOnSuccessListener { taskSnapshot ->
@@ -265,7 +369,11 @@ class ProfileActivity : AppCompatActivity() {
             }
         }
         if (documentoTrasero != null) {
-            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "documentoIdentidadTrasero", documentoTrasero!!)
+            driverProvider.uploadImage(
+                DatosPersitidos.datosConductor?.id!!,
+                "documentoIdentidadTrasero",
+                documentoTrasero!!
+            )
                 .addOnSuccessListener { taskSnapshot ->
                     driverProvider.getStorageDocumentoTrasero().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
@@ -284,10 +392,14 @@ class ProfileActivity : AppCompatActivity() {
                         }
                     }
                 }
-            }
+        }
 
         if (licenciaFrontal != null) {
-            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "licenciaFrontal", licenciaFrontal!!)
+            driverProvider.uploadImage(
+                DatosPersitidos.datosConductor?.id!!,
+                "licenciaFrontal",
+                licenciaFrontal!!
+            )
                 .addOnSuccessListener { taskSnapshot ->
                     driverProvider.getStorageLicenciaFrontal().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
@@ -309,7 +421,11 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         if (licenciaTrasera != null) {
-            driverProvider.uploadImage(DriverProvider.datosConductor?.id!!, "licenciaTrasera", licenciaTrasera!!)
+            driverProvider.uploadImage(
+                DatosPersitidos.datosConductor?.id!!,
+                "licenciaTrasera",
+                licenciaTrasera!!
+            )
                 .addOnSuccessListener { taskSnapshot ->
                     driverProvider.getStorageLicenciaTrasera().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
@@ -329,87 +445,126 @@ class ProfileActivity : AppCompatActivity() {
                     }
                 }
         }
+        if (fotoValidacion != null) {
+            driverProvider.uploadImage(
+                DatosPersitidos.datosConductor?.id!!,
+                "fotoValidacion",
+                fotoValidacion!!
+            ).addOnSuccessListener { taskSnapshot ->
+                driverProvider.getStorageFotoValidacion().addOnSuccessListener { url ->
+                    val imageUrl = url.toString()
+                    Log.d("Firestore", "la ruta de la imagen de perfil es: ${imageUrl}")
+                    driver.imagenFotoValidacion = imageUrl
+                    driverProvider.updateFotoValidacion(driver).addOnCompleteListener {
+                        viewModel?.decrementarElementos()
+                        if (!it.isSuccessful) {
+                            Toast.makeText(
+                                this@ProfileActivity,
+                                "No se pudo guardar la foto de validación",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
+                    Log.d("STORAGE", "$imageUrl")
+                }
+            }
         }
+
+    }
 
 
     private fun getDriver() {
-            driverProvider.getDriver(DriverProvider.datosConductor?.id!!)
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val driver = document.toObject(ConductorModelo::class.java)
-                        binding.textFieldPhone.text = driver?.telefono
-                        binding.textFieldName.setText(driver?.nombre)
-                        binding.textFieldLastname.setText(driver?.apellido)
+        driverProvider.getDriver(DatosPersitidos.datosConductor?.id!!)
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    driver = document.toObject(ConductorModelo::class.java)
+                    binding.textFieldPhone.text = driver?.telefono
+                    binding.textFieldName.setText(driver?.nombre)
+                    binding.textFieldLastname.setText(driver?.apellido)
+                    binding.textFieldDocumento.setText(driver?.numeroDocumento)
+                    //estblecer el valor del spinner
+                    val opcionesArray =
+                        applicationContext.resources.getStringArray(R.array.tipoDocumento)
+                    val indiceValorPredeterminado = opcionesArray.indexOf(driver?.tipoDocumento)
+                    if (indiceValorPredeterminado != -1) {
+                        // Establecer el valor predeterminado en el Spinner
+                        binding?.spinner?.setSelection(indiceValorPredeterminado)
+                    }
 
-                        if (driver?.validacion.equals("Valida tu usuario")) binding.imageEstado.setImageResource(
+                    binding.textViewEstado.text = driver?.validacion //informacion por defecto del estado
+                    if (driver?.validacion.equals("Valida tu usuario")) {
+                        binding.imageEstado.setImageResource(
                             R.drawable.ic_valida_datos
                         )
-                        if (driver?.validacion.equals("Verificando Datos")) binding.imageEstado.setImageResource(
+                        binding.textViewEstado.text = "Valida tú usuario"
+                    }
+                    if (driver?.validacion.equals("Verificando Datos")) {
+                        binding.imageEstado.setImageResource(
                             R.drawable.ic_pendiente_validar
                         )
-                        if (driver?.validacion.equals("Validado")) binding.imageEstado.setImageResource(
+                        binding.textViewEstado.text = "Verificando Datos"
+                        binding.btnUpdate.visibility = View.GONE
+                    }
+                    if (driver?.validacion.equals("Validado")) {
+                        binding.imageEstado.setImageResource(
                             R.drawable.ic_validado
                         )
-                        if (driver?.validacion.equals("Bloqueado")) binding.imageEstado.setImageResource(
+                        binding.textViewEstado.text = "Validado"
+                        binding.btnUpdate.visibility = View.GONE
+                    }
+                    if (driver?.validacion.equals("Bloqueado")) {
+                        binding.imageEstado.setImageResource(
                             R.drawable.ic_prohibido
                         )
-
-                        binding.imageEstado.setOnClickListener {
-                            if (driver?.validacion.equals("Valida tu usuario")) Utilidades.mostrarToast(
-                                "Valida tu usuario",
-                                this
-                            )
-                            if (driver?.validacion.equals("Verificando Datos")) Utilidades.mostrarToast(
-                                "Estamos verificando tus datos",
-                                this
-                            )
-                            if (driver?.validacion.equals("Validado")) Utilidades.mostrarToast(
-                                "Usuario Validado",
-                                this
-                            )
-                            if (driver?.validacion.equals("Bloqueado")) Utilidades.mostrarToast(
-                                "Usuario Bloqueado",
-                                this
-                            )
-                        }
-
-                        if (driver?.imagenPerfil != null) {
-                            if (driver.imagenPerfil != "") {
-                                Glide.with(this).load(driver.imagenPerfil)
-                                    .into(binding.circleImageProfile)
-                            }
-                        }
-
-                        if (driver?.imagenDocumento != null) {
-                            if (driver.imagenDocumento != "") {
-                                Glide.with(this).load(driver.imagenDocumento)
-                                    .into(binding.imageViewDocumento)
-                            }
-                        }
-
-                        if (driver?.imagenDocumentoTrasero != null) {
-                            if (driver.imagenDocumentoTrasero != "") {
-                                Glide.with(this).load(driver.imagenDocumentoTrasero)
-                                    .into(binding.imageViewDocumentoTrasero)
-                            }
-                        }
-
-                        if (driver?.imagenLicenciaDelantera != null) {
-                            if (driver.imagenLicenciaDelantera != "") {
-                                Glide.with(this).load(driver.imagenLicenciaDelantera)
-                                    .into(binding.imageViewLicenciaFrontal)
-                            }
-                        }
-
-                        if (driver?.imagenLicenciaTrasera != null) {
-                            if (driver.imagenLicenciaTrasera != "") {
-                                Glide.with(this).load(driver.imagenLicenciaTrasera)
-                                    .into(binding.imageViewLicenciaTrasera)
-                            }
-                        }
-                        
+                        binding.textViewEstado.text = "Bloqueado"
+                        binding.btnUpdate.visibility = View.GONE
                     }
+
+
+                    if (driver?.imagenPerfil != null) {
+                        if (driver!!.imagenPerfil != "") {
+                            Glide.with(this).load(driver!!.imagenPerfil)
+                                .into(binding.circleImageProfile)
+                        }
+                    }
+
+                    if (driver?.imagenDocumento != null) {
+                        if (driver!!.imagenDocumento != "") {
+                            Glide.with(this).load(driver!!.imagenDocumento)
+                                .into(binding.imageViewDocumento)
+                        }
+                    }
+
+                    if (driver?.imagenDocumentoTrasero != null) {
+                        if (driver!!.imagenDocumentoTrasero != "") {
+                            Glide.with(this).load(driver!!.imagenDocumentoTrasero)
+                                .into(binding.imageViewDocumentoTrasero)
+                        }
+                    }
+
+                    if (driver?.imagenLicenciaDelantera != null) {
+                        if (driver!!.imagenLicenciaDelantera != "") {
+                            Glide.with(this).load(driver!!.imagenLicenciaDelantera)
+                                .into(binding.imageViewLicenciaFrontal)
+                        }
+                    }
+
+                    if (driver?.imagenLicenciaTrasera != null) {
+                        if (driver!!.imagenLicenciaTrasera != "") {
+                            Glide.with(this).load(driver!!.imagenLicenciaTrasera)
+                                .into(binding.imageViewLicenciaTrasera)
+                        }
+                    }
+                    if (driver?.imagenFotoValidacion != null) {
+                        if (driver!!.imagenFotoValidacion != "") {
+                            binding.circleImageValidacion.visibility=View.VISIBLE
+                            Glide.with(this).load(driver!!.imagenFotoValidacion)
+                                .into(binding.circleImageValidacion)
+                        }
+                    }
+
                 }
-        }
+            }
+    }
 
 }

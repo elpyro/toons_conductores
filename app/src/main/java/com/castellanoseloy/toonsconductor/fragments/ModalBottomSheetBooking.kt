@@ -21,13 +21,12 @@ import com.castellanoseloy.toonsconductor.activitys.utils.Sonidos
 import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
-import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.ClienteProveedor
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.castellanoseloy.toonsconductor.utils.NotificarEstados
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.optic.uberclonedriverkotlin.models.Client
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 
 class ModalBottomSheetBooking: BottomSheetDialogFragment() {
@@ -163,11 +162,10 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
                             (activity as? MapaActivity)?.viajeAceptado=true
                             (activity as? MapaActivity)?.detenerServico()
                             (activity as? MapaActivity)?.easyWayLocation?.endUpdates()
-                            geoProvider.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
+                            geoProvider.eliminarLocalizacion(DatosPersitidos.datosConductor?.id!!)
 
-                            booking.id=Utilidades.generarIdUnico()
                             booking!!.status = "accept" // Crear el booking aceptado
-                            booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
+                            booking.car= DatosPersitidos.datosCarroEnUso //establecer el carro en uso
 
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
                                 Log.d("FIRESTORE", "Viaje aceptado: ${booking}")
@@ -195,7 +193,7 @@ class ModalBottomSheetBooking: BottomSheetDialogFragment() {
         clienteProveedor.getClientById(idClient).addOnSuccessListener { document ->
             if (document.exists()) {
                 val client = document.toObject(Client::class.java)
-                val nombreConductor= DriverProvider.datosConductor?.nombre +" "+DriverProvider.datosConductor?.apellido
+                val nombreConductor= DatosPersitidos.datosConductor?.nombre +" "+DatosPersitidos.datosConductor?.apellido
                 val notificarEstados= NotificarEstados()
                 notificarEstados.sendNotification("$nombreConductor ha aceptado el viaje",
                     client!!,context)

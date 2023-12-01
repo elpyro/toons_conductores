@@ -14,7 +14,7 @@ import com.castellanoseloy.toonsconductor.api.NequiOAuth2Manager
 import com.castellanoseloy.toonsconductor.databinding.ActivityRecargaNequiBinding
 import com.castellanoseloy.toonsconductor.modelos.TransaccionesModelo
 import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import retrofit2.Call
@@ -48,7 +48,7 @@ class RecargaNequi : AppCompatActivity() {
         setContentView(binding.root)
 
         listeners()
-//        binding?.editTextNumeroNequi?.setText(DriverProvider.datosConductor?.telefono?: "")
+//        binding?.editTextNumeroNequi?.setText(DatosPersitidos.datosConductor?.telefono?: "")
         binding?.editTextNumeroNequi?.setText("3720002150")
 
     }
@@ -100,7 +100,7 @@ class RecargaNequi : AppCompatActivity() {
         idTransaccion = Utilidades.generarIdUnico()
         val datosRecarga = TransaccionesModelo(
             id = idTransaccion,
-            idDriver = DriverProvider.datosConductor!!.id,
+            idDriver = DatosPersitidos.datosConductor!!.id,
             banco = "Nequi",
             cuenta = telefono,
             codigoVerificacion = codigoVerificacion,
@@ -359,6 +359,8 @@ class RecargaNequi : AppCompatActivity() {
     """.trimIndent()
 
         val mediaType = "application/json".toMediaTypeOrNull()
+
+        Log.d("Pruebas Nequi", "jsonBody : $jsonBody")
 
         return RequestBody.create(mediaType, jsonBody)
 

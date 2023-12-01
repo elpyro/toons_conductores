@@ -58,10 +58,11 @@ import android.net.Uri
 import android.os.PowerManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
-import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 import com.google.android.gms.maps.model.MapStyleOptions
 
@@ -70,7 +71,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     companion object{
         var tiempoActivo: Long? =null
-
     }
 
     private val serviceManager = ServiceLocalizationManager.getInstance()
@@ -167,24 +167,30 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         )
 
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
-        idConductor=DriverProvider.datosConductor?.id!!
+        idConductor= DatosPersitidos.datosConductor?.id!!
 
         //cargar mapa del fragmento
         val fragmentManager = supportFragmentManager
         val mapaFragment= fragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
         mapaFragment.getMapAsync(this)
 
+        serviceManager.stopLocationWorkingService(this) //si existe alguna localizacion de trabajo activa, cancelarla
         ubicacionPorDefecto()
         verificarPermisos()
 
         //si el conductor es nuevo enviar a pantalla de perfil
-        if(DriverProvider.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
+        if(DatosPersitidos.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
 
-        tiempoActivo= Date().time
+        //establecemos el tiempo desde que se activo en la lista de conductores
+        if(tiempoActivo==null ){
+            tiempoActivo= Date().time
+        }else{
+            if(tiempoActivo!=0L) tiempoActivo= Date().time //if es 0L es porque el viaje fue cancelado y debe estar en el inicio de la cola
+        }
 
 
 
-        if(DriverProvider.datosConductor!=null){
+        if(DatosPersitidos.datosConductor!=null){
             listeners()
         }else{
             val driverProvider=DriverProvider()
@@ -193,10 +199,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             driverProvider.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
                 Log.d("Firestore", "Validando client ")
                 if (document.exists()) {
-
                     val driver = document.toObject(ConductorModelo::class.java)
-                    DriverProvider.datosConductor=driver
-
+                    DatosPersitidos.datosConductor=driver
                     listeners()
                 }else{
                     Utilidades.mostrarToast("Problemas en conexion", this)
@@ -204,9 +208,18 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             }
         }
 
-
+        viewModel?.verificarVesionActualizada(this)
 
          listeners()
+        observadores()
+    }
+
+    private fun observadores() {
+        viewModel?.currentdesActualizado?.observe(this, Observer { it ->
+            if( it!=null){
+                //Todo dialogo alert version desacatualizada
+            }
+        })
     }
 
 
@@ -263,9 +276,10 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         if (!modalMostrado) {
 
             val ubicacionCliente= LatLng(booking?.originLat!!, booking?.originLng!!)
+            val ubicacionDestino=LatLng(booking?.destinationLat!!, booking?.destinationLng!!)
             addClientMarker(ubicacionCliente)
             Log.d("Firestore", "Ubicacion Actual: $ubicacionLatLong")
-            ubicacionLatLong?.let { dibujarRutaEntreCliente(it, ubicacionCliente) }
+            ubicacionCliente?.let { dibujarRutaEntreCliente(ubicacionCliente, ubicacionDestino) }
 
             Log.d("Firestore", "Modal agregado para el booking ${booking}")
             try {
@@ -401,7 +415,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
     private fun verificarConductor() : Boolean{
-        if(CarProvider.datosCarroEnUso==null){
+        if(DatosPersitidos.datosCarroEnUso==null){
             disconnectDriver()
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Seleccionar Vehiculo")
@@ -414,7 +428,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             builder.show()
             return false
         }
-        if(!DriverProvider.datosConductor?.validacion.equals("Validado")){
+        if(!DatosPersitidos.datosConductor?.validacion.equals("Validado")){
             disconnectDriver()
 
             val builder = AlertDialog.Builder(this)
@@ -499,7 +513,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         googleMaps?.moveCamera(
             CameraUpdateFactory.newCameraPosition(
-                CameraPosition.builder().target(aeropuertoBogotaLatLng!!).zoom(15f).build()
+                CameraPosition.builder().target(aeropuertoBogotaLatLng!!).zoom(14f).build()
             )
         )
 
@@ -542,7 +556,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             if (!isCameraMoved) {
                 googleMaps?.moveCamera(
                     CameraUpdateFactory.newCameraPosition(
-                        CameraPosition.builder().target(ubicacionLatLong!!).zoom(17f).build()
+                        CameraPosition.builder().target(ubicacionLatLong!!).zoom(14f).build()
                     )
                 )
                 isCameraMoved = true // Marca moveCamera como ya ejecutado

@@ -5,16 +5,13 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.castellanoseloy.toonscliente.objetos.Utilidades
-import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.addCar.AddCar
-import com.castellanoseloy.toonsconductor.activitys.historiesDetails.HistoriesDetailActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityCarListBinding
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
@@ -41,12 +38,12 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
     }
 
     private fun obtenerCars() {
-        if(DriverProvider.datosConductor?.id ==null){
+        if(DatosPersitidos.datosConductor?.id ==null){
             return
         }
 
         val carProvider=CarProvider()
-        carProvider.getCarByDriverId(DriverProvider.datosConductor?.id!!)
+        carProvider.getCarByDriverId(DatosPersitidos.datosConductor?.id!!)
             .addOnCompleteListener {listaCars->
                 if (listaCars.isSuccessful) {
                     val carrosEncontrados = listaCars.result?.toObjects(CarModel::class.java)
@@ -99,8 +96,8 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
         driverProvider.updateCar(car.id!!)
             .addOnCompleteListener {
                 if(it.isSuccessful){
-                    DriverProvider.datosConductor?.vehiculo = car.id
-                    CarProvider.datosCarroEnUso= car
+                    DatosPersitidos.datosConductor?.vehiculo = car.id
+                    DatosPersitidos.datosCarroEnUso= car
                     adaptador.notifyDataSetChanged()
                 }
             }

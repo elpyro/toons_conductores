@@ -3,8 +3,10 @@ package com.optic.uberclonedriverkotlin.providers
 import android.net.Uri
 import android.util.Log
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos.Companion.datosConductor
 import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.QuerySnapshot
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -20,16 +22,12 @@ import java.util.Date
 
 class DriverProvider {
 
-    companion object {
-        var datosConductor: ConductorModelo ? =null
-
-    }
-
     private lateinit var storageDocumento: StorageReference
     private lateinit var storageDocumentoTrasero: StorageReference
     private lateinit var storageFotoPerfil: StorageReference
     private lateinit var storageLicenciaDelantera: StorageReference
     private lateinit var storageLicenciaTrasera: StorageReference
+    private lateinit var storageFotoValidacion: StorageReference
 
     val db = Firebase.firestore.collection("Conductores")
     var storage = FirebaseStorage.getInstance().getReference().child("profile")
@@ -59,6 +57,16 @@ class DriverProvider {
                 }
             }
     }
+
+    fun getConductoresPorDocumento(documento: String): Task<QuerySnapshot> {
+        Log.d("Firebase", "Buscando conductores por documento $documento")
+        return db.whereEqualTo("numeroDocumento", documento)
+            .get()
+            .addOnFailureListener { e ->
+                Log.e("Firebase", "Error al buscar conductores por documento", e)
+            }
+    }
+
 
     fun createToken(idDriver: String): Task<String> {
         return FirebaseMessaging.getInstance().token.addOnCompleteListener {
@@ -94,6 +102,7 @@ class DriverProvider {
         if (nombreImagen.equals("documentoIdentidadTrasero"))storageDocumentoTrasero = ref
         if (nombreImagen.equals("licenciaFrontal"))storageLicenciaDelantera = ref
         if (nombreImagen.equals("licenciaTrasera"))storageLicenciaTrasera = ref
+        if (nombreImagen.equals("fotoValidacion"))storageFotoValidacion = ref
 
         val uploadTask = ref.putFile(fromFile)
 
@@ -119,6 +128,9 @@ class DriverProvider {
     fun getStorageLicenciaTrasera(): Task<Uri> {
         return storageLicenciaTrasera?.downloadUrl!!
     }
+    fun getStorageFotoValidacion(): Task<Uri> {
+        return storageFotoValidacion?.downloadUrl!!
+    }
 
     fun getDriver(idDriver: String): Task<DocumentSnapshot> {
         return db.document(idDriver).get()
@@ -128,7 +140,8 @@ class DriverProvider {
         val map: MutableMap<String, Any> = HashMap()
         map["nombre"] = driver?.nombre!!
         map["apellido"] = driver?.apellido!!
-        map["telefono"] = driver?.telefono!!
+        map["tipoDocumento"] = driver?.tipoDocumento!!
+        map["numeroDocumento"] = driver?.numeroDocumento!!
         map["validacion"] = driver?.validacion!!
         return db.document(driver?.id!!).update(map)
     }
@@ -167,7 +180,11 @@ class DriverProvider {
         map["imagenLicenciaTrasera"] = driver?.imagenLicenciaTrasera!!
         return db.document(driver?.id!!).update(map)
     }
-
+    fun updateFotoValidacion(driver: ConductorModelo): Task<Void> {
+        val map: MutableMap<String, Any> = HashMap()
+        map["imagenFotoValidacion"] = driver?.imagenFotoValidacion!!
+        return db.document(driver?.id!!).update(map)
+    }
     fun descontarComisionesApp(descuento:Double): Task<Void> {
     // Calcular la nueva cantidad de saldo después de descontar la comisión
 

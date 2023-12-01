@@ -10,7 +10,7 @@ import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.databinding.ActivityAddCarBinding
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import java.io.File
 
 class AddCarViewModel : ViewModel() {
@@ -166,7 +166,7 @@ class AddCarViewModel : ViewModel() {
         val marca = binding.textFielMarca.text.toString()
         val tipo = binding.spinner.selectedItem.toString()
         val pasajeros = binding.textFielAsisentos.text.toString().toInt()
-        val idConductor= DriverProvider.datosConductor?.id
+        val idConductor= DatosPersitidos.datosConductor?.id
         val malero=binding.switchMaletero.isChecked
         val tecnomecanica=binding.checkBoxTecnomecanica.isChecked
         val SOAT=binding.checkBoxSoat.isChecked

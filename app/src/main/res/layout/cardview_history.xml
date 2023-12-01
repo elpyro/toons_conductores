@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_marginTop="5dp">
 
@@ -12,6 +13,7 @@
         android:orientation="vertical"
         android:layout_gravity="center"
         android:gravity="center"
+        android:background="@drawable/fondo_redondo_rojo_claro"
         android:layout_margin="15dp">
 
         <TextView
@@ -27,13 +29,15 @@
             android:id="@+id/textViewGanaciaDia"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ganancia del dia"
-            android:textSize="15sp"/>
+            android:text="Ganancia del día"
+            android:textSize="16sp"/>
 
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
+        app:cardElevation="20dp"
+        app:cardCornerRadius="8dp"
         android:layout_height="wrap_content">
 
     <LinearLayout

@@ -3,6 +3,7 @@ package com.castellanoseloy.toonsconductor.proveedor
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.PhoneAuthCredential
 
 class Autenticacion {
 
@@ -37,6 +38,9 @@ class Autenticacion {
         firebaseAutenticacion.signOut()
     }
 
+    fun signInWithPhoneAuthCredential(credential: PhoneAuthCredential): Task<AuthResult> {
+        return firebaseAutenticacion.signInWithCredential(credential)
+    }
 
 
 }

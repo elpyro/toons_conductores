@@ -16,6 +16,8 @@ class NotificarEstados {
 
     fun sendNotification(status: String, client: Client, context: Context) {
 
+        if(client.token==null) return
+
         val map = HashMap<String, String>()
         map.put("title", "Estado del viaje")
         map.put("body", status)
@@ -34,10 +36,12 @@ class NotificarEstados {
                 }
                 else {
                     Toast.makeText(context, "No se pudo enviar la notificacion", Toast.LENGTH_LONG).show()
+                    Log.e("NOTIFICATION", "ERROR en notificacion")
                 }
             }
 
             override fun onFailure(call: Call<FCMResponse>, t: Throwable) {
+                Toast.makeText(context, "No se pudo enviar la notificacion", Toast.LENGTH_LONG).show()
                 Log.e("NOTIFICATION", "ERROR: ${t.message}")
             }
 

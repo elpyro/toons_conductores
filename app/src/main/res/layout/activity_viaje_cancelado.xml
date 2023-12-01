@@ -62,16 +62,28 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-
             <TextView
+                android:id="@+id/textView_motivoCliente"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text=""
+                android:text="Motivo Cliente"
                 android:textAlignment="center"
                 android:textColor="@color/white"
-                android:textSize="22sp"
+                android:textSize="16sp"
                 android:textStyle="italic" />
+
+            <TextView
+                android:id="@+id/textView_motivoConductor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Motivo Conductor"
+                android:textAlignment="center"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="italic" />
+
 
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
@@ -82,6 +94,7 @@
                 app:startIconTint="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:visibility="gone"
                     android:id="@+id/editTextComentarioDeConductor"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -93,7 +106,7 @@
 
 
             <Button
-                android:id="@+id/btnCalification"
+                android:id="@+id/btnAceptarCancelado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="30dp"

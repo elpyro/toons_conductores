@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.castellanoseloy.toonscliente.objetos.Utilidades
@@ -102,12 +103,27 @@ class AddCar : AppCompatActivity() {
         val datosValidados= viewModel.validarDatos(binding,fotoFrontal,fotoLateral, imageDocumentoDelantero,imageDocumentoTrasero,editarDatos)
 
         if(datosValidados){
-            prepararDialogProcess()
-
-                viewModel.salveData(idCar,binding, fotoFrontal,fotoLateral,imageDocumentoDelantero,imageDocumentoTrasero,colorSeleccionado, editarDatos)
-
+            dialogAlert(editarDatos)
         }
 }
+
+
+    private fun dialogAlert(editarDatos: Boolean) {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setTitle("Validar Datos")
+        alertDialogBuilder.setMessage("¿Desea enviar a verificar sus datos?, una vez enviado sus datos no podran ser cambiados hasta ser verificados")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
+            prepararDialogProcess()
+            viewModel.salveData(idCar,binding, fotoFrontal,fotoLateral,imageDocumentoDelantero,imageDocumentoTrasero,colorSeleccionado, editarDatos)
+        }
+        // Botón Cancelar
+        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
 
     private fun prepararDialogProcess() {
         progressDialog!!.show()
@@ -125,6 +141,7 @@ class AddCar : AppCompatActivity() {
         imagenSeleccionada= "fotoFrontal"
         ImagePicker.with(this)
             .crop()
+            .cameraOnly()
             .compress(1024)
             .maxResultSize(1080,1080)
             .createIntent { intent ->
@@ -135,6 +152,7 @@ class AddCar : AppCompatActivity() {
         imagenSeleccionada= "fotoLateral"
         ImagePicker.with(this)
             .crop()
+            .cameraOnly()
             .compress(1024)
             .maxResultSize(1080,1080)
             .createIntent { intent ->
@@ -144,7 +162,7 @@ class AddCar : AppCompatActivity() {
     private fun selectDocumentFrontal() {
         imagenSeleccionada= "documentoVehiculo_frontal"
         ImagePicker.with(this)
-            .crop()
+            .crop(14.0F,9.0F)
             .compress(1024)
             .maxResultSize(1080,1080)
             .createIntent { intent ->
@@ -154,7 +172,7 @@ class AddCar : AppCompatActivity() {
     private fun selectDocumentTrasero() {
         imagenSeleccionada= "documentoVehiculo_trasero"
         ImagePicker.with(this)
-            .crop()
+            .crop(14.0F,9.0F)
             .compress(1024)
             .maxResultSize(1080,1080)
             .createIntent { intent ->

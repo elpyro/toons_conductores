@@ -5,23 +5,23 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.Spinner
-import android.widget.TextView
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 
 import com.castellanoseloy.toonsconductor.R
-import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.HistoriesCancelProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos.Companion.datosConductor
+import com.castellanoseloy.toonsconductor.utils.NotificarEstados
+import com.optic.uberclonedriverkotlin.models.Client
 import com.optic.uberclonedriverkotlin.models.History
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
-import java.util.Date
 
 
 class CancelacionMotivo {
 
     fun mensaje(
         context: Context,
-        history: History
+        history: History,
+        client: Client?
     ) {
 
         val dialogBuilder = AlertDialog.Builder(context)
@@ -38,7 +38,7 @@ class CancelacionMotivo {
 
         // Configurar el botón "Aceptar"
         dialogBuilder.setPositiveButton("Aceptar") { dialogInterface, i ->
-            val motivo=spinner.selectedItem.toString()+ "\\n"+detalle.text.toString().trim()
+            val motivo=spinner.selectedItem.toString()+ " <br> "+detalle.text.toString().trim()
             history.commentDriver = motivo
 
             val bookingCancelProvider = HistoriesCancelProvider()
@@ -47,9 +47,16 @@ class CancelacionMotivo {
 
                     var bookingAceptedsProvider = BookingAceptedsProvider()
                     bookingAceptedsProvider.updateStatus(
-                        DriverProvider!!.datosConductor!!.id!!,
+                        datosConductor!!.id!!,
                         "Cancelado"
                     ).addOnCompleteListener {
+
+                        val notificarEstados = NotificarEstados()
+                        notificarEstados.sendNotification(
+                            "El conductor a cancelado el viaje del pasajero ${history.pasajero}",
+                            client!!,
+                            context
+                        )
 
                         if (!it.isSuccessful) {
                             Utilidades.mostrarToast("Problemas de conexion", context)
@@ -59,6 +66,10 @@ class CancelacionMotivo {
 
 
         }
+        dialogBuilder.setNegativeButton("Volver") {dialogInterface, i ->
+
+        }
+
 
 // Mostrar el diálogo
         val alertDialog = dialogBuilder.create()

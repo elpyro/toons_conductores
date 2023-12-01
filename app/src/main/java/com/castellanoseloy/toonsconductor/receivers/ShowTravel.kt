@@ -9,7 +9,7 @@ import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActiv
 import com.castellanoseloy.toonsconductor.modelos.BookingModel
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.BookingProvider
-import com.castellanoseloy.toonsconductor.proveedor.CarProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.castellanoseloy.toonsconductor.services.ServiceLocalizationManager
 
 
@@ -37,17 +37,14 @@ class ShowTravel: BroadcastReceiver() {
                             val serviceManager = ServiceLocalizationManager.getInstance()
                             serviceManager.stopLocationService(context)//detener servicio de localizacion en segundo plano
 
-                            booking?.id=Utilidades.generarIdUnico()
                             booking!!.status = "accept" // Crear el booking aceptado
-                            booking.car= CarProvider.datosCarroEnUso //establecer el carro en uso
+                            booking.car= DatosPersitidos.datosCarroEnUso //establecer el carro en uso
 
                             bookingAceptedsProvider.create(booking!!).addOnCompleteListener {
                                 Utilidades.mostrarToast("Viaje Aceptado", context)
                                 inciarViaje(context)
 
                             }
-                        } else {
-
                         }
                     }
                 } else {

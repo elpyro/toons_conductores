@@ -22,6 +22,7 @@ import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.proveedor.BookingAceptedsProvider
 import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.proveedor.TransaccionesProvider
+import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -45,6 +46,10 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         progressDialog = ProgressDialog(this)
         viewModel = ViewModelProvider(this).get(MainActivityViewModel::class.java)
+
+        // Iniciar el servicio
+        val intent = Intent(this, DatosPersitidos::class.java)
+        startService(intent)
 
         listeners()
     }
@@ -119,21 +124,22 @@ class MainActivity : AppCompatActivity() {
             }
              }
         driverProvideer.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
-            Log.d("Firestore", "Validando conductor ")
+            Log.d("Firestore", "Validando conductor ${autenticacion.obtenerId()}")
             if (document.exists()) {
 
                 Utilidades.esperarUnSegundo()
                 Utilidades.esperarUnSegundo()
 
                 val driver = document.toObject(ConductorModelo::class.java)
-                DriverProvider.datosConductor = driver
+                DatosPersitidos.datosConductor = driver
+
 
                 Log.d("Firestore", "Obteniendo datos del conductor ${driver?.validacion}")
                 verificarViajesPendientes()
                 obtenerDatosCarro()
 
                 val transaccionesProvider= TransaccionesProvider()
-                transaccionesProvider.buscarTransaccionesPorIdDriver(DriverProvider.datosConductor?.id!!, true){
+                transaccionesProvider.buscarTransaccionesPorIdDriver(DatosPersitidos.datosConductor?.id!!, true){
                     Log.d("Pruebas nequi","Las recargas se estan verificando")
                 }
 
@@ -151,11 +157,11 @@ class MainActivity : AppCompatActivity() {
     private fun obtenerDatosCarro(){
 
         var carProvider=CarProvider()
-        DriverProvider.datosConductor?.vehiculo?.let {
+        DatosPersitidos.datosConductor?.vehiculo?.let {
             carProvider.getCarById(it).addOnSuccessListener { document ->
                 if (document.exists()) {
                     val car = document.toObject(CarModel::class.java)
-                    CarProvider.datosCarroEnUso = car
+                    DatosPersitidos.datosCarroEnUso = car
                     Log.d("Firestore", "Obteniendo datos del carro en uso")
                 }else{
                     Log.d("Firestore", "No se encontraron datos del carro en uso")

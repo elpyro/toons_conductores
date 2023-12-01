@@ -98,19 +98,6 @@
                     android:textSize="17sp" />
 
                 <TextView
-                    android:id="@+id/textViewTimeAndDistance"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="30dp"
-                    android:layout_marginTop="20dp"
-                    android:layout_marginRight="30dp"
-                    android:maxLines="2"
-                    android:text="0 Min - 0km"
-                    android:textAlignment="center"
-                    android:textColor="@color/white"
-                    android:textSize="17sp" />
-
-                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"

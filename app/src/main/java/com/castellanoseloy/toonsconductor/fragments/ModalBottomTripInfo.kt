@@ -17,6 +17,7 @@ import com.optic.uberclonedriverkotlin.models.Client
 import de.hdodenhof.circleimageview.CircleImageView
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Button
 import android.widget.LinearLayout
 import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades
@@ -44,8 +45,8 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     var textViewComentario: TextView? = null
     var textView_pasajeros: TextView? = null
     var textView_equipaje: TextView? = null
-    var linearLayout_detalleCobro:LinearLayout? =null
-    var linearLayout_referidor:LinearLayout?=null
+    var linearLayout_detalleCobro:Button? =null
+    var linearLayout_referidor:Button?=null
 
 
 //    var imageViewPhoneReferidor: ImageView? = null
@@ -82,7 +83,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
 
         circleImageReferidor = view.findViewById(R.id.circleImageReferidor)
 
-
+        verificarPermisos()
 
         val data = arguments?.getString("booking")
         booking = BookingModel.fromJson(data!!)!!
@@ -152,7 +153,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         }
     }
 
-    private fun verificarPermisos(telefono: String) {
+    private fun verificarPermisos() {
         if (ActivityCompat.checkSelfPermission(
                 requireActivity(),
                 Manifest.permission.CALL_PHONE
@@ -164,7 +165,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                 REQUEST_PHONE_CALL
             )
         }
-        Utilidades.llamar(telefono, requireContext())
     }
 
 
@@ -181,7 +181,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         }
         imageViewPhone?.setOnClickListener {
             if (booking?.telefonoPasajero != null) {
-                verificarPermisos(booking?.telefonoPasajero!!)
+                Utilidades.llamar(booking?.telefonoPasajero!!,requireContext())
             }
         }
 

@@ -421,16 +421,30 @@ object Utilidades {
     }
 
     fun enviarWhatsapp(telefono: String,  context: Context) {
-        val intent = Intent(Intent.ACTION_VIEW)
-        val url = "https://api.whatsapp.com/send?phone=+57$telefono&text=${URLEncoder.encode("Hola ", "UTF-8")}"
-        intent.data = Uri.parse(url)
+        val numeroWhatsApp = "+57$telefono"
+        val mensaje = "Hola"
+
+        val uri = Uri.parse("whatsapp://send?phone=$numeroWhatsApp&text=${URLEncoder.encode(mensaje, "UTF-8")}")
+
+        val intent = Intent(Intent.ACTION_VIEW, uri)
 
         // Verifica si hay aplicaciones disponibles para manejar la intención
         if (intent.resolveActivity(context.packageManager) != null) {
             context.startActivity(intent)
         } else {
             // Manejar el caso en el que no hay aplicaciones disponibles
-            Toast.makeText(context, "No apps available to share.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "WhatsApp no está instalado.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun abrirEnlaceWhatsApp(enlace: String, context: Context) {
+        val intent = Intent(Intent.ACTION_VIEW)
+        val uri = Uri.parse(enlace)
+        intent.data = uri
+
+        // Verifica si hay aplicaciones disponibles para manejar la intención
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
         }
     }
 

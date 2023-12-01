@@ -26,7 +26,6 @@ import com.castellanoseloy.toonscliente.objetos.Utilidades.convertLocationToLatL
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.utils.DistanciaAreopuerto
 import com.castellanoseloy.toonsconductor.proveedor.GeoProveedor
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class LocationService : Service() {
 
@@ -62,12 +61,6 @@ class LocationService : Service() {
             scheduleNotificationUpdate() // Programa la próxima actualización
         }, NOTIFICATION_UPDATE_INTERVAL.toLong()) // Define el intervalo entre actualizaciones en milisegundos
     }
-    private fun updateNotification() {
-        val notification = createNotification()
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationManager.notify(FOREGROUND_SERVICE_ID, notification)
-    }
-
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Establece isServiceRunning en true
@@ -92,7 +85,7 @@ class LocationService : Service() {
         removeLocationUpdates()
         handler.removeCallbacksAndMessages(null)
 
-        geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
+        geoProveedor.eliminarLocalizacion(DatosPersitidos.datosConductor?.id!!)
         Log.d("Localizacion", "Conductor desconectado por onDestroy")
 
         // Detén el servicio
@@ -115,7 +108,7 @@ class LocationService : Service() {
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle("Ubicación en segundo plano activada")
-            .setSmallIcon(R.drawable.my_location_red)
+            .setSmallIcon(R.drawable.ic_ixi_logo)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setSound(null) // Desactivar sonido de la notificación
@@ -163,7 +156,7 @@ class LocationService : Service() {
         // Cancela las actualizaciones programadas
         handler.removeCallbacksAndMessages(null)
 
-        geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
+        geoProveedor.eliminarLocalizacion(DatosPersitidos.datosConductor?.id!!)
         Log.d("Localizacion", "Conductor desconectado por cierre inesperado")
 
         // Detén el servicio
@@ -186,7 +179,7 @@ class LocationService : Service() {
             val dentroAreopuerto = distanciaAreopuerto.adentroArepouerto(location)
             Log.d("Localizacion", "El conductor esta dentro del areopuerto: $dentroAreopuerto")
             if (!dentroAreopuerto) {
-                geoProveedor.eliminarLocalizacion(DriverProvider.datosConductor?.id!!)
+                geoProveedor.eliminarLocalizacion(DatosPersitidos.datosConductor?.id!!)
                 Log.d("Localizacion", "Conductor desconectado por salir de area de trabajo")
 
                 // Detiene el servicio actual
@@ -198,7 +191,7 @@ class LocationService : Service() {
 
 
                 geoProveedor.guardarLocalizacion(
-                    DriverProvider.datosConductor?.id!!,
+                    DatosPersitidos.datosConductor?.id!!,
                     ubicacion!!,
                     tiempoActivo!!
                 )
