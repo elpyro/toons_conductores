@@ -85,7 +85,6 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun verificacionDatos() {
 
-
         var editarDatos = false
         if (driver?.numeroDocumento != null) editarDatos = true
         val datosValidos = viewModel?.validarDatos(
@@ -121,11 +120,7 @@ class ProfileActivity : AppCompatActivity() {
                     }
                 }
             }
-
-
         }
-
-
     }
 
     private fun alertCuentaExistente() {
@@ -293,7 +288,7 @@ class ProfileActivity : AppCompatActivity() {
         val lastname = binding.textFieldLastname.text.toString()
         val numeroDocumento = binding.textFieldDocumento.text.toString()
         val tipoDocumento = binding.spinner.selectedItem.toString()
-
+        val validacion:String= obtenerTipoValidacion()
         val driver = ConductorModelo(
             id = DatosPersitidos.datosConductor?.id,
             nombre = name,
@@ -303,7 +298,7 @@ class ProfileActivity : AppCompatActivity() {
             imagenPerfil = DatosPersitidos.datosConductor?.imagenPerfil,
             imagenDocumento = DatosPersitidos.datosConductor?.imagenDocumento,
             imagenDocumentoTrasero = DatosPersitidos.datosConductor?.imagenDocumentoTrasero,
-            validacion = "Verificando Datos"
+            validacion = validacion
         )
 
         driverProvider.update(driver).addOnCompleteListener {
@@ -472,6 +467,14 @@ class ProfileActivity : AppCompatActivity() {
 
     }
 
+    private fun obtenerTipoValidacion(): String {
+        return if(binding.circleImageValidacion.isVisible){
+            "Recuperacion de Telefono"
+        }else{
+            "Verificando Datos"
+        }
+    }
+
 
     private fun getDriver() {
         driverProvider.getDriver(DatosPersitidos.datosConductor?.id!!)
@@ -491,33 +494,32 @@ class ProfileActivity : AppCompatActivity() {
                         binding?.spinner?.setSelection(indiceValorPredeterminado)
                     }
 
-                    binding.textViewEstado.text = driver?.validacion //informacion por defecto del estado
-                    if (driver?.validacion.equals("Valida tu usuario")) {
+                    if (driver?.validacion?.contains("Valida tu usuario")!!){
                         binding.imageEstado.setImageResource(
                             R.drawable.ic_valida_datos
                         )
-                        binding.textViewEstado.text = "Valida tú usuario"
+                        binding.textViewEstado.text = driver?.validacion
                     }
-                    if (driver?.validacion.equals("Verificando Datos")) {
+                    if (driver?.validacion?.contains("Verificando Datos")!!){
                         binding.imageEstado.setImageResource(
                             R.drawable.ic_pendiente_validar
                         )
-                        binding.textViewEstado.text = "Verificando Datos"
-                        binding.btnUpdate.visibility = View.GONE
+                        binding.textViewEstado.text = driver?.validacion
+                        binding.btnUpdate.visibility= View.GONE
                     }
-                    if (driver?.validacion.equals("Validado")) {
+                    if (driver?.validacion?.contains("Validado")!!){
                         binding.imageEstado.setImageResource(
                             R.drawable.ic_validado
                         )
-                        binding.textViewEstado.text = "Validado"
-                        binding.btnUpdate.visibility = View.GONE
+                        binding.textViewEstado.text = driver?.validacion
+                        binding.btnUpdate.visibility= View.GONE
                     }
-                    if (driver?.validacion.equals("Bloqueado")) {
+                    if (driver?.validacion?.contains("Bloqueado")!!){
                         binding.imageEstado.setImageResource(
                             R.drawable.ic_prohibido
                         )
-                        binding.textViewEstado.text = "Bloqueado"
-                        binding.btnUpdate.visibility = View.GONE
+                        binding.textViewEstado.text = driver?.validacion
+                        binding.btnUpdate.visibility= View.GONE
                     }
 
 

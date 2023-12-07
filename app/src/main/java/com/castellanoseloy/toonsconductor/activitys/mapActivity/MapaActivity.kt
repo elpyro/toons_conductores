@@ -428,7 +428,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             builder.show()
             return false
         }
-        if(!DatosPersitidos.datosConductor?.validacion.equals("Validado")){
+        if(!DatosPersitidos.datosConductor?.validacion?.contains("Validado")!!){
             disconnectDriver()
 
             val builder = AlertDialog.Builder(this)
@@ -439,8 +439,22 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             }
             builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
             builder.show()
+            return false //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
+        }
+        if(DatosPersitidos.datosConductor?.saldo!! <0.0){
+            disconnectDriver()
+
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Recarga")
+            builder.setMessage("Saldo insufiente para realizar viajes")
+            builder.setPositiveButton("Aceptar") { _, _ ->
+
+            }
+            builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
+            builder.show()
             return true //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
         }
+
         return true
     }
 
