@@ -173,7 +173,7 @@ class AddCarViewModel : ViewModel() {
 
         val car = CarModel(
             id= idCar,
-            estado = "Validando",
+            estado = "Verificando Datos",
             idDriver=idConductor,
             bland = marca,
             tipo =tipo,

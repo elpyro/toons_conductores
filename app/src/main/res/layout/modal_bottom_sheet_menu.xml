@@ -51,7 +51,7 @@
                 <ImageView
                     android:layout_width="60dp"
                     android:layout_height="60dp"
-                    android:src="@drawable/ic_paralel_car_red" />
+                    android:src="@drawable/ic_car" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -92,13 +92,12 @@
                     android:id="@+id/imageView4"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
-                    android:src="@drawable/ic_credi_card" />
+                    android:src="@drawable/ic_saldo_logo" />
 
                 <TextView
                     android:id="@+id/textView3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-
                     android:foregroundGravity="center"
                     android:gravity="center"
                     android:text="Saldo" />

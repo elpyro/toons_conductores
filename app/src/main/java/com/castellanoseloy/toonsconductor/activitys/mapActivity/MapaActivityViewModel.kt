@@ -47,12 +47,12 @@ class MapaActivityViewModel :ViewModel(){
     fun verificarVesionActualizada(mapaActivity: MapaActivity) {
         val version=obtenerInformacionDeVersion(mapaActivity)
         val versionControl=VersionControlProvider()
-        versionControl.getVersionActual().addOnSuccessListener { document ->
-            if (document.exists()) {
-                val versionActual=document.toObject(VersionModel::class.java)
-                if(version?.second!! < versionActual?.versionCode!!) _desActualizado.value=versionActual!!
-            }
-        }
+//        versionControl.getVersionActual().addOnSuccessListener { document ->
+//            if (document.exists()) {
+//                val versionActual=document.toObject(VersionModel::class.java)
+//                if(version?.second!! < versionActual?.versionCode!!) _desActualizado.value=versionActual!!
+//            }
+//        }
     }
 
 }

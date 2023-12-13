@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonsconductor.activitys.addCar.AddCar
 import com.castellanoseloy.toonsconductor.databinding.ActivityCarListBinding
 import com.castellanoseloy.toonsconductor.modelos.CarModel
@@ -92,15 +93,19 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
     }
 
     override fun onSwitchClick(car: CarModel) {
-        val driverProvider=DriverProvider()
-        driverProvider.updateCar(car.id!!)
-            .addOnCompleteListener {
-                if(it.isSuccessful){
-                    DatosPersitidos.datosConductor?.vehiculo = car.id
-                    DatosPersitidos.datosCarroEnUso= car
-                    adaptador.notifyDataSetChanged()
+        if(car.estado?.contains("Validado")!!) {
+            val driverProvider = DriverProvider()
+            driverProvider.updateCar(car.id!!)
+                .addOnCompleteListener {
+                    if (it.isSuccessful) {
+                        DatosPersitidos.datosConductor?.vehiculo = car.id
+                        DatosPersitidos.datosCarroEnUso = car
+                        adaptador.notifyDataSetChanged()
+                    }
                 }
-            }
+        }else{
+            Utilidades.mostrarToast("El vehiculo aun no ha sido validado", this)
+        }
     }
 
     override fun onCarItemClick(car: CarModel) {
