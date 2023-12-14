@@ -9,10 +9,10 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 
 interface IFCMApi {
-
+    //configura la apikey de mensajes push notificacion
     @Headers(
         "Content-Type:application/json",
-        "Authorization:key=AAAAzGYCaNg:APA91bGRtwFsVpdAOXnOP7EJShWqNMbV64udKRWi8SWvCxzwu48ckC8BHXFz5am7A4JIWgVQ2O_5WY5AYhRn82yij64vIW9w-uqTcyydzF0OdSAMZFgU_JHYy8GAe5ubPSr0whVeQEHY"
+        "Authorization:key=AAAAvM3ghZE:APA91bFiDmFeTQ0b-ij49lpPQphxWYug3pEJ0KKYCCNNga9Sm1fGzrfb42HSw-omnydsF4yO91sYORoB75XkBc3D5fbnoR_QyJp7A4nFtXYWr65hH1zSlZZaBwLoQtuTzYPzRv23efUT"
     )
     @POST("fcm/send")
     fun send(@Body body: FCMBody): Call<FCMResponse>

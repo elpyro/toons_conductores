@@ -60,6 +60,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
+import com.castellanoseloy.toonsconductor.activitys.saldo.Saldo
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
 import com.castellanoseloy.toonsconductor.services.DatosPersitidos
@@ -416,11 +417,11 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun verificarConductor() : Boolean{
         if(DatosPersitidos.datosCarroEnUso==null){
-            disconnectDriver()
+
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Seleccionar Vehiculo")
             builder.setMessage("Necesita seleccionar un vehiculo de trabajo")
-            builder.setPositiveButton("Aceptar") { _, _ ->
+            builder.setPositiveButton("Ver vehiculos") { _, _ ->
                 val i = Intent(this, CarList::class.java)
                 startActivity(i)
             }
@@ -429,30 +430,30 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             return false
         }
         if(!DatosPersitidos.datosConductor?.validacion?.contains("Validado")!!){
-            disconnectDriver()
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Usuario no validado")
             builder.setMessage("El usuario aun no ha sido validado")
-            builder.setPositiveButton("Aceptar") { _, _ ->
-
+            builder.setPositiveButton("Ver perfil") { _, _ ->
+                val i = Intent(this, ProfileActivity::class.java)
+                startActivity(i)
             }
             builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
             builder.show()
             return false //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
         }
         if(DatosPersitidos.datosConductor?.saldo!! <0.0){
-            disconnectDriver()
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Recarga")
             builder.setMessage("Saldo insufiente para realizar viajes")
-            builder.setPositiveButton("Aceptar") { _, _ ->
-
+            builder.setPositiveButton("Ver Saldo") { _, _ ->
+                val i = Intent(this, Saldo::class.java)
+                startActivity(i)
             }
             builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
             builder.show()
-            return true //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
+            return false //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
         }
 
         return true

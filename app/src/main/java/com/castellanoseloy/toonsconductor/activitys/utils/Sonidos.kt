@@ -54,12 +54,12 @@ class Sonidos(private val context: Context) {
     }
 
     fun crearTonoCancelado() {
-        if (preferencias.cargarPreferencias().sonidos) {
+
             releaseMediaPlayer()
             mediaPlayer = MediaPlayer.create(context, R.raw.tono_alerta_cancelacion)
             mediaPlayer?.start()
             mediaPlayer?.setOnCompletionListener { mp -> releaseMediaPlayer() }
-        }
+
     }
 
     private fun releaseMediaPlayer() {
