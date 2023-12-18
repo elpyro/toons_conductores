@@ -75,6 +75,7 @@
     <string name="trasera">Trasera</string>
     <string name="Documento">Documento del Vehiculo</string>
     <string name="Informacion">Información</string>
+    <string name="guardar">Guardar</string>
 
     <array name="tipoVehiculos">
         <item>Automóvil</item>

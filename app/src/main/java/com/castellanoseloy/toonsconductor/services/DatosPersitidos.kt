@@ -34,8 +34,6 @@ class DatosPersitidos : Service() {
         Log.d("Datos persistentes", "Datos conductor: $datosConductor")
         Log.d("Datos persistentes", "Datos vehiculo: $datosCarroEnUso")
 
-        // Puedes realizar operaciones en segundo plano aquí
-
         // Devuelve START_STICKY para que el servicio se reinicie si se cierra inesperadamente
         return START_STICKY
     }

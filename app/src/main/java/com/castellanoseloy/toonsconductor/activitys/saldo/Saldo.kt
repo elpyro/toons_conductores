@@ -39,7 +39,9 @@ class Saldo : AppCompatActivity() {
         val linearLayoutManager = LinearLayoutManager(this)
         binding.recyclerRecargas.layoutManager = linearLayoutManager
 
-
+        //mostrar saldo
+        binding.saldoActual.text =
+            DatosPersitidos.datosConductor?.saldo.toString().formatoMoneda()
 
         listeners()
     }

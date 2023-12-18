@@ -1,4 +1,4 @@
-package com.optic.uberclonekotlin.providers
+package com.castellanoseloy.toonsconductor.proveedor
 
 import android.util.Log
 import com.google.android.gms.tasks.Task
@@ -8,7 +8,6 @@ import com.google.firebase.ktx.Firebase
 
 class ConfigProvider {
     val db = Firebase.firestore.collection("Config")
-
 
     fun informacionWhatsApp(): Task<DocumentSnapshot> {
         return db.document("numerosWhatsApp").get().addOnFailureListener { exception ->

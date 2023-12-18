@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.castellanoseloy.toonsconductor.activitys.profileActivity
 
 import androidx.appcompat.app.AppCompatActivity
@@ -5,6 +7,7 @@ import android.os.Bundle
 import com.castellanoseloy.toonsconductor.R
 import android.app.Activity
 import android.app.ProgressDialog
+import android.content.Intent
 import android.graphics.Color
 import android.util.Log
 import android.view.View
@@ -13,9 +16,10 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.activitys.carList.CarList
+import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.databinding.ActivityProfileBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.services.DatosPersitidos
@@ -63,14 +67,18 @@ class ProfileActivity : AppCompatActivity() {
         viewModel?.mensaje?.observe(this) { mensaje ->
             Utilidades.mostrarToast(mensaje, this)
         }
-        viewModel?.elementosActualizar?.observe(this, Observer { it ->
+        viewModel?.elementosActualizar?.observe(this) {
             if (it == 0) {
-                progressDialog!!.dismiss()
-                Utilidades.mostrarToast("Datos Actualizados", this)
-                finish()
+                progressDialog.dismiss()
+
+               finish()
+
+
             }
-        })
+        }
     }
+
+
 
     private fun listeners() {
 
@@ -125,11 +133,13 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun alertCuentaExistente() {
         val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
+        alertDialogBuilder.setCancelable(true)
         alertDialogBuilder.setTitle("Validar Datos")
         alertDialogBuilder.setMessage("Detectamos que ya tienes una cuenta asociada con estas credenciales. \nPara realizar un cambio de cuenta al nuevo número ${driver?.telefono}, por favor sigue estos pasos:\n\n1. Tómate una foto de tu documento de identidad.\n2. Actualiza tus datos para validar la solicitud de cambio de cuenta.")
 
         // Botón Aceptar
-        alertDialogBuilder.setPositiveButton("Aceptar") { dialog, which ->
+        alertDialogBuilder.setPositiveButton("Aceptar") { _, _ ->
 
         }
         val alertDialog: AlertDialog = alertDialogBuilder.create()
@@ -138,15 +148,16 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun alertaConfirmacionDatos() {
         val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
         alertDialogBuilder.setTitle("Validar Datos")
         alertDialogBuilder.setMessage("¿Desea enviar a verificar sus datos?, una vez enviado sus datos no podran ser cambiados hasta ser verificados")
 
         // Botón Aceptar
-        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
+        alertDialogBuilder.setPositiveButton("Si") { _, _ ->
             updateInfo()
         }
         // Botón Cancelar
-        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+        alertDialogBuilder.setNegativeButton("No") { _, _ ->
         }
         val alertDialog: AlertDialog = alertDialogBuilder.create()
         alertDialog.show()
@@ -209,7 +220,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun selectDocument() {
         imagenSeleccionada = "documentoIdentidad"
         ImagePicker.with(this)
-            .crop(14.0F, 9.0F)
+             .crop(16.0F,10.0F)
             .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent ->
@@ -220,7 +231,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun selectDocumentoTrasero() {
         imagenSeleccionada = "documentoIdentidadTrasero"
         ImagePicker.with(this)
-            .crop(14.0F, 9.0F)
+             .crop(16.0F,10.0F)
             .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent ->
@@ -231,7 +242,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun selectLicenceFrontal() {
         imagenSeleccionada = "licenciaFrontal"
         ImagePicker.with(this)
-            .crop(14.0F, 9.0F)
+             .crop(16.0F,10.0F)
             .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent ->
@@ -242,7 +253,7 @@ class ProfileActivity : AppCompatActivity() {
     private fun selectLicenceTrasera() {
         imagenSeleccionada = "licenciaTrasera"
         ImagePicker.with(this)
-            .crop(14.0F, 9.0F)
+             .crop(16.0F,10.0F)
             .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent ->
@@ -481,6 +492,10 @@ class ProfileActivity : AppCompatActivity() {
             .addOnSuccessListener { document ->
                 if (document.exists()) {
                     driver = document.toObject(ConductorModelo::class.java)
+
+                    //actualizamos los datos persistentes
+                    DatosPersitidos.datosConductor=driver
+
                     binding.textFieldPhone.text = driver?.telefono
                     binding.textFieldName.setText(driver?.nombre)
                     binding.textFieldLastname.setText(driver?.apellido)

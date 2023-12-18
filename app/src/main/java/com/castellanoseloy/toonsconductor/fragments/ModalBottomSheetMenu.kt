@@ -22,14 +22,8 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
         const val TAG = "ModalBottomSheetMenu"
     }
 
-
-
-    val authProvider = Autenticacion()
-
     private var linearLayoutConfinguracion: LinearLayout ? = null
     private var linearLayoutCar: LinearLayout ? = null
-    private var textViewUsername: TextView? = null
-    private var linearLayoutLogout: LinearLayout? = null
     private var linearLayoutProfile: LinearLayout? = null
     private var linearLayoutHistory: LinearLayout? = null
     private var linearLayoutRecagas: LinearLayout?=null
@@ -40,7 +34,7 @@ class ModalBottomSheetMenu: BottomSheetDialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.modal_bottom_sheet_menu, container, false)
 
-        linearLayoutLogout = view.findViewById(R.id.linearLayoutLogout)
+
         linearLayoutProfile = view.findViewById(R.id.linearLayoutProfile)
         linearLayoutHistory = view.findViewById(R.id.linearLayoutHistory)
         linearLayoutCar = view.findViewById(R.id.linearLayoutCar)

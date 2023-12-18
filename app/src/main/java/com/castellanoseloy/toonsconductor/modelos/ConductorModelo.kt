@@ -23,7 +23,6 @@ data class ConductorModelo (
     var clave:String? =null
 ) {
     public fun toJson() = klaxon.toJsonString(this)
-
     companion object {
         public fun fromJson(json: String) = klaxon.parse<ConductorModelo>(json)
     }

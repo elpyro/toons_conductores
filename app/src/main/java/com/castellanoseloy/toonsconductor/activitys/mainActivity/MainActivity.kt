@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.castellanoseloy.toonsconductor.activitys.mainActivity
 
 import android.app.ProgressDialog
@@ -11,6 +13,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.codigoMensajeVerificacion.CodigoMensajeVerificacion
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
 import com.castellanoseloy.toonsconductor.activitys.mapTripActivity.MapTripActivity
@@ -36,9 +39,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var viewModel: MainActivityViewModel? = null
 
-
-
     private val autenticacion=  Autenticacion()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -83,32 +85,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun mostrarDialogProgreso(){
-        progressDialog.setTitle("Iniciando Sesion...")
-        progressDialog.setCancelable(false)
-        progressDialog.setMessage("Espere un momento...")
-        progressDialog.show()
-    }
-    private fun iniciarSesion() {
-        val datosValidos=viewModel!!.validarDatos(binding)
-
-        if (datosValidos){
-            mostrarDialogProgreso()
-
-            val correo=binding.editTextCorreo.text.toString()+"@ixi-conductor.com"
-            autenticacion.login(correo,binding.editTextContrasena.text.toString())
-                .addOnCompleteListener {
-                    if (it.isSuccessful){
-                        inicializarDatosConductor()
-                    }else{
-                        ErroresFirebase.imprimirError(it.exception,this@MainActivity)
-                        if (progressDialog.isShowing)  progressDialog.dismiss()
-                    }
-                }
-        }
-    }
-
-
 
     private fun registrar() {
         val intent = Intent(this@MainActivity, CodigoMensajeVerificacion::class.java)
@@ -116,8 +92,8 @@ class MainActivity : AppCompatActivity() {
     }
 
      fun inicializarDatosConductor(){
-        var driverProvideer=DriverProvider()
-        driverProvideer.createToken(autenticacion.obtenerId()).addOnCompleteListener { it->
+        val driverProvideer=DriverProvider()
+        driverProvideer.createToken(autenticacion.obtenerId()).addOnCompleteListener {
             if(!it.isSuccessful){
                 Utilidades.mostrarToast("Error de autenticacion",this)
                 solicitarCredenciales()
@@ -156,12 +132,19 @@ class MainActivity : AppCompatActivity() {
 
     private fun obtenerDatosCarro(){
 
-        var carProvider=CarProvider()
+        val carProvider=CarProvider()
         DatosPersitidos.datosConductor?.vehiculo?.let {
             carProvider.getCarById(it).addOnSuccessListener { document ->
                 if (document.exists()) {
                     val car = document.toObject(CarModel::class.java)
-                    DatosPersitidos.datosCarroEnUso = car
+                    if (car?.estado?.contains("Validado")!!) {
+                        DatosPersitidos.datosCarroEnUso = car
+                        DatosPersitidos.datosConductor!!.vehiculo=car.id
+                    }else{
+                        DatosPersitidos.datosConductor!!.vehiculo=""
+                        DatosPersitidos.datosCarroEnUso = null
+                    }
+
                     Log.d("Firestore", "Obteniendo datos del carro en uso")
                 }else{
                     Log.d("Firestore", "No se encontraron datos del carro en uso")
@@ -171,9 +154,9 @@ class MainActivity : AppCompatActivity() {
     }
     private fun verificarViajesPendientes() {
 
-        var bookingQuery = bookingAceptedsProvider.getBookingAccepteds()
+        val bookingQuery = bookingAceptedsProvider.getBookingAccepteds()
 
-        bookingQuery!!.addListenerForSingleValueEvent(object : ValueEventListener {
+        bookingQuery.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
 
                 if(snapshot.exists()){
@@ -197,19 +180,14 @@ class MainActivity : AppCompatActivity() {
 
 
             val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
             alertDialogBuilder.setTitle("Viaje Pendiente")
             alertDialogBuilder.setMessage("Tienes un viaje pendiente ¿Deseas ir a el viaje?.")
 
             // Botón Aceptar
-            alertDialogBuilder.setPositiveButton("Ir a viaje") { dialog, which ->
+            alertDialogBuilder.setPositiveButton("Ir a viaje") { _, _ ->
                 abrirViajePendiente()
             }
-
-            // Botón Cancelar
-//            alertDialogBuilder.setNegativeButton("Finalizarlo") { dialog, which ->
-//                bookingAceptedsProvider.deleteBookingsForDriver(autenticacion.obtenerId())
-//                abrirMapaInicio()
-//            }
 
             val alertDialog: AlertDialog = alertDialogBuilder.create()
             alertDialog.show()

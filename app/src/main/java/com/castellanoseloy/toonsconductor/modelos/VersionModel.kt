@@ -6,9 +6,8 @@ import java.sql.Timestamp
 private val klaxon = Klaxon()
 data  class VersionModel (
     var versionName:String? = null,
-    var obligatory:Double?=null,
-    var versionCode:Int? =null,
-    val fecha: Timestamp? =null,
+    var obligatory:Boolean?=null,
+    var versionCode:Int? =null
 ) {
         public fun toJson() = klaxon.toJsonString(this)
         companion object {

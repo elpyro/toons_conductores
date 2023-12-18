@@ -5,9 +5,11 @@ import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.activitys.addCar.AddCar
 import com.castellanoseloy.toonsconductor.databinding.ActivityCarListBinding
 import com.castellanoseloy.toonsconductor.modelos.CarModel
@@ -15,15 +17,15 @@ import com.castellanoseloy.toonsconductor.proveedor.CarProvider
 import com.castellanoseloy.toonsconductor.services.DatosPersitidos
 import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
-class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
+class CarList : AppCompatActivity(), CarListAdapter.OnItemClickListener {
 
     private lateinit var binding: ActivityCarListBinding
     private val listaCarros: MutableList<CarModel> = mutableListOf()
-    private lateinit var adaptador:CarListAdapter
+    private lateinit var adaptador: CarListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding=ActivityCarListBinding.inflate(layoutInflater)
+        binding = ActivityCarListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         val linearLayoutManager = LinearLayoutManager(this)
@@ -34,26 +36,31 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setTitleTextColor(Color.WHITE)
 
-
         listeners()
     }
 
     private fun obtenerCars() {
-        if(DatosPersitidos.datosConductor?.id ==null){
+        if (DatosPersitidos.datosConductor?.id == null) {
             return
         }
+        var mostrarAlertDialog = false
 
-        val carProvider=CarProvider()
+        val carProvider = CarProvider()
         carProvider.getCarByDriverId(DatosPersitidos.datosConductor?.id!!)
-            .addOnCompleteListener {listaCars->
+            .addOnCompleteListener { listaCars ->
                 if (listaCars.isSuccessful) {
                     val carrosEncontrados = listaCars.result?.toObjects(CarModel::class.java)
                     if (!carrosEncontrados.isNullOrEmpty()) {
                         // Aquí puedes hacer algo con los carros encontrados
                         for (carro in carrosEncontrados) {
                             listaCarros.add(carro)
+                            if (carro.estado?.contains("Verificando Datos")!!)  mostrarAlertDialog = true
+
                         }
-                            cargarRecyclerView()
+                        cargarRecyclerView()
+
+                        if(mostrarAlertDialog)mostrarAlerta24Horas()//si hay algun carro por validar mostra mensaje de espera
+
                     } else {
                         // No se encontraron carros para el conductor con el ID especificado
                         Log.d("Carros", "Ningún carro encontrado para el conductor")
@@ -65,9 +72,24 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
             }
     }
 
+    fun mostrarAlerta24Horas() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
+        alertDialogBuilder.setCancelable(true)
+        alertDialogBuilder.setTitle("Validación de datos")
+        alertDialogBuilder.setMessage("Tú vehiculo sera validado por nuestro equipo en aproximadamente 24 horas, luego podras seleccionarlo")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("Aceptar") { _, _ ->
+
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
+    }
+
     private fun cargarRecyclerView() {
         val gridLayoutManager = GridLayoutManager(this, 1)
-        binding!!.recyclerCarList.layoutManager = gridLayoutManager
+        binding.recyclerCarList.layoutManager = gridLayoutManager
 
 
         if (listaCarros.isNotEmpty()) {
@@ -84,7 +106,7 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
     }
 
     private fun listeners() {
-        binding.imageViewAddCard.setOnClickListener{  goToAddCar() }
+        binding.imageViewAddCard.setOnClickListener { goToAddCar() }
     }
 
     private fun goToAddCar() {
@@ -93,7 +115,7 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
     }
 
     override fun onSwitchClick(car: CarModel) {
-        if(car.estado?.contains("Validado")!!) {
+        if (car.estado?.contains("Validado")!!) {
             val driverProvider = DriverProvider()
             driverProvider.updateCar(car.id!!)
                 .addOnCompleteListener {
@@ -103,7 +125,7 @@ class CarList : AppCompatActivity() ,  CarListAdapter.OnItemClickListener{
                         adaptador.notifyDataSetChanged()
                     }
                 }
-        }else{
+        } else {
             Utilidades.mostrarToast("El vehiculo aun no ha sido validado", this)
         }
     }

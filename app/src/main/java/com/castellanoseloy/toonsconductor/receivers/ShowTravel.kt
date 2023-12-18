@@ -47,9 +47,6 @@ class ShowTravel: BroadcastReceiver() {
                             }
                         }
                     }
-                } else {
-                    // El booking no existe
-
                 }
             } else {
 

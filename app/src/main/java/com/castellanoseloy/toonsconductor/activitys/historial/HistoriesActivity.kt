@@ -47,10 +47,10 @@ class HistoriesActivity : AppCompatActivity() {
 
                     var totalStrar=0.00
                     for (d in documents) {
-                        var history = d.toObject(History::class.java)
+                        val history = d.toObject(History::class.java)
                         history?.id = d.id
                         histories.add(history!!)
-                        totalStrar += history?.calificationToDriver ?: 5.00
+                        totalStrar += history.calificationToDriver ?: 5.00
                     }
 
                     val cantidadRegistros = documents.size

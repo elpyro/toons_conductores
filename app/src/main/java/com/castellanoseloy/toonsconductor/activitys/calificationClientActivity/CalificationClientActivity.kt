@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.WindowManager
 import android.widget.Toast
 import com.castellanoseloy.toonscliente.objetos.Utilidades.formatoMonenda
 import com.castellanoseloy.toonsconductor.activitys.mapActivity.MapaActivity
@@ -25,7 +24,6 @@ class CalificationClientActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityCalificationClientBinding.inflate(layoutInflater)
         setContentView(binding.root)
-       // window.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 
         val extraPrice = intent.getDoubleExtra("price", 0.0)
         val extraOrigin = intent.getStringExtra("origin")
@@ -45,7 +43,7 @@ class CalificationClientActivity : AppCompatActivity() {
 
     private fun listeners() {
 
-        binding.ratingBar.setOnRatingBarChangeListener { ratingBar, value, b ->
+        binding.ratingBar.setOnRatingBarChangeListener { _, value, _ ->
             calification = value
         }
 

@@ -20,21 +20,12 @@ class TransaccionesProvider {
         }
     }
 
-
     fun cambiarEstado(id: String, status: String): Task<Void> {
         Log.d("Pruebas Nequi", "cambio de estado a $status del $id")
         return db.child(id).child("estado").setValue(status).addOnFailureListener { exception ->
             Log.d("REALTIME_DB", "ERROR: ${exception.message}")
         }
     }
-
-    fun deleteRecargaPorId(idRecarga: String): Task<Void> {
-        val referenciaRecarga = db.child(idRecarga)
-        return referenciaRecarga.removeValue()
-    }
-
-
-
 
 
     fun buscarTransaccionesPorIdDriver(idDriver: String, verificarPendientes: Boolean = true, callback: (List<TransaccionesModelo>) -> Unit) {

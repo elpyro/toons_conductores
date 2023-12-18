@@ -48,7 +48,6 @@ class Preferencias(private val context: Context) {
                     val ahora = System.currentTimeMillis()
                     editor.putString(preferencia, checkedValue.toString())
                     editor.putLong(PREF_ULTIMA_MODIFICACION_NEQUI, ahora)
-                    Utilidades.mostrarToast("Nequi actualizado",context)
             }
             else -> {
                 when (checkedValue) {

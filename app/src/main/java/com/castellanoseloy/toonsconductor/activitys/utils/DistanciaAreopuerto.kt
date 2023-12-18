@@ -14,7 +14,7 @@ class DistanciaAreopuerto {
     val aeropuertoLat = 4.697667
     val aeropuertoLng = -74.142290
     // Distancia máxima permitida del aeropuerto
-    val maxDistanceKm = 2.8
+    val maxDistanceKm = 2.8 //0.8 predeterminado
 
     fun adentroArepouerto(location: Location): Boolean {
         val ubicacionLatLong = convertLocationToLatLng(location)

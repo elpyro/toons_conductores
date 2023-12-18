@@ -13,7 +13,6 @@ class InformacionNequi : AppCompatActivity() {
     private var codigoVerificacion: String? = null
     private var telefono: String? = null
     private lateinit var binding: ActivityInformacionNequiBinding
-    private var nequiVerificacionPago = NequiVerificacionPago()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

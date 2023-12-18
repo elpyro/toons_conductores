@@ -34,8 +34,6 @@ class CancelacionMotivo {
         val detalle = dialogView.findViewById<EditText>(R.id.textFieldDetalles)
         val spinner= dialogView.findViewById<Spinner>(R.id.spinner_cancelaciones)
 
-
-
         // Configurar el botón "Aceptar"
         dialogBuilder.setPositiveButton("Aceptar") { dialogInterface, i ->
             val motivo=spinner.selectedItem.toString()+ " <br> "+detalle.text.toString().trim()

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.castellanoseloy.toonsconductor.activitys.codigoMensajeVerificacion
 
 import android.app.ProgressDialog
@@ -6,6 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.databinding.ActivityCodigoMensajeVerificacionBinding
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.objetos.ErroresFirebase
@@ -20,7 +23,6 @@ import java.util.concurrent.TimeUnit
 
 class CodigoMensajeVerificacion : AppCompatActivity() {
 
-    private var driver: ConductorModelo? = null
     private lateinit var progressDialog: ProgressDialog
     private lateinit var credential: PhoneAuthCredential
     private lateinit var telefono: String
@@ -87,9 +89,6 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
         PhoneAuthProvider.verifyPhoneNumber(options)
     }
 
-    // Completar la autenticación con el código de verificación
-
-
     private fun buscarPorTelefono() {
 
         Log.d("Firebase", "Telefono recibido $telefono")
@@ -101,14 +100,14 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
                     if (document != null && document.exists()) {
                         finish()
                     } else {
-                        CrearNuevoConductor()
+                        crearNuevoConductor()
                     }
                 }
 
             }
     }
 
-    private fun CrearNuevoConductor() {
+    private fun crearNuevoConductor() {
 
         val saldoObsequio = 10000.0
 
@@ -116,12 +115,13 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
             id = autenticacion.obtenerId(),
             telefono = telefono,
             saldo = saldoObsequio,
-            validacion = "Por registrar"
+            validacion = "Valida tu usuario"
         )
 
         val preferencias = Preferencias(this)
-        preferencias.guardarPreferencia("nequi", telefono!!)
+        preferencias.guardarPreferencia("nequi", telefono)
 
+        Utilidades.mostrarToast("Te hemos obsequiado 10.000$ de saldo \nPor ser nuevo usario", this)
         actualizarCrearCliente(driver)
 
 
@@ -135,7 +135,6 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
                 Utilidades.esperarUnSegundo()
 
                 finish()
-                // (this@RegistroUsuarioActivity as? MainActivity)?.inicializarDatosConductor()
             } else {
                 registrarError(it.exception!!)
             }
@@ -151,6 +150,7 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
 
     fun mostrarDialogProgreso(titulo: String) {
         progressDialog = ProgressDialog(this)
+        progressDialog.setIcon(R.drawable.ic_ixi_logo)
         progressDialog.setTitle(titulo)
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Espere un momento...")
@@ -170,7 +170,7 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
         telefono = binding.editTextTelefono.text.toString()
         val longitud = telefono.length
         if (longitud != 10) {
-            binding.editTextTelefono.setError("El telefono debe tener 10 digitos")
+            binding.editTextTelefono.error = "El telefono debe tener 10 digitos"
             return
         }
         mostrarDialogProgreso("Solicitando codigo")
@@ -181,7 +181,7 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
         val codigo = binding.editTextCodigo.text.toString().trim()
         val longitud = codigo.length
         if (longitud != 6) {
-            binding.editTextCodigo.setError("El codigo debe tener 6 digitos")
+            binding.editTextCodigo.error = "El codigo debe tener 6 digitos"
             return
         }
         mostrarDialogProgreso("Verificando codigo")

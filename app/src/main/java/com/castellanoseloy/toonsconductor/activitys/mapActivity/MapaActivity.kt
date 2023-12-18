@@ -58,8 +58,8 @@ import android.net.Uri
 import android.os.PowerManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
-import androidx.lifecycle.Observer
 import com.castellanoseloy.toonsconductor.activitys.carList.CarList
+import com.castellanoseloy.toonsconductor.activitys.mainActivity.MainActivity
 import com.castellanoseloy.toonsconductor.activitys.saldo.Saldo
 import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.proveedor.Autenticacion
@@ -74,6 +74,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         var tiempoActivo: Long? =null
     }
 
+    private var action: String? = null
     private val serviceManager = ServiceLocalizationManager.getInstance()
     var viajeAceptado: Boolean =false
     var distanceString: String? =null
@@ -170,6 +171,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         viewModel = ViewModelProvider(this).get(MapaActivityViewModel::class.java)
         idConductor= DatosPersitidos.datosConductor?.id!!
 
+        action = intent.action //recibi los parametro de ProfileActivity para saber si mostrar un dialogo
+
         //cargar mapa del fragmento
         val fragmentManager = supportFragmentManager
         val mapaFragment= fragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
@@ -181,6 +184,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         //si el conductor es nuevo enviar a pantalla de perfil
         if(DatosPersitidos.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
+
 
         //establecemos el tiempo desde que se activo en la lista de conductores
         if(tiempoActivo==null ){
@@ -211,36 +215,20 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
         viewModel?.verificarVesionActualizada(this)
 
+
          listeners()
         observadores()
     }
 
+
+
     private fun observadores() {
-        viewModel?.currentdesActualizado?.observe(this, Observer { it ->
-            if( it!=null){
+        viewModel?.currentdesActualizado?.observe(this) {
+            if (it != null) {
                 //Todo dialogo alert version desacatualizada
             }
-        })
+        }
     }
-
-
-    var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                when{
-                    permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false)->{
-                        easyWayLocation!!.startLocation()
-                        connectDriver()
-                    }
-                    else->{
-                        Log.d("Pemisos","Permiso gps NO concedidos")
-                        mostrarDialogoPermisos()
-                    }
-            }
-            }
-    }
-
-
 
 
 
@@ -270,19 +258,17 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun showModalBooking(booking: BookingModel) {
 
-        Log.d("Firestore", "Modal mostrado= $modalMostrado para  ${booking}  ")
-
-
+        Log.d("Firestore", "Modal mostrado= $modalMostrado para  $booking  ")
 
         if (!modalMostrado) {
 
-            val ubicacionCliente= LatLng(booking?.originLat!!, booking?.originLng!!)
-            val ubicacionDestino=LatLng(booking?.destinationLat!!, booking?.destinationLng!!)
+            val ubicacionCliente= LatLng(booking.originLat!!, booking.originLng!!)
+            val ubicacionDestino=LatLng(booking.destinationLat!!, booking.destinationLng!!)
             addClientMarker(ubicacionCliente)
             Log.d("Firestore", "Ubicacion Actual: $ubicacionLatLong")
             ubicacionCliente?.let { dibujarRutaEntreCliente(ubicacionCliente, ubicacionDestino) }
 
-            Log.d("Firestore", "Modal agregado para el booking ${booking}")
+            Log.d("Firestore", "Modal agregado para el booking $booking")
             try {
             val bundle = Bundle()
             bundle.putString("booking", booking.toJson())
@@ -315,8 +301,25 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             Manifest.permission.ACCESS_BACKGROUND_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
-
     }
+    var permisoLocalizacion= registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()){permiso->
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            when{
+                permiso.getOrDefault(Manifest.permission.ACCESS_BACKGROUND_LOCATION, false)->{
+                    easyWayLocation!!.startLocation()
+                    connectDriver()
+                }
+                else->{
+                    Log.d("Pemisos","Permiso gps NO concedidos")
+                    mostrarDialogoPermisos()
+                    easyWayLocation!!.startLocation()
+                    connectDriver()
+                }
+            }
+        }
+    }
+
 
     fun detenerServico() {
         serviceManager.stopLocationService(this)
@@ -343,6 +346,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun mostrarDialogoPermisos() {
         val builder = AlertDialog.Builder(this)
+        builder.setIcon(R.drawable.ic_ixi_logo)
         builder.setTitle("Permisos Requeridos")
         builder.setMessage("Esta aplicación requiere permisos de ubicación TODO EL TIEMPO, ve a: \n\n↓  Información de la aplicación  \n↓  Permisos  \n↓  Ubicación \n-> PERMITIR TODO EL TIEMPO")
         builder.setPositiveButton("Aceptar") { _, _ ->
@@ -416,9 +420,45 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
     private fun verificarConductor() : Boolean{
+
+        if (DatosPersitidos.datosConductor?.validacion?.contains("Verificando Datos")!!) {
+            val alertDialogBuilder = AlertDialog.Builder(this)
+            alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
+            alertDialogBuilder.setCancelable(true)
+            alertDialogBuilder.setTitle("Validación de datos")
+            alertDialogBuilder.setMessage("Tú perfil sera validado por nuestro equipo en aproximadamente 24 horas, y podras conectarte como conductor. \n\nPuedes registrar tus vehiculos mientras te validamos")
+            // Botón Aceptar
+            alertDialogBuilder.setPositiveButton("Aceptar") { _, _ ->
+
+            }
+            alertDialogBuilder.setNegativeButton("Registrar Vehiculos"){_, _ ->
+                val i = Intent(this, CarList::class.java)
+                startActivity(i)
+            }
+
+            val alertDialog: AlertDialog = alertDialogBuilder.create()
+            alertDialog.show()
+            return false
+        }
+
+        if(!DatosPersitidos.datosConductor?.validacion?.contains("Validado")!!){
+
+            val builder = AlertDialog.Builder(this)
+            builder.setIcon(R.drawable.ic_ixi_logo)
+            builder.setTitle("Usuario no validado")
+            builder.setMessage("Registra tus datos en tú perfil")
+            builder.setPositiveButton("Ver perfil") { _, _ ->
+                val i = Intent(this, ProfileActivity::class.java)
+                startActivity(i)
+            }
+            builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
+            builder.show()
+            return false //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
+        }
         if(DatosPersitidos.datosCarroEnUso==null){
 
             val builder = AlertDialog.Builder(this)
+            builder.setIcon(R.drawable.ic_ixi_logo)
             builder.setTitle("Seleccionar Vehiculo")
             builder.setMessage("Necesita seleccionar un vehiculo de trabajo")
             builder.setPositiveButton("Ver vehiculos") { _, _ ->
@@ -429,22 +469,10 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             builder.show()
             return false
         }
-        if(!DatosPersitidos.datosConductor?.validacion?.contains("Validado")!!){
-
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle("Usuario no validado")
-            builder.setMessage("El usuario aun no ha sido validado")
-            builder.setPositiveButton("Ver perfil") { _, _ ->
-                val i = Intent(this, ProfileActivity::class.java)
-                startActivity(i)
-            }
-            builder.setCancelable(true) // Evita que el usuario pueda cancelar el diálogo tocando fuera de él
-            builder.show()
-            return false //TODO CAMBIAR ESTE VALOR A FALSE, (TRUE SOLO PARA PRUEBAS)
-        }
         if(DatosPersitidos.datosConductor?.saldo!! <0.0){
 
             val builder = AlertDialog.Builder(this)
+            builder.setIcon(R.drawable.ic_ixi_logo)
             builder.setTitle("Recarga")
             builder.setMessage("Saldo insufiente para realizar viajes")
             builder.setPositiveButton("Ver Saldo") { _, _ ->
@@ -495,7 +523,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     }
 
     private fun addClientMarker(clientLatLng:LatLng) {
-     googleMaps?.addMarker(MarkerOptions().position(clientLatLng!!).title("Mi posicion")
+     googleMaps?.addMarker(MarkerOptions().position(clientLatLng).title("Mi posicion")
             .icon(BitmapDescriptorFactory.fromResource(R.drawable.my_location_red)))
     }
 
@@ -523,12 +551,12 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             }
 
         } catch (e: Resources.NotFoundException) {
-            Log.d("MAPAS", "Error: ${e.toString()}")
+            Log.d("MAPAS", "Error: $e")
         }
 
         googleMaps?.moveCamera(
             CameraUpdateFactory.newCameraPosition(
-                CameraPosition.builder().target(aeropuertoBogotaLatLng!!).zoom(14f).build()
+                CameraPosition.builder().target(aeropuertoBogotaLatLng).zoom(14f).build()
             )
         )
 
@@ -576,7 +604,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
                 )
                 isCameraMoved = true // Marca moveCamera como ya ejecutado
 
-                if(binding?.btnDisconnect?.isVisible == true) agregarMarca()
+                if(binding.btnDisconnect?.isVisible == true) agregarMarca()
             }
 
             if (ubicacionLatLong != null && start != null && marcaConductor!=null) {
@@ -595,12 +623,25 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         Log.d("Firestore", "Distancia del arepuerto $distanciaAlAeropuerto")
         // Verificar si la distancia es mayor que la distancia máxima permitida
         val distanciaAreopuerto=distanciaAreopuerto.adentroArepouerto(location)
-        if (!distanciaAreopuerto) {
-            // Si la distancia es mayor, desconectar al conductor
-            val rootView = findViewById<View>(android.R.id.content) // Puedes obtener la vista raíz de la actividad o el diseño
-            Snackbar.make(rootView, "Estas fuera del area de trabajo", Snackbar.LENGTH_LONG).show()
+        if (!distanciaAreopuerto && binding.btnDisconnect.visibility==View.VISIBLE) {
             disconnectDriver()
+            mensajeFueraDeArea()
         }
+    }
+
+    private fun mensajeFueraDeArea() {
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
+        alertDialogBuilder.setCancelable(true)
+        alertDialogBuilder.setTitle("Fuera del area")
+        alertDialogBuilder.setMessage("Debes estar dentro del area de trabajo para poder conectarte.")
+
+        // Botón Aceptar
+        alertDialogBuilder.setPositiveButton("ok") { _, _ ->
+
+        }
+        val alertDialog: AlertDialog = alertDialogBuilder.create()
+        alertDialog.show()
     }
 
     private fun crearIcono() {
@@ -664,18 +705,18 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
 
     private fun dibujarRutaEntreCliente(originLatLng:LatLng,destinationLatLng:LatLng){
         wayPoints.clear()
-        wayPoints.add(originLatLng!!)
-        wayPoints.add(destinationLatLng!!)
+        wayPoints.add(originLatLng)
+        wayPoints.add(destinationLatLng)
         directionUtil = DirectionUtil.Builder()
             .setDirectionKey(resources.getString(R.string.google_maps_key))
-            .setOrigin(originLatLng!!)
+            .setOrigin(originLatLng)
             .setWayPoints(wayPoints)
             .setGoogleMap(googleMaps!!)
             .setPolyLinePrimaryColor(R.color.black)
             .setPolyLineWidth(25)
             .setPathAnimation(true)
             .setCallback(this)
-            .setDestination(destinationLatLng!!)
+            .setDestination(destinationLatLng)
             .build()
 
         directionUtil.initPath()
@@ -691,8 +732,8 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         distance = if (distance < 1000.0) 1000.0 else distance // SI ES MENOS DE 1000 METROS EN 1 KM
         time = if (time < 60.0) 60.0 else time
 
-        distance = distance / 1000 // KM
-        time = time / 60 // MIN
+        distance /= 1000 // KM
+        time /= 60 // MIN
 
         timeString = String.format("%.2f", time)
         distanceString = String.format("%.2f", distance)

@@ -31,6 +31,7 @@ import android.widget.VideoView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.FragmentActivity
+import com.castellanoseloy.toonsconductor.R
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -218,6 +219,7 @@ object Utilidades {
         positiveButtonClickListener: DialogInterface.OnClickListener
     ) {
         AlertDialog.Builder(context)
+            .setIcon(R.drawable.ic_ixi_logo)
             .setTitle(title)
             .setMessage(message)
             .setPositiveButton(positiveButton, positiveButtonClickListener)
@@ -420,34 +422,62 @@ object Utilidades {
         context.startActivity(i)
     }
 
-    fun enviarWhatsapp(telefono: String,  context: Context) {
+    fun enviarWhatsapp(telefono: String, mensaje: String, context: Context) {
         val numeroWhatsApp = "+57$telefono"
-        val mensaje = "Hola"
-
         val uri = Uri.parse("whatsapp://send?phone=$numeroWhatsApp&text=${URLEncoder.encode(mensaje, "UTF-8")}")
-
         val intent = Intent(Intent.ACTION_VIEW, uri)
 
-        // Verifica si hay aplicaciones disponibles para manejar la intención
+        // Verificar si hay aplicaciones disponibles para manejar la intención
         if (intent.resolveActivity(context.packageManager) != null) {
             context.startActivity(intent)
         } else {
-            // Manejar el caso en el que no hay aplicaciones disponibles
-            Toast.makeText(context, "WhatsApp no está instalado.", Toast.LENGTH_SHORT).show()
+            // Intentar abrir WhatsApp Business
+            abrirWhatsappBusiness(numeroWhatsApp, mensaje, context)
         }
     }
+
+
+    private fun abrirWhatsappBusiness(numeroWhatsApp: String, mensaje: String, context: Context) {
+        val uri = Uri.parse("https://api.whatsapp.com/send?phone=$numeroWhatsApp&text=${URLEncoder.encode(mensaje, "UTF-8")}")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+
+        // Verificar si hay aplicaciones disponibles para manejar la intención
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        } else {
+            // Mostrar mensaje de error
+            Toast.makeText(context, "WhatsApp y WhatsApp Business no están instalados.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+
 
     fun abrirEnlaceWhatsApp(enlace: String, context: Context) {
         val intent = Intent(Intent.ACTION_VIEW)
         val uri = Uri.parse(enlace)
         intent.data = uri
 
-        // Verifica si hay aplicaciones disponibles para manejar la intención
+        // Verificar si hay aplicaciones disponibles para manejar la intención
         if (intent.resolveActivity(context.packageManager) != null) {
             context.startActivity(intent)
+        } else {
+            // Intentar abrir WhatsApp Business
+            abrirWhatsappBusinessEnlace(enlace, context)
         }
     }
 
+    private fun abrirWhatsappBusinessEnlace(enlace: String, context: Context) {
+        val uri = Uri.parse("https://api.whatsapp.com/send?text=${URLEncoder.encode(enlace, "UTF-8")}")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+
+        // Verificar si hay aplicaciones disponibles para manejar la intención
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        } else {
+            // Mostrar mensaje de error
+            Toast.makeText(context, "WhatsApp y WhatsApp Business no están instalados.", Toast.LENGTH_SHORT).show()
+        }
+    }
     //obtener la distacina entre dos puntos
      fun obtenerDistacia(originLatLng: LatLng, destinationLatLng: LatLng): Float {
         var distance = 0.0f

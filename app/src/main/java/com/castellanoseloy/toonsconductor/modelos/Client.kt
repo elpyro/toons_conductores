@@ -16,10 +16,7 @@ data class Client (
     val validacion: String? =null,
     val token: String ? = null
 ) {
-
-
     public fun toJson() = klaxon.toJsonString(this)
-
     companion object {
         public fun fromJson(json: String) = klaxon.parse<Client>(json)
     }

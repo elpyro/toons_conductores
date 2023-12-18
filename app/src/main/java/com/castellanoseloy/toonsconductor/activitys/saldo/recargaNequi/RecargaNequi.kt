@@ -9,6 +9,7 @@ import android.widget.Toast
 import com.castellanoseloy.toonscliente.objetos.Utilidades
 import com.castellanoseloy.toonscliente.objetos.Utilidades.eliminarPuntosComasLetras
 import com.castellanoseloy.toonscliente.objetos.Utilidades.escribirFormatoMoneda
+import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.api.NequiApiService
 import com.castellanoseloy.toonsconductor.api.NequiOAuth2Manager
 import com.castellanoseloy.toonsconductor.databinding.ActivityRecargaNequiBinding
@@ -48,7 +49,7 @@ class RecargaNequi : AppCompatActivity() {
         setContentView(binding.root)
 
         listeners()
-//        binding?.editTextNumeroNequi?.setText(DatosPersitidos.datosConductor?.telefono?: "")
+
         binding?.editTextNumeroNequi?.setText("3720002150")
 
     }
@@ -130,9 +131,6 @@ class RecargaNequi : AppCompatActivity() {
             if (accessToken != null) {
                 Log.d("Pruebas Nequi", "Token de autenticacion: $accessToken")
 
-//                val solicitudNequi=configurarSolicituPushNequi(accessToken)
-//                ProcesarSolicitud(solicitudNequi)
-//
                 retrofit2(configurarSolicituPushNequi(),accessToken)
 
             } else {
@@ -241,89 +239,12 @@ class RecargaNequi : AppCompatActivity() {
         }
     }
 
-//
-//    private fun procesarSolicitud(
-//        request: Request
-//    ) {
-//
-//        // Configurar un tiempo de espera máximo de 120 segundos
-//        val timeoutInSeconds = 120L
-//        val client = OkHttpClient.Builder().callTimeout(timeoutInSeconds, TimeUnit.SECONDS).build()
-//
-//        client.newCall(request).enqueue(object : Callback {
-//            override fun onFailure(call: Call, e: IOException) {
-//                Log.e(
-//                    "Pruebas Nequi",
-//                    "Error en la solicitud HTTP: ${e.message}, causa: ${e.cause}"
-//                )
-//
-//                runOnUiThread {
-//                    progressDialog.dismiss()
-//                    Toast.makeText(
-//                        applicationContext,
-//                        "Nequi no responde",
-//                        Toast.LENGTH_LONG
-//                    ).show()
-//                }
-//            }
-//
-//            override fun onResponse(call: Call, response: Response) {
-//                val responseBody = response.body?.string()
-//                val jsonResponse = JSONObject(responseBody)
-//
-//                val responseMessage = jsonResponse.optJSONObject("ResponseMessage")
-//                val responseHeader = responseMessage?.optJSONObject("ResponseHeader")
-//                var statusCode = responseHeader?.optJSONObject("Status")?.optString("StatusCode")!!
-//
-//                Log.d("Pruebas Nequi", "Respuesta : $responseBody")
-//
-//                if (statusCode == "0") {
-//                    Log.d("Pruebas Nequi", "Respuesta exitosa o devuelta por error de usuario invalido")
-//
-//                    val responseBody = jsonResponse.optJSONObject("ResponseMessage")
-//                        ?.optJSONObject("ResponseBody")
-//                    val transactionId = responseBody?.optJSONObject("any")
-//                        ?.optJSONObject("unregisteredPaymentRS")?.optString("transactionId")
-//                    Log.d("Pruebas Nequi", "transaccion nequi creada TransaccionId: $transactionId")
-//
-//                    runOnUiThread {
-//                        crearRegistroFirebase(transactionId!!)  //transaccion exitosa, dejar registro
-//                    }
-//                } else if (statusCode == "3-451" || statusCode == "11-9L" || statusCode == "11-37L" || statusCode == "2-CCSB000012" || statusCode == "2-CCSB000013") {
-//                    Log.e("Pruebas Nequi", "Respuesta exitosa, error usuario no registrado")
-//                    runOnUiThread {
-//                        progressDialog.dismiss()
-//                        Toast.makeText(
-//                            applicationContext,
-//                            "Numero de telefono errado",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//
-//                } else {
-//
-//                    runOnUiThread {
-//                        progressDialog.dismiss()
-//                        Toast.makeText(
-//                            applicationContext,
-//                            "Error: Nequi no responde",
-//                            Toast.LENGTH_SHORT
-//                        ).show()
-//                    }
-//
-//                }
-//            }
-//        })
-//    }
-
-
     fun configurarSolicituPushNequi(): RequestBody {
         val url =
             "https://api.sandbox.nequi.com/payments/v2/-services-paymentservice-unregisteredpayment"
 
         val fecha = Utilidades.obtenerFechaActualEnFormatoISO8601()
         val clientId = nequiOAuth2Manager.clientId
-        val apiKey = nequiOAuth2Manager.apiKey
         val referencia1 = nequiOAuth2Manager.referencia1
 
 
@@ -384,6 +305,7 @@ class RecargaNequi : AppCompatActivity() {
 
     fun mostrarDialogProgreso() {
         progressDialog = ProgressDialog(this)
+        progressDialog.setIcon(R.drawable.ic_ixi_logo)
         progressDialog.setTitle("Conectando con Nequi...")
         progressDialog.setCancelable(false)
         progressDialog.setMessage("Espere un momento...")

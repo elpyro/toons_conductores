@@ -48,8 +48,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
     var linearLayout_detalleCobro:Button? =null
     var linearLayout_referidor:Button?=null
 
-
-//    var imageViewPhoneReferidor: ImageView? = null
     var imageViewPhone: ImageView? = null
 
     var circleImageReferidor: CircleImageView? = null
@@ -78,7 +76,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textViewDestination = view.findViewById(R.id.textViewDestination)
         linearLayout_detalleCobro= view.findViewById(R.id.linearLayout_detalleCobro)
         linearLayout_referidor=view.findViewById(R.id.linearLayout_referidor)
-//        imageViewPhoneReferidor = view.findViewById(R.id.imageViewPhoneReferidor)
         imageViewPhone = view.findViewById(R.id.imageViewPhone)
 
         circleImageReferidor = view.findViewById(R.id.circleImageReferidor)
@@ -115,9 +112,7 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
         textViewClientName?.text=booking.nombrePasajero
 
         getClientInfo()
-
         listeners()
-        observadores()
         return view
     }
 
@@ -139,11 +134,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                     }
                 }
 
-//                imageViewPhoneReferidor?.setOnClickListener {
-//                    if (client?.telefono!! != null) {
-//                        verificarPermisos(client?.telefono!!)
-//                    }
-//                }
                 linearLayout_referidor?.setOnClickListener{
                     val datosRefeidorPromt=DatosReferidorPromt()
                     client?.let { it1 -> datosRefeidorPromt.clienteDetalle(requireContext(), it1) }
@@ -165,11 +155,6 @@ class ModalBottomTripInfo: BottomSheetDialogFragment() {
                 REQUEST_PHONE_CALL
             )
         }
-    }
-
-
-    private fun observadores() {
-
     }
 
 

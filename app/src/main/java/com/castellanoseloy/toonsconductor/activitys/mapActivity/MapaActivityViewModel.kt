@@ -7,11 +7,9 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.castellanoseloy.toonsconductor.modelos.ConductorModelo
 import com.castellanoseloy.toonsconductor.modelos.VersionModel
 import com.castellanoseloy.toonsconductor.proveedor.VersionControlProvider
-import com.castellanoseloy.toonsconductor.utils.RelativeTime.getPackageManager
-import com.castellanoseloy.toonsconductor.utils.RelativeTime.getPackageName
+
 
 
 class MapaActivityViewModel :ViewModel(){
@@ -23,8 +21,6 @@ class MapaActivityViewModel :ViewModel(){
     private val _currentTimerValue = MutableLiveData<Long>()
     val currentTimerValue: LiveData<Long>
         get() = _currentTimerValue
-
-    // Otras propiedades y funciones del ViewModel...
 
     // Función para actualizar el valor del temporizador
     fun updateCurrentTimerValue(value: Long) {
@@ -47,12 +43,12 @@ class MapaActivityViewModel :ViewModel(){
     fun verificarVesionActualizada(mapaActivity: MapaActivity) {
         val version=obtenerInformacionDeVersion(mapaActivity)
         val versionControl=VersionControlProvider()
-//        versionControl.getVersionActual().addOnSuccessListener { document ->
-//            if (document.exists()) {
-//                val versionActual=document.toObject(VersionModel::class.java)
-//                if(version?.second!! < versionActual?.versionCode!!) _desActualizado.value=versionActual!!
-//            }
-//        }
+        versionControl.getVersionActual().addOnSuccessListener { document ->
+            if (document.exists()) {
+                val versionActual=document.toObject(VersionModel::class.java)
+                if(version?.second!! < versionActual?.versionCode!!) _desActualizado.value=versionActual!!
+            }
+        }
     }
 
 }

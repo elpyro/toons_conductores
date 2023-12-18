@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package com.castellanoseloy.toonsconductor.activitys.addCar
 
 import android.app.Activity
@@ -10,8 +12,8 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import com.castellanoseloy.toonscliente.objetos.Utilidades
+import com.castellanoseloy.toonsconductor.R
 import com.castellanoseloy.toonsconductor.databinding.ActivityAddCarBinding
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.flask.colorpicker.ColorPickerView
@@ -54,8 +56,8 @@ class AddCar : AppCompatActivity() {
             idCar = carModel!!.id.toString()
             colorSeleccionado = carModel!!.color!!
 
-            binding?.btnUpdate?.text = "Guardar"
-            if (!carModel!!.estado?.contains("Valida tu vehiculo")!!) binding?.btnUpdate?.visibility =
+            binding.btnUpdate.text = getString(R.string.guardar)
+            if (!carModel!!.estado?.contains("Valida tu vehiculo")!!) binding.btnUpdate.visibility =
                 View.GONE
 
             viewModel.cargarDatos(carModel!!, binding, applicationContext)
@@ -70,17 +72,19 @@ class AddCar : AppCompatActivity() {
     }
 
     private fun observador() {
-        viewModel?.mensaje?.observe(this) { mensaje ->
+        viewModel.mensaje.observe(this) { mensaje ->
             Utilidades.mostrarToast(mensaje, this)
         }
-        viewModel?.elementosActualizar?.observe(this, Observer { it ->
+        viewModel.elementosActualizar.observe(this) {
             if (it == 0) {
-                progressDialog!!.dismiss()
-                Utilidades.mostrarToast("Datos Guardados", this)
+                progressDialog.dismiss()
+                Utilidades.mostrarToast("Vehiculo registrado", this)
                 finish()
             }
-        })
+        }
     }
+
+
 
     val progressDialog: ProgressDialog by lazy {
         ProgressDialog(this).apply {
@@ -122,11 +126,12 @@ class AddCar : AppCompatActivity() {
 
     private fun dialogAlert(editarDatos: Boolean) {
         val alertDialogBuilder = AlertDialog.Builder(this)
+        alertDialogBuilder.setIcon(R.drawable.ic_ixi_logo)
         alertDialogBuilder.setTitle("Validar Datos")
         alertDialogBuilder.setMessage("¿Desea enviar a verificar sus datos?, una vez enviado sus datos no podran ser cambiados hasta ser verificados")
 
         // Botón Aceptar
-        alertDialogBuilder.setPositiveButton("Si") { dialog, which ->
+        alertDialogBuilder.setPositiveButton("Si") { _, _ ->
             prepararDialogProcess()
             viewModel.salveData(
                 idCar,
@@ -140,21 +145,21 @@ class AddCar : AppCompatActivity() {
             )
         }
         // Botón Cancelar
-        alertDialogBuilder.setNegativeButton("No") { dialog, which ->
+        alertDialogBuilder.setNegativeButton("No") { _, _ ->
         }
         val alertDialog: AlertDialog = alertDialogBuilder.create()
         alertDialog.show()
     }
 
     private fun prepararDialogProcess() {
-        progressDialog!!.show()
+        progressDialog.show()
 
         binding.btnUpdate.isEnabled = false
 
-        if (fotoFrontal != null) viewModel?.incrementarElementos()
-        if (fotoLateral != null) viewModel?.incrementarElementos()
-        if (imageDocumentoDelantero != null) viewModel?.incrementarElementos()
-        if (imageDocumentoTrasero != null) viewModel?.incrementarElementos()
+        if (fotoFrontal != null) viewModel.incrementarElementos()
+        if (fotoLateral != null) viewModel.incrementarElementos()
+        if (imageDocumentoDelantero != null) viewModel.incrementarElementos()
+        if (imageDocumentoTrasero != null) viewModel.incrementarElementos()
 
     }
 
@@ -185,7 +190,7 @@ class AddCar : AppCompatActivity() {
     private fun selectDocumentFrontal() {
         imagenSeleccionada = "documentoVehiculo_frontal"
         ImagePicker.with(this)
-            .crop(14.0F, 9.0F)
+             .crop(16.0F,10.0F)
             .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent ->
@@ -196,7 +201,7 @@ class AddCar : AppCompatActivity() {
     private fun selectDocumentTrasero() {
         imagenSeleccionada = "documentoVehiculo_trasero"
         ImagePicker.with(this)
-            .crop(14.0F, 9.0F)
+             .crop(16.0F,10.0F)
             .compress(1024)
             .maxResultSize(1080, 1080)
             .createIntent { intent ->
@@ -213,23 +218,23 @@ class AddCar : AppCompatActivity() {
             if (resultCode == Activity.RESULT_OK) {
                 val fileUri = data?.data
 
-                if (imagenSeleccionada.equals("fotoFrontal")) {
-                    fotoFrontal = File(fileUri?.path)
-                    binding.circleImageFotoFrontal?.setImageURI(fileUri)
+                if (imagenSeleccionada == "fotoFrontal") {
+                    fotoFrontal = fileUri?.path?.let { File(it) }
+                    binding.circleImageFotoFrontal.setImageURI(fileUri)
                 }
-                if (imagenSeleccionada.equals("fotoLateral")) {
-                    fotoLateral = File(fileUri?.path)
-                    binding.circleImageFotoLateral?.setImageURI(fileUri)
-                }
-
-                if (imagenSeleccionada.equals("documentoVehiculo_frontal")) {
-                    imageDocumentoDelantero = File(fileUri?.path)
-                    binding.imageViewDocumentoVehiculoFontal?.setImageURI(fileUri)
+                if (imagenSeleccionada == "fotoLateral") {
+                    fotoLateral = fileUri?.path?.let { File(it) }
+                    binding.circleImageFotoLateral.setImageURI(fileUri)
                 }
 
-                if (imagenSeleccionada.equals("documentoVehiculo_trasero")) {
-                    imageDocumentoTrasero = File(fileUri?.path)
-                    binding.imageViewDocumentoVehiculoTrasero?.setImageURI(fileUri)
+                if (imagenSeleccionada == "documentoVehiculo_frontal") {
+                    imageDocumentoDelantero = fileUri?.path?.let { File(it) }
+                    binding.imageViewDocumentoVehiculoFontal.setImageURI(fileUri)
+                }
+
+                if (imagenSeleccionada == "documentoVehiculo_trasero") {
+                    imageDocumentoTrasero = fileUri?.path?.let { File(it) }
+                    binding.imageViewDocumentoVehiculoTrasero.setImageURI(fileUri)
                 }
 
             } else if (resultCode == ImagePicker.RESULT_ERROR) {
@@ -241,7 +246,7 @@ class AddCar : AppCompatActivity() {
         }
 
     private fun selectColor() {
-        var currentBackgroundColor: Int = Color.BLUE
+        val currentBackgroundColor: Int = Color.BLUE
         ColorPickerDialogBuilder
             .with(this)
             .setTitle("Seleccione color de vehiculo")
@@ -251,10 +256,10 @@ class AddCar : AppCompatActivity() {
             .lightnessSliderOnly()
             .setPositiveButton(
                 "ok"
-            ) { dialog, selectedColor, allColors -> changeColorCar(selectedColor) }
+            ) { _, selectedColor, _ -> changeColorCar(selectedColor) }
             .setNegativeButton(
                 "cancel"
-            ) { dialog, which -> }
+            ) { _, _ -> }
             .build()
             .show()
     }

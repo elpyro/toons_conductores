@@ -40,8 +40,8 @@ class HistoriesDetailActivity : AppCompatActivity() {
     }
 
     private fun listeners() {
-        binding.buttonVerDetalle.setOnClickListener{
-            var mostrarTarifas= MostrarTarifas()
+        binding.buttonVerDetalle.setOnClickListener {
+            val mostrarTarifas = MostrarTarifas()
             mostrarTarifas.mostrarTarifas(this, history?.tarifas!!)
         }
     }
@@ -55,16 +55,16 @@ class HistoriesDetailActivity : AppCompatActivity() {
                 binding.textViewDestination.text = history?.destination
                 binding.textViewDate.text =
                     RelativeTime.getTimeAgo(history?.timestamp!!, this@HistoriesDetailActivity)
-                binding.textViewPasajero.text=history?.pasajero?: "Desconocido"
+                binding.textViewPasajero.text = history?.pasajero ?: "Desconocido"
 
-                binding.textViewPrice.text = history!!.tarifas?.totalComisionConductor.toString().formatoMonenda()
-                binding.textViewMyCalification.text = "${history?.calificationToDriver  ?: "5"}    ${history?.commentClient  ?: "El cliente no califico"}"
-                binding.textViewClientCalification.text = "${history?.calificationToClient ?: "5"}    ${history?.commentDriver ?: "No calificaste"}"
+                binding.textViewPrice.text =
+                    history!!.tarifas?.totalComisionConductor.toString().formatoMonenda()
+                binding.textViewMyCalification.text =
+                    "${history?.calificationToDriver ?: "5"}    ${history?.commentClient ?: "El cliente no califico"}"
+                binding.textViewClientCalification.text =
+                    "${history?.calificationToClient ?: "5"}    ${history?.commentDriver ?: "No calificaste"}"
 
-//                binding.textViewTimeAndDistance.text =
-//                    "${history?.time} Min - ${String.format("%.1f", history?.km)} Km"
-
-                binding?.buttonVerCliente?.setOnClickListener{
+                binding.buttonVerCliente.setOnClickListener {
                     mostrarCliente(history?.idClient)
                 }
             }
@@ -73,16 +73,16 @@ class HistoriesDetailActivity : AppCompatActivity() {
     }
 
     private fun mostrarCliente(idClient: String?) {
-        var clienteProveedor = ClienteProveedor()
+        val clienteProveedor = ClienteProveedor()
         clienteProveedor.getClientById(idClient!!).addOnSuccessListener { document ->
             if (document.exists()) {
                 val cliente = document.toObject(Client::class.java)
 
-                var datosRefeidorPromt= DatosReferidorPromt()
-                datosRefeidorPromt.clienteDetalle(this,cliente!!)
+                val datosRefeidorPromt = DatosReferidorPromt()
+                datosRefeidorPromt.clienteDetalle(this, cliente!!)
 
 
-                Log.d("Firestore", "Obteniendo datos del cliente ${cliente}")
+                Log.d("Firestore", "Obteniendo datos del cliente $cliente")
 
             } else {
                 Log.e("Firestore", "No se encontraron datos del cliente")

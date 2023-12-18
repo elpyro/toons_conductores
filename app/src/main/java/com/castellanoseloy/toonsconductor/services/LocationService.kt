@@ -45,8 +45,7 @@ class LocationService : Service() {
             override fun onLocationResult(locationResult: LocationResult) {
                 super.onLocationResult(locationResult)
                 locationResult.lastLocation?.let { location ->
-                    // Aquí colocas tu código de currentLocation y sus funciones anidadas
-                    // Por ejemplo:
+
                     handleNewLocation(location)
                     // ...
                 }
@@ -107,7 +106,7 @@ class LocationService : Service() {
         }
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setContentTitle("Ubicación en segundo plano activada")
+            .setContentTitle("Ubicación ixi")
             .setSmallIcon(R.drawable.ic_ixi_logo)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)

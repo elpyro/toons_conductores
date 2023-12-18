@@ -1,7 +1,6 @@
 package com.castellanoseloy.toonsconductor.activitys.carList
 
 import android.annotation.SuppressLint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,13 +8,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.castellanoseloy.toonsconductor.R
-import com.castellanoseloy.toonsconductor.activitys.diffCallback.ProductoDiffCallback
 import com.castellanoseloy.toonsconductor.modelos.CarModel
 import com.castellanoseloy.toonsconductor.services.DatosPersitidos
-import com.optic.uberclonedriverkotlin.providers.DriverProvider
 
 class CarListAdapter  (
     private var car: MutableList<CarModel>,
@@ -44,12 +40,6 @@ class CarListAdapter  (
         return car.size
     }
 
-    fun updateData(newProducts: List<CarModel>) {
-        val diffResult = DiffUtil.calculateDiff(ProductoDiffCallback(car, newProducts))
-        car.clear()
-        car.addAll(newProducts)
-        diffResult.dispatchUpdatesTo(this)
-    }
 
     inner class CarViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val placaYModelo: TextView = itemView.findViewById(R.id.textview_placaymodelo)

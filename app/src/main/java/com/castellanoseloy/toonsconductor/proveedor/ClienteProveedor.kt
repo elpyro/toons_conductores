@@ -8,8 +8,6 @@ import com.google.firebase.ktx.Firebase
 class ClienteProveedor {
 
     val bd =Firebase.firestore.collection("Clientes")
-
-
     fun getClientById(id: String): Task<DocumentSnapshot> {
         return bd.document(id).get()
     }

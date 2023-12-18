@@ -75,11 +75,11 @@ class AddCarViewModel : ViewModel() {
             carProvider.uploadImage(
                 idCar,
                 "fotoFrontal",
-                fotoFrontal!!
-            ).addOnSuccessListener { taskSnapshot ->
+                fotoFrontal
+            ).addOnSuccessListener {
                 carProvider.getStorageImagenFrontal().addOnSuccessListener { url ->
                     val imageUrl = url.toString()
-                    Log.d("Firestore", "la ruta de la imagen de perfil es: ${imageUrl}")
+                    Log.d("Firestore", "la ruta de la imagen de perfil es: $imageUrl")
                     val car=CarModel(id=idCar, imagenFrontal =imageUrl )
                     carProvider.updateImagenFrontal(car).addOnCompleteListener {
                         decrementarElementos()
@@ -88,7 +88,7 @@ class AddCarViewModel : ViewModel() {
                             Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                         }
                     }
-                    Log.d("STORAGE", "$imageUrl")
+                    Log.d("STORAGE", imageUrl)
                 }
             }
         }
@@ -97,12 +97,12 @@ class AddCarViewModel : ViewModel() {
             carProvider.uploadImage(
                 idCar,
                 "fotoLateral",
-                fotoLateral!!
-            ).addOnSuccessListener { taskSnapshot ->
+                fotoLateral
+            ).addOnSuccessListener {
                 carProvider.getStorageImagenLateral().addOnSuccessListener { url ->
                     val imageUrl = url.toString()
 
-                    Log.d("Firestore", "la ruta de la imagen documento es: ${imageUrl}")
+                    Log.d("Firestore", "la ruta de la imagen documento es: $imageUrl")
 
                     val car=CarModel(id=idCar, imagenLateral =imageUrl )
                     carProvider.updateImagenLateral(car).addOnCompleteListener {
@@ -112,16 +112,16 @@ class AddCarViewModel : ViewModel() {
                             Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                         }
                     }
-                    Log.d("STORAGE", "$imageUrl")
+                    Log.d("STORAGE", imageUrl)
                 }
             }
         }
         if ( imagenDocumento!= null) {
-            carProvider.uploadImage(idCar, "documentoVehiculo_frontal", imagenDocumento!!)
-                .addOnSuccessListener { taskSnapshot ->
+            carProvider.uploadImage(idCar, "documentoVehiculo_frontal", imagenDocumento)
+                .addOnSuccessListener {
                     carProvider.getStorageDocumentoFrontal().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
-                        Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
+                        Log.d("Firestore", "la ruta de la imagen la licencia es: $imageUrl")
                         val car=CarModel(id=idCar, imagenDocumento =imageUrl )
                         carProvider.updateDocumento(car).addOnCompleteListener {
                             decrementarElementos()
@@ -129,18 +129,18 @@ class AddCarViewModel : ViewModel() {
                               mensaje.value="No se pudo guardar el documento"
                                 Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                             }
-                            Log.d("STORAGE", "$imageUrl")
+                            Log.d("STORAGE", imageUrl)
                         }
                     }
                 }
         }
 
         if ( imageDocumentoTrasero!= null) {
-            carProvider.uploadImage(idCar, "documentoVehiculo_trasero", imageDocumentoTrasero!!)
-                .addOnSuccessListener { taskSnapshot ->
+            carProvider.uploadImage(idCar, "documentoVehiculo_trasero", imageDocumentoTrasero)
+                .addOnSuccessListener {
                     carProvider.getStorageDocumentoTrasero().addOnSuccessListener { url ->
                         val imageUrl = url.toString()
-                        Log.d("Firestore", "la ruta de la imagen la licencia es: ${imageUrl}")
+                        Log.d("Firestore", "la ruta de la imagen la licencia es: $imageUrl")
                         val car=CarModel(id=idCar, imagenDocumentoTrasero =imageUrl )
                         carProvider.updateDocumentoTrasero(car).addOnCompleteListener {
                             decrementarElementos()
@@ -148,7 +148,7 @@ class AddCarViewModel : ViewModel() {
                                 mensaje.value="No se pudo guardar el documento"
                                 Log.e("Firebase", "ERROR GUARDANDO EN LA NUBE: ${it.exception}")
                             }
-                            Log.d("STORAGE", "$imageUrl")
+                            Log.d("STORAGE", imageUrl)
                         }
                     }
                 }
@@ -169,7 +169,7 @@ class AddCarViewModel : ViewModel() {
         val idConductor= DatosPersitidos.datosConductor?.id
         val malero=binding.switchMaletero.isChecked
         val tecnomecanica=binding.checkBoxTecnomecanica.isChecked
-        val SOAT=binding.checkBoxSoat.isChecked
+        val soat=binding.checkBoxSoat.isChecked
 
         val car = CarModel(
             id= idCar,
@@ -182,7 +182,7 @@ class AddCarViewModel : ViewModel() {
             pasajeros= pasajeros,
             malero= malero,
             tecnomecanica= tecnomecanica,
-            SOAT=SOAT
+            SOAT=soat
         )
 
         val carProvider=CarProvider()
@@ -239,15 +239,15 @@ class AddCarViewModel : ViewModel() {
         }
         if(binding.textFieldPlaca.text.toString().isEmpty()){
             datosValidos=false
-            binding.textFieldPlaca.setError("Obligatorio")
+            binding.textFieldPlaca.error = "Obligatorio"
         }
         if(binding.textFielMarca.text.toString().isEmpty()){
             datosValidos=false
-            binding.textFielMarca.setError("Obligatorio")
+            binding.textFielMarca.error = "Obligatorio"
         }
         if(binding.textFielAsisentos.text.toString().isEmpty()){
             datosValidos=false
-            binding.textFielAsisentos.setError("Obligatorio")
+            binding.textFielAsisentos.error = "Obligatorio"
         }
 
         return datosValidos
@@ -257,31 +257,31 @@ class AddCarViewModel : ViewModel() {
     fun cargarDatos(carModel: CarModel, binding: ActivityAddCarBinding, applicationContext: Context) {
 
 
-        if (carModel?.imagenFrontal != null) {
+        if (carModel.imagenFrontal != null) {
                 try {
-                    Glide.with(applicationContext).load(carModel?.imagenFrontal).into(binding.circleImageFotoFrontal!!)
-                }catch (e: Exception){  }
+                    Glide.with(applicationContext).load(carModel.imagenFrontal).into(binding.circleImageFotoFrontal)
+                }catch (_: Exception){  }
         }
-        if (carModel?.imagenLateral != null) {
+        if (carModel.imagenLateral != null) {
             try {
-                Glide.with(applicationContext).load(carModel?.imagenLateral).into(binding.circleImageFotoLateral!!)
-            }catch (e: Exception){  }
+                Glide.with(applicationContext).load(carModel.imagenLateral).into(binding.circleImageFotoLateral)
+            }catch (_: Exception){  }
         }
-        if (carModel?.imagenDocumento != null) {
+        if (carModel.imagenDocumento != null) {
             try {
-                Glide.with(applicationContext).load(carModel?.imagenDocumento).into(binding.imageViewDocumentoVehiculoFontal!!)
-            }catch (e: Exception){  }
+                Glide.with(applicationContext).load(carModel.imagenDocumento).into(binding.imageViewDocumentoVehiculoFontal)
+            }catch (_: Exception){  }
         }
-        if (carModel?.imagenDocumentoTrasero != null) {
+        if (carModel.imagenDocumentoTrasero != null) {
             try {
-                Glide.with(applicationContext).load(carModel?.imagenDocumentoTrasero).into(binding.imageViewDocumentoVehiculoTrasero!!)
-            }catch (e: Exception){  }
+                Glide.with(applicationContext).load(carModel.imagenDocumentoTrasero).into(binding.imageViewDocumentoVehiculoTrasero)
+            }catch (_: Exception){  }
         }
 
         binding.textFieldPlaca.setText(carModel.placa)
         binding.textFielMarca.setText(carModel.bland)
         binding.textFielAsisentos.setText(carModel.pasajeros!!.toString())
-        binding.switchMaletero.setChecked(carModel.malero!!)
+        binding.switchMaletero.isChecked = carModel.malero!!
         binding.checkBoxTecnomecanica.isChecked=carModel.tecnomecanica!!
         binding.checkBoxSoat.isChecked=carModel.SOAT!!
 
@@ -290,7 +290,7 @@ class AddCarViewModel : ViewModel() {
         val indiceValorPredeterminado = opcionesArray.indexOf(carModel.tipo)
         if (indiceValorPredeterminado != -1) {
             // Establecer el valor predeterminado en el Spinner
-            binding?.spinner?.setSelection(indiceValorPredeterminado)
+            binding.spinner.setSelection(indiceValorPredeterminado)
         }
         binding.imageViewCarColor.setColorFilter(carModel.color!!)
 

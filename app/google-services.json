@@ -8,12 +8,25 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:810907895185:android:8a4c59cc9587bf8e0f0630",
+        "mobilesdk_app_id": "1:810907895185:android:a75208d069ffee360f0630",
         "android_client_info": {
-          "package_name": "com.castellanoseloy.toonscliente"
+          "package_name": "app.castellanoseloy.ixi_administrativo"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "810907895185-2g6l711bialg2jntsgvtc5b5hujjrb92.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.castellanoseloy.ixi_administrativo",
+            "certificate_hash": "4d3572b3a332ceb089bae42bdf0001b3066741e7"
+          }
+        },
+        {
+          "client_id": "810907895185-d8p29rpsnuuv92tj2tgpe5vceimbu5md.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC9lJVjRDHwxa85WW4FRvzYD0sAJP8LZds"
@@ -21,7 +34,49 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810907895185-20li3cfqv02iti2htu700b16mo3ko51a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810907895185:android:8a4c59cc9587bf8e0f0630",
+        "android_client_info": {
+          "package_name": "com.castellanoseloy.toonscliente"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "810907895185-u6qes1jj5spoq0j783ie8gf8o0hr90se.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.castellanoseloy.toonscliente",
+            "certificate_hash": "4d3572b3a332ceb089bae42bdf0001b3066741e7"
+          }
+        },
+        {
+          "client_id": "810907895185-d8p29rpsnuuv92tj2tgpe5vceimbu5md.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC9lJVjRDHwxa85WW4FRvzYD0sAJP8LZds"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810907895185-20li3cfqv02iti2htu700b16mo3ko51a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
@@ -32,7 +87,20 @@
           "package_name": "com.castellanoseloy.toonsconductor"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "810907895185-nuus3lg7h5a9jdgu36vcb5av63crg5k8.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.castellanoseloy.toonsconductor",
+            "certificate_hash": "4d3572b3a332ceb089bae42bdf0001b3066741e7"
+          }
+        },
+        {
+          "client_id": "810907895185-d8p29rpsnuuv92tj2tgpe5vceimbu5md.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC9lJVjRDHwxa85WW4FRvzYD0sAJP8LZds"
@@ -40,7 +108,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810907895185-20li3cfqv02iti2htu700b16mo3ko51a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

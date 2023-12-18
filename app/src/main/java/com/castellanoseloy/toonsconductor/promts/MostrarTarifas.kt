@@ -28,12 +28,10 @@ class MostrarTarifas {
         val textViewPorcentajeComisionReferido = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_referido)
         val editText_porcentaje_comision_referido_etiqueta = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_referido_etiqueta)
         val editText_TarifaFijaReferidor = dialogView.findViewById<TextView>(R.id.editText_TarifaFijaReferidor)
-//        val editText_impuesto = dialogView.findViewById<TextView>(R.id.editText_impuesto)
         val editText_porcentaje_comision_app_etiqueta = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_app_etiqueta)
         val editText_porcentaje_comision_app = dialogView.findViewById<TextView>(R.id.editText_porcentaje_comision_app)
         val editText_tarifa_fija_app = dialogView.findViewById<TextView>(R.id.editText_tarifa_fija_app)
         val editText_ganancia_condutor = dialogView.findViewById<TextView>(R.id.editText_ganancia_condutor)
-//        val editText_impuesto_etiqueta = dialogView.findViewById<TextView>(R.id.editText_impuesto_etiqueta)
 
         textViewTotalViaje.setText(tarifas.totalViaje.toString().formatoMoneda())
 
@@ -49,7 +47,6 @@ class MostrarTarifas {
         editText_porcentaje_comision_referido_etiqueta.setText("Comision ${tarifas.porcenajeComisionReferido}%")
         val comisionReferidor= (tarifas.totalViaje!! * tarifas.porcenajeComisionReferido!!)/100
         textViewPorcentajeComisionReferido.setText(comisionReferidor.toString().formatoMoneda())
-
 
 
 // Configurar el botón "Aceptar"

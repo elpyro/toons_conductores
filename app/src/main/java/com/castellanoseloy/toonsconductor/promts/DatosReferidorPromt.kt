@@ -62,7 +62,7 @@ class DatosReferidorPromt {
         }
 
         imageViewPhoneReferidor.setOnClickListener { Utilidades.llamar(cliente?.telefono!!, context) }
-        imageViewWhatsappConductor.setOnClickListener { Utilidades.enviarWhatsapp(cliente?.telefono!!, context) }
+        imageViewWhatsappConductor.setOnClickListener { Utilidades.enviarWhatsapp(cliente?.telefono!!, "Hola", context) }
 
         dialogBuilder.setNegativeButton("Aceptar") { dialogInterface, i ->
             // No hacer nada
