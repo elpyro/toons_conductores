@@ -115,7 +115,7 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
     // Declara una variable miembro para el PowerManager.WakeLock
     private var wakeLock: PowerManager.WakeLock? = null
 
-    val timer = object: CountDownTimer(10000, 1000) {
+    val timer = object: CountDownTimer(13000, 1000) {
 
 
         override fun onTick(counter: Long) {
@@ -178,14 +178,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         val mapaFragment= fragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
         mapaFragment.getMapAsync(this)
 
-        serviceManager.stopLocationWorkingService(this) //si existe alguna localizacion de trabajo activa, cancelarla
-        ubicacionPorDefecto()
-        verificarPermisos()
-
-        //si el conductor es nuevo enviar a pantalla de perfil
-        if(DatosPersitidos.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
-
-
         //establecemos el tiempo desde que se activo en la lista de conductores
         if(tiempoActivo==null ){
             tiempoActivo= Date().time
@@ -193,30 +185,17 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
             if(tiempoActivo!=0L) tiempoActivo= Date().time //if es 0L es porque el viaje fue cancelado y debe estar en el inicio de la cola
         }
 
+        serviceManager.stopLocationWorkingService(this) //si existe alguna localizacion de trabajo activa, cancelarla
+        ubicacionPorDefecto()
+        verificarPermisos()
 
-
-        if(DatosPersitidos.datosConductor!=null){
-            listeners()
-        }else{
-            val driverProvider=DriverProvider()
-            val autenticacion= Autenticacion()
-            driverProvider.createToken(autenticacion.obtenerId())
-            driverProvider.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
-                Log.d("Firestore", "Validando client ")
-                if (document.exists()) {
-                    val driver = document.toObject(ConductorModelo::class.java)
-                    DatosPersitidos.datosConductor=driver
-                    listeners()
-                }else{
-                    Utilidades.mostrarToast("Problemas en conexion", this)
-                }
-            }
-        }
 
         viewModel?.verificarVesionActualizada(this)
 
+        //si el conductor es nuevo enviar a pantalla de perfil
+        if(DatosPersitidos.datosConductor?.validacion.equals("Valida tu usuario")) goToProfile()
 
-         listeners()
+        listeners()
         observadores()
     }
 
@@ -330,8 +309,31 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         modalMostrado=false
         // Adquiere el WakeLock al entrar en primer plano
         wakeLock?.acquire()
+
+        verificarDatosConductor()
         listenerBooking()
+
+
     }
+
+    private fun verificarDatosConductor() {
+        val driverProvider=DriverProvider()
+        val autenticacion= Autenticacion()
+        driverProvider.createToken(autenticacion.obtenerId())
+        driverProvider.getDriver(autenticacion.obtenerId()).addOnSuccessListener { document ->
+            Log.d("Firestore", "Validando client ")
+            if (document.exists()) {
+                val driver = document.toObject(ConductorModelo::class.java)
+                DatosPersitidos.datosConductor=driver
+                if(!DatosPersitidos.datosConductor?.validacion?.contains("Validado")!!) disconnectDriver()
+                if(DatosPersitidos.datosConductor!!.saldo!! < 0.00)disconnectDriver()
+                listeners()
+            }else{
+                Utilidades.mostrarToast("Problemas en conexion", this)
+            }
+        }
+    }
+
     private fun showModalMenu() {
         // Verifica si el menú modal ya está agregado al FragmentManager
         val existingMenuFragment = supportFragmentManager.findFragmentByTag(ModalBottomSheetMenu.TAG)
@@ -743,4 +745,6 @@ class MapaActivity : AppCompatActivity(), OnMapReadyCallback, Listener,Direction
         //dibujar ruta
         directionUtil.drawPath(WAY_POINT_TAG)
     }
+
+
 }

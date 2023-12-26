@@ -109,7 +109,7 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
 
     private fun crearNuevoConductor() {
 
-        val saldoObsequio = 10000.0
+        val saldoObsequio = 20000.0
 
         val driver = ConductorModelo(
             id = autenticacion.obtenerId(),
@@ -121,7 +121,7 @@ class CodigoMensajeVerificacion : AppCompatActivity() {
         val preferencias = Preferencias(this)
         preferencias.guardarPreferencia("nequi", telefono)
 
-        Utilidades.mostrarToast("Te hemos obsequiado 10.000$ de saldo \nPor ser nuevo usario", this)
+        Utilidades.mostrarToast("Te hemos obsequiado 20.000$ de saldo \nPor ser nuevo usario", this)
         actualizarCrearCliente(driver)
 
 
